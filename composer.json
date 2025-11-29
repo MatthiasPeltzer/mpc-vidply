@@ -2,7 +2,6 @@
   "name": "mpc/mpc-vidply",
   "description": "TYPO3 Extension for VidPly - Universal, Accessible Video & Audio Player",
   "type": "typo3-cms-extension",
-  "version": "1.0.0",
   "license": [
     "GPL-2.0-or-later"
   ],
@@ -10,6 +9,7 @@
     {
       "name": "Matthias Peltzer",
       "email": "mail@mpeltzer.de",
+      "homepage": "https://www.mpeltzer.de/",
       "role": "Developer"
     }
   ],
@@ -18,16 +18,43 @@
       "Mpc\\MpcVidply\\": "Classes/"
     }
   },
+  "config": {
+    "vendor-dir": "../default.instance/vendor",
+    "bin-dir": "../default.instance/bin"
+  },
   "extra": {
     "typo3/cms": {
+      "cms-package-dir": "{$vendor-dir}/typo3/cms",
+      "web-dir": "../default.instance",
       "extension-key": "mpc_vidply"
     }
   },
+  "homepage": "https://github.com/MatthiasPeltzer/mpc-vidply",
+  "replace": {
+    "typo3-ter/mpc-vidply": "self.version"
+  },
   "require": {
-    "php": "^8.2",
+    "php": ">=8.2",
     "typo3/cms-core": "^13.4 || ^14.0",
-    "typo3/cms-fluid": "^13.4 || ^14.0",
-    "typo3/cms-frontend": "^13.4 || ^14.0"
+    "typo3/cms-extbase": "^13.4 || ^14.0",
+    "typo3/cms-fluid": "^13.4 || ^14.0"
+  },
+  "scripts": {
+    "post-autoload-dump": [
+      "mkdir -p ../default.instance/typo3conf/ext/",
+      "[ -L ../default.instance/typo3conf/ext/mpc-vidply ] || ln -snvf ../../../dir-project ../default.instance/typo3conf/ext/mpc-vidply"
+    ]
   }
 }
+
+
+
+
+
+
+
+
+
+
+
 
