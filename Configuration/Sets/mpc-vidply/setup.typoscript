@@ -1,0 +1,16 @@
+# VidPly Player Setup TypoScript
+lib.contentElement {
+    templateRootPaths.200 = EXT:mpc_vidply/Resources/Private/Templates/
+    partialRootPaths.200 = EXT:mpc_vidply/Resources/Private/Partials/
+    layoutRootPaths.200 = EXT:mpc_vidply/Resources/Private/Layouts/
+}
+
+# Configure VidPly content element
+tt_content.mpc_vidply =< lib.contentElement
+tt_content.mpc_vidply {
+    templateName = VidPly
+    
+    dataProcessing {
+        10 = Mpc\MpcVidply\DataProcessing\VidPlyProcessor
+    }
+}

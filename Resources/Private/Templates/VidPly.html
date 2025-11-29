@@ -1,0 +1,156 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+
+<f:layout name="Default" />
+
+<f:section name="Main">
+    <f:variable name="wrapperClasses" value="vidply-wrapper" />
+    <f:if condition="{data.frame_class}">
+        <f:variable name="wrapperClasses" value="{wrapperClasses} frame-{data.frame_class}" />
+    </f:if>
+    <f:if condition="{data.space_before_class}">
+        <f:variable name="wrapperClasses" value="{wrapperClasses} frame-space-before-{data.space_before_class}" />
+    </f:if>
+    <f:if condition="{data.space_after_class}">
+        <f:variable name="wrapperClasses" value="{wrapperClasses} frame-space-after-{data.space_after_class}" />
+    </f:if>
+
+    <div class="{wrapperClasses}" id="{vidply.uniqueId}-wrapper">
+        <f:render partial="Header/All" arguments="{data: data, settings: settings}" />
+        
+        <f:comment><!-- Check if external service (YouTube, Vimeo, SoundCloud) - use privacy layer --></f:comment>
+        <f:variable name="isExternalService" value="{f:if(condition: '{vidply.serviceType} == \"youtube\"', then: '1', else: '0')}" />
+        <f:if condition="{vidply.serviceType} == 'vimeo'">
+            <f:variable name="isExternalService" value="1" />
+        </f:if>
+        <f:if condition="{vidply.serviceType} == 'soundcloud'">
+            <f:variable name="isExternalService" value="1" />
+        </f:if>
+        
+        <f:if condition="{isExternalService}">
+            <f:then>
+                <f:comment><!-- External service: Render privacy layer (no VidPlay) --></f:comment>
+                <f:render partial="VidPly/PrivacyLayer" arguments="{
+                    service: vidply.serviceType,
+                    videoUrl: vidply.videoUrl,
+                    poster: vidply.poster,
+                    title: data.header,
+                    uniqueId: vidply.uniqueId
+                }" />
+            </f:then>
+            <f:else>
+                <f:comment><!-- Local/HLS media: Render based on media type --></f:comment>
+                <f:if condition="{vidply.mediaType} == 'audio'">
+                    <f:then>
+                        <f:render section="AudioPlayer" arguments="{_all}" />
+                    </f:then>
+                    <f:else>
+                        <f:render section="VideoPlayer" arguments="{_all}" />
+                    </f:else>
+                </f:if>
+            </f:else>
+        </f:if>
+        
+        <f:comment><!-- Register VidPly assets conditionally based on media types --></f:comment>
+        <f:render partial="VidPly/Assets" arguments="{
+            needsPrivacyLayer: vidply.needsPrivacyLayer,
+            needsVidPlay: vidply.needsVidPlay,
+            needsPlaylist: vidply.needsPlaylist,
+            needsHLS: vidply.needsHLS
+        }" />
+    </div>
+</f:section>
+
+<f:section name="VideoPlayer">
+    <video
+        id="{vidply.uniqueId}"
+        <f:if condition="{vidply.playlistData}">
+            <f:then>
+                <f:comment><!-- Playlist mode: Don't use data-vidply to prevent auto-init, we'll initialize manually --></f:comment>
+                data-vidply-options='{f:format.json(value: vidply.options)}'
+                data-playlist='{f:format.json(value: vidply.playlistData.tracks)}'
+                data-playlist-auto-advance="{f:if(condition: vidply.playlistData.options.autoAdvance, then: 'true', else: 'false')}"
+                data-playlist-auto-play-first="{f:if(condition: vidply.options.autoplay, then: 'true', else: 'false')}"
+                data-playlist-loop="{f:if(condition: vidply.playlistData.options.loop, then: 'true', else: 'false')}"
+                data-playlist-show-panel="{f:if(condition: vidply.playlistData.options.showPanel, then: 'true', else: 'false')}"
+            </f:then>
+            <f:else>
+                <f:comment><!-- Single file mode: JavaScript will decide auto-init vs manual-init based on URL --></f:comment>
+                data-vidply-init
+                data-vidply-options='{f:format.json(value: vidply.options)}'
+                <f:if condition="{vidply.videoUrl}">data-vidply-src="{vidply.videoUrl}"</f:if>
+            </f:else>
+        </f:if>
+        width="{vidply.width}"
+        height="{vidply.height}"
+        <f:if condition="{vidply.poster}">poster="{vidply.poster}"</f:if>
+    >
+        <f:comment><!-- Video source elements --></f:comment>
+        <f:render partial="VidPly/VideoSources" arguments="{
+            videoUrl: vidply.videoUrl,
+            playlistData: vidply.playlistData,
+            sources: vidply.sources,
+            mediaFiles: vidply.mediaFiles
+        }" />
+        
+        <f:comment><!-- Track elements (captions, chapters) --></f:comment>
+        <f:render partial="VidPly/Tracks" arguments="{
+            captions: vidply.captions,
+            chapters: vidply.chapters,
+            languageSelection: vidply.languageSelection
+        }" />
+        
+        <f:comment><!-- Fallback message --></f:comment>
+        <p>Your browser does not support HTML5 video.</p>
+    </video>
+    
+    <f:comment><!-- Metadata scripts (audio description, sign language) --></f:comment>
+    <f:render partial="VidPly/MetadataScripts" arguments="{
+        uniqueId: vidply.uniqueId,
+        audioDescriptionTracks: vidply.audioDescriptionTracks,
+        audioDescription: vidply.audioDescription,
+        signLanguage: vidply.signLanguage
+    }" />
+</f:section>
+
+<f:section name="AudioPlayer">
+    <audio
+        id="{vidply.uniqueId}"
+        <f:if condition="{vidply.playlistData}">
+            <f:then>
+                <f:comment><!-- Playlist mode: Don't use data-vidply to prevent auto-init, we'll initialize manually --></f:comment>
+                data-vidply-options='{f:format.json(value: vidply.options)}'
+                data-playlist='{f:format.json(value: vidply.playlistData.tracks)}'
+                data-playlist-auto-advance="{f:if(condition: vidply.playlistData.options.autoAdvance, then: 'true', else: 'false')}"
+                data-playlist-auto-play-first="{f:if(condition: vidply.options.autoplay, then: 'true', else: 'false')}"
+                data-playlist-loop="{f:if(condition: vidply.playlistData.options.loop, then: 'true', else: 'false')}"
+                data-playlist-show-panel="{f:if(condition: vidply.playlistData.options.showPanel, then: 'true', else: 'false')}"
+            </f:then>
+            <f:else>
+                <f:comment><!-- Single file mode: Manual init (NO data-vidply!) --></f:comment>
+                data-vidply-init
+                data-vidply-options='{f:format.json(value: vidply.options)}'
+            </f:else>
+        </f:if>
+        preload="metadata"
+    >
+        <f:comment><!-- Audio source elements --></f:comment>
+        <f:render partial="VidPly/AudioSources" arguments="{
+            playlistData: vidply.playlistData,
+            tracks: vidply.tracks,
+            sources: vidply.sources,
+            mediaFiles: vidply.mediaFiles
+        }" />
+        
+        <f:comment><!-- Track elements (captions, chapters) --></f:comment>
+        <f:render partial="VidPly/Tracks" arguments="{
+            captions: vidply.captions,
+            chapters: vidply.chapters,
+            languageSelection: vidply.languageSelection
+        }" />
+        
+        <f:comment><!-- Fallback message --></f:comment>
+        <p>Your browser does not support HTML5 audio.</p>
+    </audio>
+</f:section>
+
+</html>

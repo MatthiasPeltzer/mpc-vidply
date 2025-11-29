@@ -1,0 +1,24 @@
+{
+  "name": "mpc-vidply",
+  "version": "1.0.0",
+  "description": "TYPO3 Extension for VidPly - Universal, Accessible Video & Audio Player",
+  "scripts": {
+    "build": "echo 'Build complete. VidPly assets are copied from libs/vidply/dist/'",
+    "watch": "echo 'Use npm run watch in libs/vidply/ for development'",
+    "update-vidply": "npm run update-vidply:js && npm run update-vidply:css",
+    "update-vidply:js": "cp ../../libs/vidply/dist/vidply.esm.min.js Resources/Public/JavaScript/ && cp ../../libs/vidply/dist/vidply.min.js Resources/Public/JavaScript/",
+    "update-vidply:css": "cp ../../libs/vidply/dist/vidply.min.css Resources/Public/Css/"
+  },
+  "keywords": [
+    "typo3",
+    "vidply",
+    "video",
+    "audio",
+    "player",
+    "accessible",
+    "wcag"
+  ],
+  "author": "Matthias Peltzer",
+  "license": "GPL-2.0-or-later"
+}
+

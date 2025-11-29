@@ -1,0 +1,33 @@
+{
+  "name": "mpc/mpc-vidply",
+  "description": "TYPO3 Extension for VidPly - Universal, Accessible Video & Audio Player",
+  "type": "typo3-cms-extension",
+  "version": "1.0.0",
+  "license": [
+    "GPL-2.0-or-later"
+  ],
+  "authors": [
+    {
+      "name": "Matthias Peltzer",
+      "email": "mail@mpeltzer.de",
+      "role": "Developer"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Mpc\\MpcVidply\\": "Classes/"
+    }
+  },
+  "extra": {
+    "typo3/cms": {
+      "extension-key": "mpc_vidply"
+    }
+  },
+  "require": {
+    "php": "^8.2",
+    "typo3/cms-core": "^13.4 || ^14.0",
+    "typo3/cms-fluid": "^13.4 || ^14.0",
+    "typo3/cms-frontend": "^13.4 || ^14.0"
+  }
+}
+

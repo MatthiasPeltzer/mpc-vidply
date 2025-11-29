@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+    <file source-language="en" target-language="de" datatype="plaintext" original="messages" date="2025-11-24T12:00:00Z" product-name="mpc_vidply">
+        <header/>
+        <body>
+            <!-- Media Library Table -->
+            <trans-unit id="tx_mpcvidply_media">
+                <source>VidPly Media</source>
+                <target>VidPly Medien</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_media.media_type">
+                <source>Media Type</source>
+                <target>Medientyp</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.media_type.video">
+                <source>HTML5 Video</source>
+                <target>HTML5 Video</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.media_type.audio">
+                <source>HTML5 Audio</source>
+                <target>HTML5 Audio</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.media_type.youtube">
+                <source>YouTube</source>
+                <target>YouTube</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.media_type.vimeo">
+                <source>Vimeo</source>
+                <target>Vimeo</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.media_type.soundcloud">
+                <source>SoundCloud</source>
+                <target>SoundCloud</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.media_type.hls">
+                <source>HLS Stream</source>
+                <target>HLS Stream</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.media_type.m3u">
+                <source>M3U Playlist</source>
+                <target>M3U Wiedergabeliste</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_media.media_url">
+                <source>Media URL</source>
+                <target>Medien-URL</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.media_url.description">
+                <source>Enter the URL for YouTube, Vimeo, SoundCloud, HLS stream, or M3U playlist</source>
+                <target>Geben Sie die URL für YouTube, Vimeo, SoundCloud, HLS-Stream oder M3U-Wiedergabeliste ein</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_media.media_file">
+                <source>Media File</source>
+                <target>Mediendatei</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.media_file.description">
+                <source>Upload video or audio file</source>
+                <target>Video- oder Audiodatei hochladen</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_media.title">
+                <source>Title</source>
+                <target>Titel</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_media.artist">
+                <source>Artist / Creator</source>
+                <target>Künstler / Ersteller</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_media.description">
+                <source>Description</source>
+                <target>Beschreibung</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_media.duration">
+                <source>Duration (seconds)</source>
+                <target>Dauer (Sekunden)</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.duration.description">
+                <source>Duration in seconds (optional, for display purposes)</source>
+                <target>Dauer in Sekunden (optional, für Anzeigezwecke)</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_media.poster">
+                <source>Poster / Thumbnail</source>
+                <target>Vorschaubild / Thumbnail</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_media.captions">
+                <source>Captions / Subtitles (VTT)</source>
+                <target>Untertitel / Captions (VTT)</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.captions.add">
+                <source>Add caption file</source>
+                <target>Untertitel-Datei hinzufügen</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_media.chapters">
+                <source>Chapters (VTT)</source>
+                <target>Kapitel (VTT)</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.chapters.add">
+                <source>Add chapter file</source>
+                <target>Kapitel-Datei hinzufügen</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_media.audio_description">
+                <source>Audio Description</source>
+                <target>Audiodeskription</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.audio_description.add">
+                <source>Add audio description</source>
+                <target>Audiodeskription hinzufügen</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_media.sign_language">
+                <source>Sign Language Video</source>
+                <target>Gebärdensprache Video</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.sign_language.add">
+                <source>Add sign language video</source>
+                <target>Gebärdensprache-Video hinzufügen</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_media.enable_transcript">
+                <source>Enable Transcript</source>
+                <target>Transkript aktivieren</target>
+            </trans-unit>
+            
+            <trans-unit id="tabs.captions">
+                <source>Captions &amp; Chapters</source>
+                <target>Untertitel &amp; Kapitel</target>
+            </trans-unit>
+            
+            <trans-unit id="tabs.accessibility">
+                <source>Accessibility</source>
+                <target>Barrierefreiheit</target>
+            </trans-unit>
+            
+            <!-- Playlist Item Table (Legacy) -->
+            <trans-unit id="tx_mpcvidply_playlist_item">
+                <source>VidPly Media Item</source>
+                <target>VidPly Medien-Element</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_playlist_item.media">
+                <source>Media File</source>
+                <target>Mediendatei</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_playlist_item.media.description">
+                <source>Upload the video or audio file for this item</source>
+                <target>Laden Sie die Video- oder Audiodatei für dieses Element hoch</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_playlist_item.title">
+                <source>Title</source>
+                <target>Titel</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_playlist_item.title.description">
+                <source>The title of this track (e.g., "Episode 1: Introduction" or "Song Title")</source>
+                <target>Der Titel dieses Titels (z.B. "Episode 1: Einführung" oder "Songtitel")</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_playlist_item.artist">
+                <source>Artist / Creator</source>
+                <target>Künstler / Ersteller</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_playlist_item.artist.description">
+                <source>Optional: Artist name for audio tracks or creator/director for videos</source>
+                <target>Optional: Künstlername für Audiotitel oder Ersteller/Regisseur für Videos</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_playlist_item.description">
+                <source>Description</source>
+                <target>Beschreibung</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_playlist_item.duration">
+                <source>Duration (seconds)</source>
+                <target>Dauer (Sekunden)</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_playlist_item.duration.description">
+                <source>Optional: Duration in seconds. Leave empty to auto-detect.</source>
+                <target>Optional: Dauer in Sekunden. Leer lassen für automatische Erkennung.</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_playlist_item.poster">
+                <source>Poster / Thumbnail</source>
+                <target>Vorschaubild / Thumbnail</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_playlist_item.poster.description">
+                <source>Thumbnail image for this specific track (shown in playlist panel)</source>
+                <target>Vorschaubild für diesen spezifischen Titel (wird im Wiedergabelisten-Panel angezeigt)</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_playlist_item.captions">
+                <source>Captions / Subtitles</source>
+                <target>Untertitel</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_playlist_item.captions.description">
+                <source>WebVTT caption files for this specific track (can have multiple languages)</source>
+                <target>WebVTT-Untertiteldateien für diesen spezifischen Titel (kann mehrere Sprachen haben)</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_playlist_item.chapters">
+                <source>Chapters</source>
+                <target>Kapitel</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_playlist_item.chapters.description">
+                <source>WebVTT chapter files for this specific track</source>
+                <target>WebVTT-Kapiteldateien für diesen spezifischen Titel</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_playlist_item.audio_description">
+                <source>Audio Description</source>
+                <target>Audiodeskription</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_playlist_item.audio_description.description">
+                <source>Alternative video with audio description for this specific track</source>
+                <target>Alternatives Video mit Audiodeskription für diesen spezifischen Titel</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_playlist_item.sign_language">
+                <source>Sign Language Video</source>
+                <target>Gebärdensprach-Video</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_playlist_item.sign_language.description">
+                <source>Sign language overlay video for this specific track</source>
+                <target>Gebärdensprach-Overlay-Video für diesen spezifischen Titel</target>
+            </trans-unit>
+            
+            <!-- Tabs -->
+            <trans-unit id="tabs.captions">
+                <source>Captions &amp; Chapters</source>
+                <target>Untertitel &amp; Kapitel</target>
+            </trans-unit>
+            <trans-unit id="tabs.accessibility">
+                <source>Accessibility</source>
+                <target>Barrierefreiheit</target>
+            </trans-unit>
+            
+            <!-- Content Element Field -->
+            <trans-unit id="tt_content.tx_mpcvidply_playlist_items">
+                <source>Playlist Items</source>
+                <target>Wiedergabelisten-Elemente</target>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_playlist_items.description">
+                <source>Add playlist items with individual media files and per-track features (captions, chapters, audio description, etc.). This provides maximum flexibility for complex playlists where each track needs different accessibility features.</source>
+                <target>Fügen Sie Wiedergabelisten-Elemente mit individuellen Mediendateien und titelspezifischen Funktionen hinzu (Untertitel, Kapitel, Audiodeskription, usw.). Dies bietet maximale Flexibilität für komplexe Wiedergabelisten, bei denen jeder Titel unterschiedliche Barrierefreiheitsfunktionen benötigt.</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>
+
