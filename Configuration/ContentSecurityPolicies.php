@@ -98,6 +98,17 @@ return Map::fromEntries([
             Directive::StyleSrcElem,
             SourceKeyword::unsafeInline
         ),
+        
+        // Allow external video/audio player iframes (YouTube, Vimeo, SoundCloud)
+        new Mutation(
+            MutationMode::Extend,
+            Directive::FrameSrc,
+            SourceKeyword::self,
+            new UriValue('https://*.youtube.com'),
+            new UriValue('https://*.youtube-nocookie.com'),
+            new UriValue('https://*.vimeo.com'),
+            new UriValue('https://*.soundcloud.com')
+        ),
     ),
 ]);
 
