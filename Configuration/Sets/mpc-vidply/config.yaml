@@ -1,0 +1,8 @@
+name: mpc/mpc-vidply
+label: MPC VidPly Player
+dependencies:
+  - typo3/fluid-styled-content
+settings:
+  definitions: settings.definitions.yaml
+  defaults: settings.yaml
+

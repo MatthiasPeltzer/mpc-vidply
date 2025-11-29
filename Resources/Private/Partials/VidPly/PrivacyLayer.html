@@ -1,0 +1,83 @@
+<html data-namespace-typo3-fluid="true" xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers">
+<f:comment><!--
+    Partial: VidPly Privacy Layer
+    Renders a privacy/GDPR consent layer for external services (YouTube, Vimeo, SoundCloud)
+    
+    Arguments:
+    - {service} - Service name: 'youtube', 'vimeo', or 'soundcloud'
+    - {videoUrl} - The external service URL
+    - {poster} - Poster/thumbnail image
+    - {title} - Media title
+    - {uniqueId} - Unique identifier for the player instance
+--></f:comment>
+
+<div class="vidply-privacy-layer vidply-privacy-{service}" 
+     data-vidply-privacy="{service}"
+     data-vidply-url="{videoUrl}"
+     data-vidply-id="{uniqueId}"
+     style="position: relative; width: 100%; padding-bottom: 56.25%; background-color: var(--bs-gray-dark, #343a40); <f:if condition="{poster}">background-image: url('{poster}'); background-size: cover; background-position: center;</f:if> overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+    
+    <f:comment><!-- VidPlay Big Play Overlay Button (exact SVG from VidPlay) --></f:comment>
+    <button class="vidply-privacy-button" 
+            type="button"
+            aria-label="{f:translate(key: 'privacy.load_content', arguments: {0: service}, extensionName: 'mpc_vidply')}"
+            style="background: transparent; border: none; cursor: pointer; padding: 0; transition: transform 0.3s ease; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;">
+        <svg class="vidply-play-overlay" viewBox="0 0 80 80" width="80" height="80" aria-hidden="true" role="presentation" style="cursor: pointer;">
+            <defs>
+                <filter id="vidply-play-shadow-privacy-{uniqueId}" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur in="SourceAlpha" stdDeviation="3"></feGaussianBlur>
+                    <feOffset dx="0" dy="2" result="offsetblur"></feOffset>
+                    <feComponentTransfer>
+                        <feFuncA type="linear" slope="0.3"></feFuncA>
+                    </feComponentTransfer>
+                    <feMerge>
+                        <feMergeNode></feMergeNode>
+                        <feMergeNode in="SourceGraphic"></feMergeNode>
+                    </feMerge>
+                </filter>
+            </defs>
+            <circle cx="40" cy="40" r="40" fill="rgba(255, 255, 255, 0.95)" filter="url(#vidply-play-shadow-privacy-{uniqueId})" class="vidply-play-overlay-bg"></circle>
+            <polygon points="32,28 32,52 54,40" fill="#0a406e" class="vidply-play-overlay-icon"></polygon>
+        </svg>
+    </button>
+    
+    <f:comment><!-- Privacy Notice Below Button --></f:comment>
+    <div class="vidply-privacy-text" style="position: absolute; bottom: 0; left: 0; right: 0; color: #fff; background: rgba(0, 0, 0, 0.8); padding: 1rem; text-align: center; z-index: 9;">
+        <p style="margin: 0; font-size: 0.85rem;">
+            <f:comment><!-- Intro Text (different for SoundCloud widget) --></f:comment>
+            <f:if condition="{service} == 'soundcloud'">
+                <f:then>
+                    <f:translate key="privacy.activate_intro_widget" extensionName="mpc_vidply" />
+                </f:then>
+                <f:else>
+                    <f:translate key="privacy.activate_intro" extensionName="mpc_vidply" />
+                </f:else>
+            </f:if>
+            
+            <f:comment><!-- Privacy Policy Link (service-specific) --></f:comment>
+            <f:switch expression="{service}">
+                <f:case value="youtube">
+                    <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" style="color: #fff; text-decoration: underline;">
+                        <f:translate key="privacy.youtube.policy_link" extensionName="mpc_vidply" />
+                    </a>
+                </f:case>
+                <f:case value="vimeo">
+                    <a href="https://vimeo.com/privacy" target="_blank" rel="noopener noreferrer" style="color: #fff; text-decoration: underline;">
+                        <f:translate key="privacy.vimeo.policy_link" extensionName="mpc_vidply" />
+                    </a>
+                </f:case>
+                <f:case value="soundcloud">
+                    <a href="https://soundcloud.com/pages/privacy" target="_blank" rel="noopener noreferrer" style="color: #fff; text-decoration: underline;">
+                        <f:translate key="privacy.soundcloud.policy_link" extensionName="mpc_vidply" />
+                    </a>
+                </f:case>
+            </f:switch>
+            
+            <f:comment><!-- Outro Text --></f:comment>
+            <f:translate key="privacy.activate_outro" extensionName="mpc_vidply" />
+        </p>
+    </div>
+</div>
+
+</html>
+

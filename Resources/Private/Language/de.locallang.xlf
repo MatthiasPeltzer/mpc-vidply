@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+    <file source-language="en" target-language="de" datatype="plaintext" original="messages" date="2025-11-21T00:00:00Z" product-name="mpc_vidply">
+        <header/>
+        <body>
+            <trans-unit id="player.play">
+                <source>Play</source>
+                <target>Abspielen</target>
+            </trans-unit>
+            <trans-unit id="player.pause">
+                <source>Pause</source>
+                <target>Pause</target>
+            </trans-unit>
+            <trans-unit id="player.stop">
+                <source>Stop</source>
+                <target>Stopp</target>
+            </trans-unit>
+            <trans-unit id="player.mute">
+                <source>Mute</source>
+                <target>Stumm</target>
+            </trans-unit>
+            <trans-unit id="player.unmute">
+                <source>Unmute</source>
+                <target>Ton einschalten</target>
+            </trans-unit>
+            <trans-unit id="player.fullscreen">
+                <source>Fullscreen</source>
+                <target>Vollbild</target>
+            </trans-unit>
+            <trans-unit id="player.captions">
+                <source>Captions</source>
+                <target>Untertitel</target>
+            </trans-unit>
+            <trans-unit id="player.previous">
+                <source>Previous</source>
+                <target>Zurück</target>
+            </trans-unit>
+            <trans-unit id="player.next">
+                <source>Next</source>
+                <target>Weiter</target>
+            </trans-unit>
+            
+            <trans-unit id="privacy.activate_intro">
+                <source>To activate the video, you must click on the button. After activating the button,</source>
+                <target>Um das Video zu aktivieren, müssen Sie auf die Schaltfläche klicken. Nach dem Aktivieren gilt</target>
+            </trans-unit>
+            <trans-unit id="privacy.activate_intro_widget">
+                <source>To activate the widget, you must click on the button. After activating the button,</source>
+                <target>Um das Widget zu aktivieren, müssen Sie auf die Schaltfläche klicken. Nach dem Aktivieren gilt</target>
+            </trans-unit>
+            <trans-unit id="privacy.activate_outro">
+                <source>applies.</source>
+                <target>.</target>
+            </trans-unit>
+            <trans-unit id="privacy.youtube.policy_link">
+                <source>Google's privacy policy</source>
+                <target>die Datenschutzerklärung von Google</target>
+            </trans-unit>
+            <trans-unit id="privacy.vimeo.policy_link">
+                <source>Vimeo's privacy policy</source>
+                <target>die Datenschutzerklärung von Vimeo</target>
+            </trans-unit>
+            <trans-unit id="privacy.soundcloud.policy_link">
+                <source>SoundCloud's privacy policy</source>
+                <target>die Datenschutzerklärung von SoundCloud</target>
+            </trans-unit>
+            <trans-unit id="privacy.load_content">
+                <source>Load {0} content</source>
+                <target>{0}-Inhalt laden</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>
+

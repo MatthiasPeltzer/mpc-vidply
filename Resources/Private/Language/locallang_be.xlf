@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+    <file source-language="en" datatype="plaintext" original="messages" date="2025-11-21T00:00:00Z" product-name="mpc_vidply">
+        <header/>
+        <body>
+            <trans-unit id="content_element.title">
+                <source>VidPly Player</source>
+            </trans-unit>
+            <trans-unit id="content_element.description">
+                <source>Universal, accessible video and audio player with support for HTML5, YouTube, Vimeo, HLS streaming, playlists, captions, and full accessibility features.</source>
+            </trans-unit>
+            
+            <!-- Tabs -->
+            <trans-unit id="tabs.captions">
+                <source>Captions &amp; Chapters</source>
+            </trans-unit>
+            <trans-unit id="tabs.accessibility">
+                <source>Accessibility</source>
+            </trans-unit>
+            <trans-unit id="tabs.settings">
+                <source>Player Settings</source>
+            </trans-unit>
+            <trans-unit id="tabs.playlist">
+                <source>Playlist</source>
+            </trans-unit>
+            <trans-unit id="tabs.media">
+                <source>Media</source>
+            </trans-unit>
+            
+            <!-- Media Type -->
+            <trans-unit id="tt_content.tx_mpcvidply_media_type">
+                <source>Media Type</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_media_type.video">
+                <source>Video (HTML5)</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_media_type.audio">
+                <source>Audio (HTML5)</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_media_type.youtube">
+                <source>YouTube</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_media_type.vimeo">
+                <source>Vimeo</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_media_type.hls">
+                <source>HLS Streaming</source>
+            </trans-unit>
+            
+            <!-- Fields -->
+            <trans-unit id="tt_content.tx_mpcvidply_media_items">
+                <source>Media Items</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_media_items.description">
+                <source>Select one or more media items from the media library. Add 2+ items to create a playlist.</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_media_items.add">
+                <source>Create new media item</source>
+            </trans-unit>
+            
+            <trans-unit id="tt_content.tx_mpcvidply_video_url">
+                <source>Video URL</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_video_url.description">
+                <source>For YouTube: https://www.youtube.com/watch?v=VIDEO_ID, For Vimeo: https://vimeo.com/VIDEO_ID</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_media">
+                <source>Media Files</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_media_video">
+                <source>Video Files (MP4 / WebM)</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_media_audio">
+                <source>Audio Files (MP3 / WAV / OGG)</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_media_hls">
+                <source>HLS Manifest (.m3u8)</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_poster">
+                <source>Poster Image</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_captions">
+                <source>Captions / Subtitles</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_captions.description">
+                <source>Add WebVTT (.vtt) files for captions and subtitles. Use the language code field for srclang.</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_captions.add">
+                <source>Add Caption Track</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_chapters">
+                <source>Chapters</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_chapters.description">
+                <source>Add WebVTT (.vtt) files with chapter information. Use the language code field for srclang.</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_audio_description">
+                <source>Audio Description</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_audio_description.description">
+                <source>Upload MP4/WebM video tracks with descriptive audio. Use the language field to provide multiple languages.</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_audio_description.add">
+                <source>Add Audio Description Track</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_sign_language">
+                <source>Sign Language Videos</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_sign_language.description">
+                <source>Upload MP4/WebM sign language videos. Use the language field to provide multiple languages.</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_sign_language.add">
+                <source>Add Sign Language Video</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_width">
+                <source>Player Width (px)</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_height">
+                <source>Player Height (px)</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_options">
+                <source>Player Options</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_options.autoplay">
+                <source>Autoplay</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_options.loop">
+                <source>Loop</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_options.muted">
+                <source>Muted</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_options.controls">
+                <source>Show Controls</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_options.captions_default">
+                <source>Captions On by Default</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_options.transcript">
+                <source>Enable Transcript</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_options.keyboard">
+                <source>Keyboard Shortcuts</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_options.responsive">
+                <source>Responsive</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_options.auto_advance">
+                <source>Auto-advance to Next (Playlist)</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_volume">
+                <source>Initial Volume</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_volume.description">
+                <source>Default volume level (0.0 - 1.0, default: 0.8)</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_playback_speed">
+                <source>Playback Speed</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_playback_speed.description">
+                <source>Default playback speed (0.25 - 2.0, default: 1.0)</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_language">
+                <source>Player Language</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_language.auto">
+                <source>Auto (detect from page language)</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_playlist">
+                <source>Enable Playlist Mode</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_playlist_auto_advance">
+                <source>Auto-advance to Next Track</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_playlist_items">
+                <source>Media Items</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_playlist_items.description">
+                <source>Add media items (video or audio files). Each item can have its own title, poster, captions, chapters, audio description, and sign language video. Add 1 item for a single video/audio, or multiple items to create a playlist.</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>
+
