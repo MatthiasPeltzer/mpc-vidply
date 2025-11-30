@@ -12,9 +12,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Update Packagist
-        uses: MercuryCrew/action-packagist@v1
-        with:
-          username: ${{ secrets.PACKAGIST_USERNAME }}
-          api-token: ${{ secrets.PACKAGIST_TOKEN }}
-          repository: mpc/mpc-vidply
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -XPOST \
+            -H "Content-Type: application/json" \
+            "https://packagist.org/api/update-package?username=${{ secrets.PACKAGIST_USERNAME }}&apiToken=${{ secrets.PACKAGIST_TOKEN }}" \
+            -d '{"repository":{"url":"https://github.com/MatthiasPeltzer/mpc-vidply"}}')
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+          
+          echo "Response: $body"
+          echo "HTTP Code: $http_code"
+          
+          if [ "$http_code" != "200" ] && [ "$http_code" != "202" ]; then
+            echo "Error: Packagist API returned HTTP $http_code"
+            exit 1
+          fi
+          
+          echo "Successfully notified Packagist!"
 
