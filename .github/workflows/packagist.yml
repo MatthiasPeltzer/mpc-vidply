@@ -1,0 +1,20 @@
+name: Update Packagist
+
+on:
+  release:
+    types: [published]
+  push:
+    tags:
+      - '*'
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update Packagist
+        uses: MercuryCrew/action-packagist@v1
+        with:
+          username: ${{ secrets.PACKAGIST_USERNAME }}
+          api-token: ${{ secrets.PACKAGIST_TOKEN }}
+          repository: mpc/mpc-vidply
+
