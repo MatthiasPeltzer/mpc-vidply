@@ -13,21 +13,21 @@ jobs:
     steps:
       - name: Update Packagist
         run: |
-          response=$(curl -s -w "\n%{http_code}" -XPOST \
+          echo "📦 Updating Packagist package: mpc/mpc-vidply"
+          
+          response=$(curl -s -XPOST \
             -H "Content-Type: application/json" \
             "https://packagist.org/api/update-package?username=${{ secrets.PACKAGIST_USERNAME }}&apiToken=${{ secrets.PACKAGIST_TOKEN }}" \
             -d '{"repository":{"url":"https://github.com/MatthiasPeltzer/mpc-vidply"}}')
           
-          http_code=$(echo "$response" | tail -n1)
-          body=$(echo "$response" | sed '$d')
+          echo "Response: $response"
           
-          echo "Response: $body"
-          echo "HTTP Code: $http_code"
-          
-          if [ "$http_code" != "200" ] && [ "$http_code" != "202" ]; then
-            echo "Error: Packagist API returned HTTP $http_code"
+          if echo "$response" | grep -q '"status":"success"'; then
+            echo "✅ Successfully updated Packagist!"
+            exit 0
+          else
+            echo "❌ Failed to update Packagist"
+            echo "Response: $response"
             exit 1
           fi
-          
-          echo "Successfully notified Packagist!"
 
