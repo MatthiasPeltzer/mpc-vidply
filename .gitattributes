@@ -1,0 +1,8 @@
+# Export configuration for GitHub releases and Packagist
+# Only exclude non-essential development files from archives
+
+# Exclude development/CI files from export
+/.github export-ignore
+/.gitignore export-ignore
+/.gitattributes export-ignore
+
