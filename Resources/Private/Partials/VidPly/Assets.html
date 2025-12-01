@@ -20,17 +20,12 @@
 
 <f:comment><!-- HLS.js - only for HLS streams --></f:comment>
 <f:if condition="{needsHLS}">
-    <f:asset.script identifier="vidPlyHLS" src="https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js"/>
+    <f:asset.script identifier="vidPlyHLS" src="EXT:mpc_vidply/Resources/Public/JavaScript/hls.min.js"/>
 </f:if>
 
-<f:comment><!-- VidPlay Core - only for native player (not external services) --></f:comment>
-<f:if condition="{needsVidPlay}">
-    <f:asset.script identifier="vidPlyWrapper" src="EXT:mpc_vidply/Resources/Public/JavaScript/VidPlyWrapper.js"/>
-    <f:asset.script identifier="vidPly" src="EXT:mpc_vidply/Resources/Public/JavaScript/vidply.esm.min.js" type="module"/>
-</f:if>
-
-<f:comment><!-- Playlist Init - for playlists or native player initialization --></f:comment>
+<f:comment><!-- Playlist Init - for playlists or native player initialization (includes vidply.esm.min.js) --></f:comment>
 <f:if condition="{needsPlaylist}">
+    <f:asset.script identifier="vidPlyWrapper" src="EXT:mpc_vidply/Resources/Public/JavaScript/VidPlyWrapper.js"/>
     <f:asset.script identifier="playlistInit" src="EXT:mpc_vidply/Resources/Public/JavaScript/PlaylistInit.js" type="module"/>
 </f:if>
 
