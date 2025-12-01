@@ -165,6 +165,8 @@ class VidPlyProcessor implements DataProcessorInterface
                 // Extract poster
                 if (!empty($firstTrack['poster'])) {
                     $poster = $firstTrack['poster'];
+                    // Add poster to player options for single audio files (used for track artwork)
+                    $playerOptions['poster'] = $poster;
                 }
                 
                 // Extract captions/chapters/descriptions
