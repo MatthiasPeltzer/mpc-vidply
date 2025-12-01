@@ -31,5 +31,5 @@ $EM_CONF[$_EXTKEY] = [
     'clearCacheOnLoad' => 1,
     'author' => 'Matthias Peltzer',
     'author_email' => 'mail@mpeltzer.de',
-    'version' => '1.0.6',
+    'version' => '1.0.7',
 ];
