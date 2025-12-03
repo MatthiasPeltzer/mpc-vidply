@@ -15,8 +15,6 @@
     </f:if>
 
     <div class="{wrapperClasses}" id="{vidply.uniqueId}-wrapper">
-        <f:render partial="Header/All" arguments="{data: data, settings: settings}" />
-        
         <f:comment><!-- Check if external service (YouTube, Vimeo, SoundCloud) - use privacy layer --></f:comment>
         <f:variable name="isExternalService" value="{f:if(condition: '{vidply.serviceType} == \"youtube\"', then: '1', else: '0')}" />
         <f:if condition="{vidply.serviceType} == 'vimeo'">
