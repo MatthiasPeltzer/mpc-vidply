@@ -20,7 +20,11 @@ class VidPlyPreviewRenderer extends StandardContentPreviewRenderer
     {
         $record = $item->getRecord();
         
-        // In TYPO3 13/14, getRecord() returns an array
+        // Convert Record object to array for TYPO3 14 compatibility
+        if (is_object($record) && method_exists($record, 'toArray')) {
+            $record = $record->toArray();
+        }
+        
         $contentUid = (int)($record['uid'] ?? 0);
         
         // Start with empty HTML (header is already shown by TYPO3)
