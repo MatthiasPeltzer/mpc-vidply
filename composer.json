@@ -1,10 +1,7 @@
 {
   "name": "mpc/mpc-vidply",
-  "description": "TYPO3 Extension for VidPly - Universal, Accessible Video & Audio Player",
-  "license": [
-    "GPL-2.0-or-later"
-  ],
-  "type": "typo3-cms-extension",
+  "description": "Universal, Accessible Video & Audio Player for TYPO3. Includes support for HTML5 video/audio, YouTube, Vimeo, SoundCloud, HLS streaming, playlists, captions, transcripts, sign language, and full WCAG 2.1 AA accessibility compliance.",
+  "homepage": "https://github.com/MatthiasPeltzer/mpc-vidply",
   "authors": [
     {
       "name": "Matthias Peltzer",
@@ -13,42 +10,24 @@
       "role": "Developer"
     }
   ],
+  "type": "typo3-cms-extension",
+  "version": "2.0.3",
+  "license": ["GPL-2.0-or-later"],
+  "require": {
+    "php": "^8.2",
+    "typo3/cms-core": "^13.0 || ^14.0",
+    "typo3/cms-fluid": "^13.0 || ^14.0",
+    "typo3/cms-extbase": "^13.0 || ^14.0",
+    "typo3/cms-fluid-styled-content": "^13.0 || ^14.0"
+  },
   "autoload": {
     "psr-4": {
       "Mpc\\MpcVidply\\": "Classes/"
     }
   },
-  "autoload-dev": {
-    "psr-4": {
-      "Mpc\\MpcVidply\\": "Tests/"
-    }
-  },
-  "config": {
-    "vendor-dir": "../default.instance/vendor",
-    "bin-dir": "../default.instance/bin"
-  },
-
   "extra": {
     "typo3/cms": {
-      "cms-package-dir": "{$vendor-dir}/typo3/cms",
-      "web-dir": "../default.instance",
       "extension-key": "mpc_vidply"
     }
-  },
-  "homepage": "https://github.com/MatthiasPeltzer/mpc-vidply",
-  "replace": {
-    "typo3-ter/mpc-vidply": "self.version"
-  },
-  "require": {
-    "php": ">=8.2",
-    "typo3/cms-core": "^13.4 || ^14.0",
-    "typo3/cms-extbase": "^13.4 || ^14.0",
-    "typo3/cms-fluid": "^13.4 || ^14.0"
-  },
-  "scripts": {
-    "post-autoload-dump": [
-      "mkdir -p ../default.instance/typo3conf/ext/",
-      "[ -L ../default.instance/typo3conf/ext/mpc_vidply ] || ln -snvf ../../../dir-project ../default.instance/typo3conf/ext/mpc_vidply"
-    ]
   }
 }
