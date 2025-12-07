@@ -197,6 +197,29 @@
             <trans-unit id="tt_content.tx_mpcvidply_playlist_items.description">
                 <source>Add playlist items with individual media files and per-track features (captions, chapters, audio description, etc.). This provides maximum flexibility for complex playlists where each track needs different accessibility features.</source>
             </trans-unit>
+            
+            <!-- sys_file_reference fields for VTT tracks -->
+            <trans-unit id="sys_file_reference.tx_lang_code">
+                <source>Language Code</source>
+            </trans-unit>
+            <trans-unit id="sys_file_reference.tx_track_kind">
+                <source>Track Kind</source>
+            </trans-unit>
+            <trans-unit id="sys_file_reference.tx_track_kind.captions">
+                <source>Captions</source>
+            </trans-unit>
+            <trans-unit id="sys_file_reference.tx_track_kind.subtitles">
+                <source>Subtitles</source>
+            </trans-unit>
+            <trans-unit id="sys_file_reference.tx_track_kind.descriptions">
+                <source>Descriptions</source>
+            </trans-unit>
+            <trans-unit id="sys_file_reference.tx_track_kind.chapters">
+                <source>Chapters</source>
+            </trans-unit>
+            <trans-unit id="sys_file_reference.tx_track_kind.metadata">
+                <source>Metadata</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>
