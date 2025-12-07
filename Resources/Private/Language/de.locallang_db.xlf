@@ -251,6 +251,36 @@
                 <source>Add playlist items with individual media files and per-track features (captions, chapters, audio description, etc.). This provides maximum flexibility for complex playlists where each track needs different accessibility features.</source>
                 <target>Fügen Sie Wiedergabelisten-Elemente mit individuellen Mediendateien und titelspezifischen Funktionen hinzu (Untertitel, Kapitel, Audiodeskription, usw.). Dies bietet maximale Flexibilität für komplexe Wiedergabelisten, bei denen jeder Titel unterschiedliche Barrierefreiheitsfunktionen benötigt.</target>
             </trans-unit>
+            
+            <!-- sys_file_reference fields for VTT tracks -->
+            <trans-unit id="sys_file_reference.tx_lang_code">
+                <source>Language Code</source>
+                <target>Sprachcode</target>
+            </trans-unit>
+            <trans-unit id="sys_file_reference.tx_track_kind">
+                <source>Track Kind</source>
+                <target>Track-Typ</target>
+            </trans-unit>
+            <trans-unit id="sys_file_reference.tx_track_kind.captions">
+                <source>Captions</source>
+                <target>Untertitel (Captions)</target>
+            </trans-unit>
+            <trans-unit id="sys_file_reference.tx_track_kind.subtitles">
+                <source>Subtitles</source>
+                <target>Untertitel</target>
+            </trans-unit>
+            <trans-unit id="sys_file_reference.tx_track_kind.descriptions">
+                <source>Descriptions</source>
+                <target>Beschreibungen</target>
+            </trans-unit>
+            <trans-unit id="sys_file_reference.tx_track_kind.chapters">
+                <source>Chapters</source>
+                <target>Kapitel</target>
+            </trans-unit>
+            <trans-unit id="sys_file_reference.tx_track_kind.metadata">
+                <source>Metadata</source>
+                <target>Metadaten</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>
