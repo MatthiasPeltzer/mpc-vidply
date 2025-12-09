@@ -360,6 +360,21 @@ return [
                 'allowed' => 'webm,mp4,externalvideo,mp3,ogg,externalaudio,youtube,vimeo',
                 'maxitems' => 10,
                 'minitems' => 1,
+                'overrideChildTca' => [
+                    'columns' => [
+                        'description' => [
+                            'config' => [
+                                'type' => 'passthrough',
+                            ],
+                        ],
+                        'autoplay' => [
+                            'config' => [
+                                'renderType' => 'passthrough',
+                                'type' => 'passthrough',
+                            ],
+                        ],
+                    ],
+                ],
             ],
         ],
         'title' => [
@@ -414,6 +429,50 @@ return [
                 'type' => 'file',
                 'allowed' => 'common-image-types',
                 'maxitems' => 1,
+                'overrideChildTca' => [
+                    'columns' => [
+                        'title' => [
+                            'config' => [
+                                'type' => 'passthrough',
+                            ],
+                        ],
+                        'description' => [
+                            'config' => [
+                                'type' => 'passthrough',
+                            ],
+                        ],
+                        'outline' => [
+                            'config' => [
+                                'renderType' => 'passthrough',
+                                'type' => 'passthrough',
+                            ],
+                        ],
+                        'allow_download' => [
+                            'config' => [
+                                'renderType' => 'passthrough',
+                                'type' => 'passthrough',
+                            ],
+                        ],
+                        'crop' => [
+                            'config' => [
+                                'type' => 'passthrough',
+                            ],
+                        ],
+                        'link' => [
+                            'config' => [
+                                'type' => 'passthrough',
+                            ],
+                        ],
+                    ],
+                    'types' => [
+                        '1' => [
+                            'showitem' => '
+                                alternative,
+                                --palette--;;filePalette,
+                            ',
+                        ],
+                    ],
+                ],
             ],
         ],
         'captions' => [
@@ -474,7 +533,7 @@ return [
                     'types' => [
                         '1' => [
                             'showitem' => '
-                                title,tx_lang_code,tx_track_kind,
+                                tx_track_kind,title,tx_lang_code,
                                 --palette--;;filePalette,
                             ',
                         ],
@@ -558,6 +617,21 @@ return [
                 'appearance' => [
                     'createNewRelationLinkTitle' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.audio_description.add',
                 ],
+                'overrideChildTca' => [
+                    'columns' => [
+                        'description' => [
+                            'config' => [
+                                'type' => 'passthrough',
+                            ],
+                        ],
+                        'autoplay' => [
+                            'config' => [
+                                'renderType' => 'passthrough',
+                                'type' => 'passthrough',
+                            ],
+                        ],
+                    ],
+                ],
             ],
         ],
         'sign_language' => [
@@ -569,6 +643,21 @@ return [
                 'maxitems' => 5,
                 'appearance' => [
                     'createNewRelationLinkTitle' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.sign_language.add',
+                ],
+                'overrideChildTca' => [
+                    'columns' => [
+                        'description' => [
+                            'config' => [
+                                'type' => 'passthrough',
+                            ],
+                        ],
+                        'autoplay' => [
+                            'config' => [
+                                'renderType' => 'passthrough',
+                                'type' => 'passthrough',
+                            ],
+                        ],
+                    ],
                 ],
             ],
         ],
@@ -594,4 +683,3 @@ return [
         ],
     ],
 ];
-
