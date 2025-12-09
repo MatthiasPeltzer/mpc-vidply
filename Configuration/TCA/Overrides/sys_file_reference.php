@@ -39,6 +39,19 @@ defined('TYPO3') || die();
                 ],
             ],
         ],
+        'tx_quality_label' => [
+            'label' => 'LLL:EXT:mp_core/Resources/Private/Language/locallang_db.xlf:sys_file_reference.tx_quality_label',
+            'config' => [
+                'type' => 'input',
+                'size' => 20,
+                'max' => 50,
+                'eval' => 'trim',
+                'placeholder' => '1080p, 720p, High, Low',
+                'behaviour' => [
+                    'allowLanguageSynchronization' => true,
+                ],
+            ],
+        ],
     ];
 
     ExtensionManagementUtility::addTCAcolumns('sys_file_reference', $newColumns);
