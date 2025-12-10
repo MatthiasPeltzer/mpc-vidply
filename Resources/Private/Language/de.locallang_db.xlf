@@ -83,6 +83,14 @@
                 <source>Duration in seconds (optional, for display purposes)</source>
                 <target>Dauer in Sekunden (optional, für Anzeigezwecke)</target>
             </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.audio_description_duration">
+                <source>Audio Description Duration (seconds)</source>
+                <target>Audiodeskription-Dauer (Sekunden)</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.audio_description_duration.description">
+                <source>Duration of the audio-described version in seconds (typically longer than the original)</source>
+                <target>Dauer der audiobeschriebenen Version in Sekunden (typischerweise länger als das Original)</target>
+            </trans-unit>
             
             <trans-unit id="tx_mpcvidply_media.poster">
                 <source>Poster / Thumbnail</source>
