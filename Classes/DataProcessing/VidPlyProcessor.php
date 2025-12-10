@@ -11,6 +11,7 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Connection;
+use TYPO3\CMS\Core\Context\Context;
 
 /**
  * DataProcessor for VidPly Player
@@ -88,8 +89,26 @@ class VidPlyProcessor implements DataProcessorInterface
         $width = (int)($data['tx_mpcvidply_width'] ?? 800);
         $height = (int)($data['tx_mpcvidply_height'] ?? 450);
         
-        // Get media items from MM table
-        $mediaRecords = $this->getMediaRecords((int)$data['uid']);
+        // Get current language ID from frontend context
+        $languageId = 0;
+        try {
+            $context = GeneralUtility::makeInstance(Context::class);
+            $languageId = (int)$context->getPropertyFromAspect('language', 'id', 0);
+        } catch (\Exception $e) {
+            // Fallback: try to get from TSFE if available
+            if (isset($GLOBALS['TSFE']) && isset($GLOBALS['TSFE']->sys_language_uid)) {
+                $languageId = (int)$GLOBALS['TSFE']->sys_language_uid;
+            }
+        }
+        
+        // Additional fallback: check if content element itself is translated
+        // If the content element has sys_language_uid > 0, use that as language hint
+        if ($languageId === 0 && isset($data['sys_language_uid']) && (int)$data['sys_language_uid'] > 0) {
+            $languageId = (int)$data['sys_language_uid'];
+        }
+        
+        // Get media items from MM table with language support
+        $mediaRecords = $this->getMediaRecords((int)$data['uid'], $languageId);
         
         // Process media records into tracks
         $tracks = [];
@@ -279,31 +298,107 @@ class VidPlyProcessor implements DataProcessorInterface
 
     /**
      * Get media records associated with content element via MM table
+     * Respects language translations and falls back to default language if needed
      */
-    protected function getMediaRecords(int $contentUid): array
+    protected function getMediaRecords(int $contentUid, int $languageId = 0): array
     {
-        $queryBuilder = $this->connectionPool
-            ->getQueryBuilderForTable('tx_mpcvidply_media');
+        // Step 1: Get MM relations for this content element
+        $mmQueryBuilder = $this->connectionPool
+            ->getQueryBuilderForTable('tx_mpcvidply_content_media_mm');
         
-        $records = $queryBuilder
-            ->select('media.*')
-            ->from('tx_mpcvidply_media', 'media')
-            ->join(
-                'media',
-                'tx_mpcvidply_content_media_mm',
-                'mm',
-                $queryBuilder->expr()->eq('media.uid', $queryBuilder->quoteIdentifier('mm.uid_foreign'))
-            )
+        $mmRelations = $mmQueryBuilder
+            ->select('uid_foreign', 'sorting')
+            ->from('tx_mpcvidply_content_media_mm')
             ->where(
-                $queryBuilder->expr()->eq('mm.uid_local', $queryBuilder->createNamedParameter($contentUid, Connection::PARAM_INT)),
-                $queryBuilder->expr()->eq('media.deleted', $queryBuilder->createNamedParameter(0, Connection::PARAM_INT)),
-                $queryBuilder->expr()->eq('media.hidden', $queryBuilder->createNamedParameter(0, Connection::PARAM_INT))
+                $mmQueryBuilder->expr()->eq('uid_local', $mmQueryBuilder->createNamedParameter($contentUid, Connection::PARAM_INT))
             )
-            ->orderBy('mm.sorting', 'ASC')
+            ->orderBy('sorting', 'ASC')
             ->executeQuery()
             ->fetchAllAssociative();
         
-        return $records ?: [];
+        if (empty($mmRelations)) {
+            return [];
+        }
+        
+        // Step 2: For each media record referenced in MM table, get the best language version
+        $resultRecords = [];
+        
+        foreach ($mmRelations as $mmRelation) {
+            $mediaUid = (int)$mmRelation['uid_foreign'];
+            $sorting = (int)$mmRelation['sorting'];
+            
+            // First, check what the MM table references: is it a default language record or a translated one?
+            $mediaQueryBuilder = $this->connectionPool
+                ->getQueryBuilderForTable('tx_mpcvidply_media');
+            
+            $referencedRecord = $mediaQueryBuilder
+                ->select('uid', 'sys_language_uid', 'l10n_parent')
+                ->from('tx_mpcvidply_media')
+                ->where(
+                    $mediaQueryBuilder->expr()->eq('uid', $mediaQueryBuilder->createNamedParameter($mediaUid, Connection::PARAM_INT)),
+                    $mediaQueryBuilder->expr()->eq('deleted', $mediaQueryBuilder->createNamedParameter(0, Connection::PARAM_INT)),
+                    $mediaQueryBuilder->expr()->eq('hidden', $mediaQueryBuilder->createNamedParameter(0, Connection::PARAM_INT))
+                )
+                ->executeQuery()
+                ->fetchAssociative();
+            
+            if ($referencedRecord === false) {
+                continue; // Record not found or deleted/hidden
+            }
+            
+            $referencedLanguageId = (int)($referencedRecord['sys_language_uid'] ?? 0);
+            $defaultLanguageUid = $referencedLanguageId === 0 
+                ? $mediaUid 
+                : (int)($referencedRecord['l10n_parent'] ?? 0);
+            
+            // Now get the best language version
+            $mediaRecord = null;
+            
+            // If we need a translation and the referenced record is not already in the target language
+            if ($languageId > 0 && $referencedLanguageId !== $languageId) {
+                // Try to get translated version
+                $translatedQueryBuilder = $this->connectionPool
+                    ->getQueryBuilderForTable('tx_mpcvidply_media');
+                
+                $mediaRecord = $translatedQueryBuilder
+                    ->select('*')
+                    ->from('tx_mpcvidply_media')
+                    ->where(
+                        $translatedQueryBuilder->expr()->eq('l10n_parent', $translatedQueryBuilder->createNamedParameter($defaultLanguageUid, Connection::PARAM_INT)),
+                        $translatedQueryBuilder->expr()->eq('sys_language_uid', $translatedQueryBuilder->createNamedParameter($languageId, Connection::PARAM_INT)),
+                        $translatedQueryBuilder->expr()->eq('deleted', $translatedQueryBuilder->createNamedParameter(0, Connection::PARAM_INT)),
+                        $translatedQueryBuilder->expr()->eq('hidden', $translatedQueryBuilder->createNamedParameter(0, Connection::PARAM_INT))
+                    )
+                    ->executeQuery()
+                    ->fetchAssociative();
+            }
+            
+            // If no translated version found (or we're on default language), get default language record
+            if ($mediaRecord === false || $mediaRecord === null) {
+                $defaultQueryBuilder = $this->connectionPool
+                    ->getQueryBuilderForTable('tx_mpcvidply_media');
+                
+                $mediaRecord = $defaultQueryBuilder
+                    ->select('*')
+                    ->from('tx_mpcvidply_media')
+                    ->where(
+                        $defaultQueryBuilder->expr()->eq('uid', $defaultQueryBuilder->createNamedParameter($defaultLanguageUid, Connection::PARAM_INT)),
+                        $defaultQueryBuilder->expr()->eq('sys_language_uid', $defaultQueryBuilder->createNamedParameter(0, Connection::PARAM_INT)),
+                        $defaultQueryBuilder->expr()->eq('deleted', $defaultQueryBuilder->createNamedParameter(0, Connection::PARAM_INT)),
+                        $defaultQueryBuilder->expr()->eq('hidden', $defaultQueryBuilder->createNamedParameter(0, Connection::PARAM_INT))
+                    )
+                    ->executeQuery()
+                    ->fetchAssociative();
+            }
+            
+            // If we found a record, add it with the sorting from MM table
+            if ($mediaRecord !== false && $mediaRecord !== null) {
+                $mediaRecord['sorting'] = $sorting;
+                $resultRecords[] = $mediaRecord;
+            }
+        }
+        
+        return $resultRecords;
     }
 
     /**
@@ -465,3 +560,4 @@ class VidPlyProcessor implements DataProcessorInterface
         return $track;
     }
 }
+
