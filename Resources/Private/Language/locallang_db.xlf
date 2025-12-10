@@ -65,6 +65,12 @@
             <trans-unit id="tx_mpcvidply_media.duration.description">
                 <source>Duration in seconds (optional, for display purposes)</source>
             </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.audio_description_duration">
+                <source>Audio Description Duration (seconds)</source>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.audio_description_duration.description">
+                <source>Duration of the audio-described version in seconds (typically longer than the original)</source>
+            </trans-unit>
             
             <trans-unit id="tx_mpcvidply_media.poster">
                 <source>Poster / Thumbnail</source>

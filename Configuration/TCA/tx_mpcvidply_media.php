@@ -253,7 +253,7 @@ return [
     ],
     'palettes' => [
         'metadata' => [
-            'showitem' => 'title,--linebreak--,artist,--linebreak--,description,--linebreak--,duration',
+            'showitem' => 'title,--linebreak--,artist,--linebreak--,description,--linebreak--,duration,audio_description_duration',
         ],
         'timeRestriction' => [
             'showitem' => 'starttime,endtime',
@@ -412,6 +412,20 @@ return [
             'exclude' => true,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.duration',
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.duration.description',
+            'config' => [
+                'type' => 'number',
+                'format' => 'integer',
+                'size' => 10,
+                'default' => 0,
+                'range' => [
+                    'lower' => 0,
+                ],
+            ],
+        ],
+        'audio_description_duration' => [
+            'exclude' => true,
+            'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.audio_description_duration',
+            'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.audio_description_duration.description',
             'config' => [
                 'type' => 'number',
                 'format' => 'integer',

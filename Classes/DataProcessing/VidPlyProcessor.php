@@ -323,9 +323,20 @@ class VidPlyProcessor implements DataProcessorInterface
             $track['artist'] = $mediaRecord['artist'];
         }
         
-        // Add duration if available
+        // Add duration if available (in seconds)
         if (!empty($mediaRecord['duration'])) {
             $track['duration'] = (int)$mediaRecord['duration'];
+        }
+        
+        // Add audio description duration if available (in seconds)
+        // This is the duration of the audio-described version, which is typically longer
+        if (!empty($mediaRecord['audio_description_duration'])) {
+            $track['audioDescriptionDuration'] = (int)$mediaRecord['audio_description_duration'];
+        }
+        
+        // Add description if available
+        if (!empty($mediaRecord['description'])) {
+            $track['description'] = $mediaRecord['description'];
         }
         
         // Handle different media types

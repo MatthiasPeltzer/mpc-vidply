@@ -31,6 +31,7 @@ CREATE TABLE tx_mpcvidply_media (
 	artist varchar(255) DEFAULT '' NOT NULL,
 	description text,
 	duration int(11) DEFAULT '0' NOT NULL,
+	audio_description_duration int(11) DEFAULT '0' NOT NULL,
 	
 	# Poster/Thumbnail
 	poster int(11) unsigned DEFAULT '0' NOT NULL,
