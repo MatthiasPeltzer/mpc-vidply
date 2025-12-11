@@ -4,6 +4,7 @@ node_modules/
 # IDE files
 .idea/
 .vscode/
+.cursor/
 *.swp
 *.swo
 *~
