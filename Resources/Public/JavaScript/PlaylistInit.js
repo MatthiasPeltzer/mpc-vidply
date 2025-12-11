@@ -4,7 +4,7 @@
  * Manual initialization to prevent double-init bug
  */
 
-import {Player, PlaylistManager} from './vidply.esm.min.js';
+import {Player, PlaylistManager} from './vidply/vidply.esm.min.js';
 
 // Track initialized players to prevent double-init
 const initializedPlayers = new WeakSet();
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function prepareAndInitHLS() {
         if (externalSrc && externalSrc.includes('.m3u8')) {
             const posterUrl = element.getAttribute('poster');
 
-            // Add source element with proper MIME type
+            // Add a source element with a proper MIME type
             const source = document.createElement('source');
             source.setAttribute('src', externalSrc);
             source.setAttribute('type', 'application/x-mpegURL');
@@ -65,11 +65,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let player;
 
-            // For HLS streams, add source element (Firefox needs MIME type)
+            // For HLS streams, add a source element (Firefox needs MIME type)
             if (isHLS) {
                 const posterUrl = element.getAttribute('poster');
 
-                // Add source element with proper MIME type
+                // Add a source element with a proper MIME type
                 const source = document.createElement('source');
                 source.setAttribute('src', externalSrc);
                 source.setAttribute('type', 'application/x-mpegURL');
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 player = new Player(element, options);
                 // console.log('[VidPly Init] Player created for HLS');
 
-                // Chrome workaround: VidPly doesn't detect HLS from source element in manual init
+                // Chrome workaround: VidPly doesn't detect HLS from a source element in manual init
                 // So for Chrome, we accept HTMLRenderer and the browser handles HLS natively
                 // Quality button won't be available in Chrome (browser-level quality only)
                 // console.log('[VidPly Init] Note: Quality button may not appear in Chrome due to VidPly limitation');
@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         if (player.renderer?.hls?.levels?.length > 0) {
                             // console.log('[VidPly Init] Quality levels detected:', player.renderer.hls.levels.length);
-                            // Force control bar to rebuild with quality button
+                            // Force control bar to rebuild with the quality button
                             if (player.controls?.buildControlBar) {
                                 player.controls.buildControlBar();
                             }
@@ -160,25 +160,43 @@ document.addEventListener('DOMContentLoaded', () => {
             // Parse player options
             const options = element.dataset.vidplyOptions ? JSON.parse(element.dataset.vidplyOptions) : {};
 
-            // Parse playlist options
-            const playlistOptions = {
-                autoAdvance: element.dataset.playlistAutoAdvance === 'true',
-                autoPlayFirst: element.dataset.playlistAutoPlayFirst === 'true',
-                loop: element.dataset.playlistLoop === 'true',
-                showPanel: element.dataset.playlistShowPanel !== 'false'
-            };
+            // Determine media type
+            const mediaType = element.tagName === 'AUDIO' ? 'audio' : 'video';
 
-            // Create player and playlist manager
-            const player = new Player(element, options);
-            const playlist = new PlaylistManager(player, playlistOptions);
-            playlist.loadPlaylist(tracks);
+            // Create a player first
+            const player = new Player(element, {
+                ...options,
+                mediaType
+            });
+
+            // Wait for the player to be ready before creating a playlist
+            // This ensures the player's container exists for the panel
+            player.on('ready', () => {
+                // Parse playlist options from attributes
+                const playlistOptions = {
+                    autoAdvance: element.dataset.playlistAutoAdvance !== 'false',
+                    autoPlayFirst: element.dataset.playlistAutoPlayFirst === 'true',
+                    loop: element.dataset.playlistLoop === 'true',
+                    showPanel: element.dataset.playlistShowPanel !== 'false',
+                    tracks  // Pass tracks directly in options
+                };
+
+                // Create playlist manager after player is ready
+                const playlist = new PlaylistManager(player, playlistOptions);
+
+                element._vidplyPlaylist = playlist;
+
+                // Listen for track changes
+                player.on('playlisttrackchange', (e) => {
+                    // console.log(`Now playing: ${e.item?.title || 'Unknown'}`);
+                });
+            });
 
             initializedPlayers.add(element);
             element._vidplyPlayer = player;
-            element._vidplyPlaylist = playlist;
 
         } catch (error) {
-            // Silently handle errors
+            console.error('[VidPly Init] Playlist error:', error);
         }
     });
 });
