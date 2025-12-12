@@ -167,11 +167,16 @@ GDPR-compliant external service loading:
 
 ## Documentation
 
-- `AssetLoading.md` - Conditional asset loading optimization
-- `Partials.md` - Template structure and customization
-- `PrivacyLayer.md` - External service privacy implementation
-- `HLS-Implementation.md` - HLS streaming technical details
-- `SettingsArchitecture.md` - Configuration system
+### Guides
+- **[Editors Guide](Documentation/Editors-Guide.md)** - How to use VidPly for content editors
+- **[Developers Quickstart](Documentation/Developers-Quickstart.md)** - Quick reference for developers
+
+### Technical Documentation
+- [AssetLoading.md](Documentation/AssetLoading.md) - Conditional asset loading optimization
+- [Partials.md](Documentation/Partials.md) - Template structure and customization
+- [PrivacyLayer.md](Documentation/PrivacyLayer.md) - External service privacy implementation
+- [HLS-Implementation.md](Documentation/HLS-Implementation.md) - HLS streaming technical details
+- [SettingsArchitecture.md](Documentation/SettingsArchitecture.md) - Configuration system
 
 ## Troubleshooting
 
