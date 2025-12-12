@@ -1,0 +1,427 @@
+# Editor's Guide: VidPly Player
+
+A practical guide for content editors on how to use VidPly to add accessible video and audio content.
+
+---
+
+## Quick Overview
+
+VidPly is a universal, accessible media player supporting multiple sources:
+
+| Media Type | Source | Privacy Layer | Best For |
+|------------|--------|---------------|----------|
+| **HTML5 Video** | Upload MP4/WebM | No | Local videos |
+| **HTML5 Audio** | Upload MP3/OGG | No | Podcasts, music |
+| **YouTube** | Video URL | Yes (GDPR) | External videos |
+| **Vimeo** | Video URL | Yes (GDPR) | Professional videos |
+| **SoundCloud** | Track/Set URL | Yes (GDPR) | Music, podcasts |
+| **HLS** | .m3u8 URL | No | Live streaming |
+
+---
+
+## Two-Step Workflow
+
+### Step 1: Create Media Records
+
+First, create reusable media items in the **VidPly Media** storage.
+
+### Step 2: Add Player to Page
+
+Then, add a **VidPly Player** content element and select your media.
+
+---
+
+## Step 1: Creating Media Records
+
+### Where to Find It
+
+**Web → List Module → Select storage folder → Click "+" → VidPly Media**
+
+Or use the "Create new record" button in the VidPly Player element.
+
+### Media Types Explained
+
+#### 🎬 HTML5 Video
+
+**Use for:** Self-hosted video files
+
+**Supported formats:** MP4, WebM, OGG
+
+**How to create:**
+1. Select media type: **HTML5 Video**
+2. Click "Add media file" and upload your video
+3. Add a **title** (required)
+4. Add a **poster image** (thumbnail shown before playback)
+
+**Tips:**
+- Upload multiple formats (MP4 + WebM) for browser compatibility
+- Recommended: MP4 with H.264 codec for widest support
+- Keep file sizes reasonable (compress for web)
+
+---
+
+#### 🎵 HTML5 Audio
+
+**Use for:** Podcasts, music, audio content
+
+**Supported formats:** MP3, OGG, WAV
+
+**How to create:**
+1. Select media type: **HTML5 Audio**
+2. Click "Add media file" and upload your audio
+3. Add a **title** (required)
+4. Optionally add a **poster image** (album art)
+
+---
+
+#### ▶️ YouTube
+
+**Use for:** YouTube videos with GDPR-compliant privacy layer
+
+**How to create:**
+1. Select media type: **YouTube**
+2. Click "Add media file" → "Add external video"
+3. Paste the YouTube URL (e.g., `https://www.youtube.com/watch?v=...`)
+4. Add a **title** (required)
+5. Add a **poster image** (shown before consent)
+
+**Privacy behavior:**
+- Video does NOT load until user clicks play
+- Shows privacy notice overlay
+- No tracking before user consent
+- Compliant with GDPR requirements
+
+---
+
+#### 🎬 Vimeo
+
+**Use for:** Vimeo videos with privacy layer
+
+**How to create:**
+1. Select media type: **Vimeo**
+2. Click "Add media file" → "Add external video"
+3. Paste the Vimeo URL (e.g., `https://vimeo.com/123456789`)
+4. Add a **title** (required)
+5. Add a **poster image**
+
+---
+
+#### 🎧 SoundCloud
+
+**Use for:** SoundCloud tracks or playlists with privacy layer
+
+**How to create:**
+1. Select media type: **SoundCloud**
+2. Enter the **Media URL** (track or set URL)
+3. Add a **title** (required)
+4. Add a **poster image** (optional)
+
+---
+
+#### 📡 HLS Streaming
+
+**Use for:** Live streams, adaptive bitrate video
+
+**How to create:**
+1. Select media type: **HLS**
+2. Enter the **Media URL** (must end in `.m3u8`)
+3. Add a **title** (required)
+4. Add a **poster image**
+
+**Example URL:** `https://example.com/stream/video.m3u8`
+
+---
+
+### Adding Metadata
+
+Every media record has a **metadata palette**:
+
+| Field | Description | Required |
+|-------|-------------|----------|
+| **Title** | Display name in player/playlist | ✅ Yes |
+| **Artist** | Creator name (shown in playlist) | No |
+| **Description** | Text description | No |
+| **Duration** | Length in seconds (for display) | No |
+| **Poster** | Thumbnail image | Recommended |
+
+---
+
+## Accessibility Features
+
+VidPly provides full WCAG 2.1 AA accessibility support.
+
+### 📝 Captions & Subtitles
+
+**Tab: Captions**
+
+Add WebVTT (.vtt) files for hearing-impaired users:
+
+1. Click "Add captions file"
+2. Upload your `.vtt` file
+3. Set **Track kind**: Captions or Subtitles
+4. Set **Language name**: e.g., "English", "Deutsch"
+5. Set **Language code**: e.g., "en", "de"
+
+**Multiple languages:** Add multiple VTT files for each language.
+
+**VTT Example:**
+```
+WEBVTT
+
+00:00:00.000 --> 00:00:03.000
+Welcome to our video tutorial.
+
+00:00:03.000 --> 00:00:07.000
+Today we'll learn about VidPly.
+```
+
+---
+
+### 📑 Chapters
+
+**Tab: Captions → Chapters**
+
+Add chapter markers for easy navigation:
+
+1. Click "Add chapters file"
+2. Upload your chapters `.vtt` file
+3. Set **Track kind**: Chapters
+4. Set language info
+
+**Chapters VTT Example:**
+```
+WEBVTT
+
+00:00:00.000 --> 00:02:30.000
+Introduction
+
+00:02:30.000 --> 00:08:00.000
+Main Content
+
+00:08:00.000 --> 00:10:00.000
+Conclusion
+```
+
+---
+
+### 🔊 Audio Description
+
+**Tab: Accessibility → Audio Description**
+
+For visually impaired users, add a video with narrated descriptions:
+
+1. Click "Add audio description"
+2. Upload an alternative video with audio description track
+3. Users can toggle between standard and described video
+
+---
+
+### 🤟 Sign Language
+
+**Tab: Accessibility → Sign Language**
+
+Add sign language interpretation overlay:
+
+1. Click "Add sign language video"
+2. Upload video with sign language interpreter
+3. Appears as picture-in-picture overlay
+
+---
+
+### 📜 Transcripts
+
+**Tab: Captions → Enable Transcript**
+
+Generate searchable text transcript from captions:
+
+1. Enable "Show transcript panel"
+2. Captions are displayed as clickable, searchable text
+3. Users can click any line to jump to that point
+
+---
+
+## Step 2: Adding Player to Page
+
+### Insert Content Element
+
+**Page Module → Add Content → VidPly Player**
+
+### Select Media Items
+
+**Media Tab:**
+- Click in the "Media Items" field
+- Search for and select your media records
+- Add multiple items for a **playlist** (2+ items)
+
+### Configure Player Options
+
+**Settings Tab:**
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| **Width** | 800 | Player width in pixels |
+| **Height** | 450 | Player height in pixels |
+| **Autoplay** | Off | Start playing automatically |
+| **Loop** | Off | Loop when finished |
+| **Muted** | Off | Start muted |
+| **Controls** | On | Show player controls |
+| **Captions Default** | Off | Show captions by default |
+| **Transcript** | Off | Show transcript panel |
+| **Keyboard** | On | Enable keyboard shortcuts |
+| **Responsive** | On | Adapt to container size |
+| **Auto Advance** | On | Auto-play next in playlist |
+
+**Playback Settings:**
+- **Volume**: Default volume (0.0 - 1.0)
+- **Playback Speed**: Default speed (0.25 - 2.0)
+- **Language**: Force specific UI language
+
+---
+
+## Playlists
+
+### Automatic Playlist
+
+Select **2 or more media items** to automatically create a playlist:
+
+- Thumbnail list appears alongside player
+- Click any item to play it
+- Auto-advance plays next track
+- Loop option cycles through all tracks
+
+### Best Practices
+
+- Use consistent poster images (same dimensions)
+- Add titles to all items
+- Consider grouping related content
+- Order items logically (drag to reorder)
+
+---
+
+## Player Controls
+
+### Visual Controls
+
+| Control | Function |
+|---------|----------|
+| ▶️ Play/Pause | Start or pause playback |
+| 🔊 Volume | Adjust volume + mute |
+| ⏩ Progress bar | Seek to position |
+| ⏮️⏭️ Skip | Previous/next in playlist |
+| CC | Toggle captions |
+| ⚙️ Settings | Quality, speed, captions |
+| 🖼️ PiP | Picture-in-Picture |
+| ⛶ Fullscreen | Enter fullscreen |
+
+### Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| **Space** or **K** | Play/Pause |
+| **M** | Mute/Unmute |
+| **F** | Fullscreen |
+| **C** | Toggle captions |
+| **←** | Seek back 10s |
+| **→** | Seek forward 10s |
+| **↑** | Volume up 10% |
+| **↓** | Volume down 10% |
+| **Home** | Go to start |
+| **End** | Go to end |
+
+---
+
+## Privacy Layer (GDPR)
+
+For YouTube, Vimeo, and SoundCloud:
+
+### How It Works
+
+1. **Before consent:** Only poster image + play button shown
+2. **Privacy notice:** Explains data will be sent to external service
+3. **User clicks play:** Video loads and plays immediately
+4. **No cookies** until user explicitly consents
+
+### What Users See
+
+```
+┌─────────────────────────────────┐
+│                                 │
+│      [Poster Image]             │
+│                                 │
+│         ▶ Play                  │
+│                                 │
+│  ⚠️ Privacy Notice: Clicking   │
+│  play will load content from    │
+│  YouTube and send data to       │
+│  Google.                        │
+└─────────────────────────────────┘
+```
+
+---
+
+## Tips & Best Practices
+
+### Video Quality
+- **Resolution:** 1080p or 720p for web
+- **Bitrate:** 5-8 Mbps for HD
+- **Codec:** H.264 for MP4
+- **Always** provide a poster image
+
+### Audio Quality
+- **Bitrate:** 128-320 kbps MP3
+- **Sample rate:** 44.1 or 48 kHz
+
+### Accessibility
+- ✅ Always add captions for videos with speech
+- ✅ Provide audio descriptions for visual content
+- ✅ Use meaningful titles
+- ✅ Add alt text to poster images
+
+### Performance
+- Compress videos before upload
+- Use appropriate resolution (not always 4K)
+- Consider HLS for long content
+- External services (YouTube/Vimeo) reduce server load
+
+### Mobile
+- Test on mobile devices
+- Responsive mode adapts to screen
+- Touch controls work automatically
+
+---
+
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| Video not showing | Check media record is not hidden |
+| Playlist not working | Need 2+ items; check browser console |
+| Captions not loading | Validate VTT syntax; check CORS headers |
+| YouTube not loading | Check URL format; clear caches |
+| Privacy layer stuck | Clear TYPO3 caches; check JS loading |
+| No sound | Check muted option; volume setting |
+
+### VTT Validation
+
+Ensure your VTT files:
+- Start with `WEBVTT` on first line
+- Have blank line after `WEBVTT`
+- Use format: `HH:MM:SS.mmm --> HH:MM:SS.mmm`
+- Have text on next line(s)
+
+---
+
+## Quick Reference
+
+| Task | Steps |
+|------|-------|
+| Add video | List → New VidPly Media → Video → Upload |
+| Add YouTube | List → New VidPly Media → YouTube → Paste URL |
+| Add captions | Edit media → Captions tab → Add VTT |
+| Create playlist | VidPly Player → Select 2+ items |
+| Enable privacy | Automatic for YouTube/Vimeo/SoundCloud |
+
+---
+
+**Need help?** Contact your site administrator or check the [technical documentation](README.md).
+
