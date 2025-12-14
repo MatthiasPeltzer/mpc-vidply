@@ -1,34 +1,13 @@
 <html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
-<f:comment><!--
-    Partial: VidPly Tracks
-    Renders caption and chapter track elements
 
-    Arguments:
-    - {captions} - Array of caption tracks (kind: captions/subtitles/descriptions)
-    - {chapters} - Array of chapter tracks
-    - {languageSelection} - Default language code to mark tracks as default
---></f:comment>
-
-<f:comment><!-- Captions / Subtitles / Descriptions --></f:comment>
 <f:for each="{captions}" as="caption">
-    <track
-        kind="{caption.kind}"
-        src="{caption.src}"
-        srclang="{caption.srclang}"
-        label="{caption.label}"
-        <f:if condition="{languageSelection} && {caption.srclang} == {languageSelection}"> default</f:if>
-    >
+    <track kind="{caption.kind}" src="{caption.src}" srclang="{caption.srclang}" label="{caption.label}"
+        <f:if condition="{languageSelection} && {caption.srclang} == {languageSelection}"> default</f:if>>
 </f:for>
 
-<f:comment><!-- Chapters --></f:comment>
 <f:for each="{chapters}" as="chapter">
-    <track
-        kind="{chapter.kind}"
-        src="{chapter.src}"
-        srclang="{chapter.srclang}"
-        <f:if condition="{chapter.label}">label="{chapter.label}"</f:if>
-    >
+    <track kind="{chapter.kind}" src="{chapter.src}" srclang="{chapter.srclang}"
+        <f:if condition="{chapter.label}">label="{chapter.label}"</f:if>>
 </f:for>
 
 </html>
-

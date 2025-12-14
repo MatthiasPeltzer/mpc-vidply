@@ -1,32 +1,17 @@
 <html data-namespace-typo3-fluid="true" xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers">
-<f:comment><!--
-    Partial: VidPly Assets
-    Conditionally registers CSS and JavaScript assets based on media types
 
-    Arguments:
-    - {needsPrivacyLayer} - Load PrivacyLayer.js (YouTube, Vimeo, SoundCloud)
-    - {needsVidPlay} - Load VidPlay player (local video/audio, HLS)
-    - {needsPlaylist} - Load PlaylistInit.js (2+ items or native player)
-    - {needsHLS} - Load hls.js (HLS streaming)
---></f:comment>
-
-<f:comment><!-- CSS always loads --></f:comment>
 <f:asset.css href="EXT:mpc_vidply/Resources/Public/Css/vidply.min.css" identifier="vidplyCSS"/>
 
-<f:comment><!-- Privacy Layer JS - only for external services --></f:comment>
-<f:if condition="{needsPrivacyLayer}">
+<f:if condition="{needsPrivacyLayer} && !{needsPlaylist}">
     <f:asset.script identifier="vidPlyPrivacy" src="EXT:mpc_vidply/Resources/Public/JavaScript/PrivacyLayer.js" type="module"/>
 </f:if>
 
-<f:comment><!-- HLS.js - only for HLS streams --></f:comment>
 <f:if condition="{needsHLS}">
     <f:asset.script identifier="vidPlyHLS" src="EXT:mpc_vidply/Resources/Public/JavaScript/hls.min.js"/>
 </f:if>
 
-<f:comment><!-- Playlist Init - for playlists or native player initialization (includes vidply.esm.min.js) --></f:comment>
 <f:if condition="{needsPlaylist}">
     <f:asset.script identifier="playlistInit" src="EXT:mpc_vidply/Resources/Public/JavaScript/PlaylistInit.js" type="module"/>
 </f:if>
 
 </html>
-

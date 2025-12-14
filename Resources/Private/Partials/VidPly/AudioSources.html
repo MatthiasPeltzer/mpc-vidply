@@ -1,45 +1,14 @@
 <html data-namespace-typo3-fluid="true" xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers">
-<f:comment><!--
-    Partial: VidPly Audio Sources
-    Renders source elements for audio player
 
-    Arguments:
-    - {playlistData} - Playlist configuration object
-    - {tracks} - Array of playlist tracks
-    - {sources} - Array of multiple audio sources (different formats)
-    - {mediaFiles} - Array of media file objects
---></f:comment>
-
-<f:comment><!-- Local audio files --></f:comment>
 <f:if condition="{playlistData}">
-    <f:then>
-        <f:comment><!-- Playlist mode: Render all sources from first track --></f:comment>
-        <f:if condition="{tracks.0.sources}">
-            <f:then>
-                <f:comment><!-- First track has multiple sources (e.g., MP3 + OGG) --></f:comment>
-                <f:for as="source" each="{tracks.0.sources}">
-                    <source src="{source.src}" type="{source.type}">
-                </f:for>
-            </f:then>
-            <f:else>
-                <f:comment><!-- First track single source --></f:comment>
-                <f:if condition="{tracks.0.src}">
-                    <source src="{tracks.0.src}" type="{tracks.0.type}">
-                </f:if>
-            </f:else>
-        </f:if>
-    </f:then>
     <f:else>
-        <f:comment><!-- Single audio mode: Render all sources for format fallback --></f:comment>
         <f:if condition="{sources}">
             <f:then>
-                <f:comment><!-- Multiple formats: Use sources array (e.g., MP3 + OGG) --></f:comment>
                 <f:for as="source" each="{sources}">
                     <source src="{source.src}" type="{source.type}">
                 </f:for>
             </f:then>
             <f:else>
-                <f:comment><!-- Single format: Render from mediaFiles --></f:comment>
                 <f:if condition="{mediaFiles.0.publicUrl}">
                     <source src="{mediaFiles.0.publicUrl}" type="{mediaFiles.0.mimeType}">
                 </f:if>
@@ -49,4 +18,3 @@
 </f:if>
 
 </html>
-

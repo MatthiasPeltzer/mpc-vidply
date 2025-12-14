@@ -75,28 +75,44 @@ return Map::fromEntries([
             MutationMode::Extend,
             Directive::ScriptSrc,
             SourceKeyword::unsafeInline,
-            new UriValue('https://cdn.jsdelivr.net')
+            new UriValue('https://cdn.jsdelivr.net'),
+            new UriValue('https://*.youtube.com'),
+            new UriValue('https://*.youtube-nocookie.com'),
+            new UriValue('https://*.vimeo.com'),
+            new UriValue('https://*.soundcloud.com')
         ),
         
         // Allow script elements from CDN (for hls.js dynamic loading)
         new Mutation(
             MutationMode::Extend,
             Directive::ScriptSrcElem,
-            new UriValue('https://cdn.jsdelivr.net')
+            new UriValue('https://cdn.jsdelivr.net'),
+            new UriValue('https://*.youtube.com'),
+            new UriValue('https://*.youtube-nocookie.com'),
+            new UriValue('https://*.vimeo.com'),
+            new UriValue('https://*.soundcloud.com')
         ),
         
         // Allow unsafe-inline for styles
         new Mutation(
             MutationMode::Extend,
             Directive::StyleSrc,
-            SourceKeyword::unsafeInline
+            SourceKeyword::unsafeInline,
+            new UriValue('https://*.youtube.com'),
+            new UriValue('https://*.youtube-nocookie.com'),
+            new UriValue('https://*.vimeo.com'),
+            new UriValue('https://*.soundcloud.com')
         ),
         
         // Allow unsafe-inline for style elements
         new Mutation(
             MutationMode::Extend,
             Directive::StyleSrcElem,
-            SourceKeyword::unsafeInline
+            SourceKeyword::unsafeInline,
+            new UriValue('https://*.youtube.com'),
+            new UriValue('https://*.youtube-nocookie.com'),
+            new UriValue('https://*.vimeo.com'),
+            new UriValue('https://*.soundcloud.com')
         ),
         
         // Allow external video/audio player iframes (YouTube, Vimeo, SoundCloud)

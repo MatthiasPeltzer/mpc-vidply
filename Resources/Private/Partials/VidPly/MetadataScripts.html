@@ -1,28 +1,17 @@
 <html data-namespace-typo3-fluid="true" xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers">
-<f:comment><!--
-    Partial: VidPly Metadata Scripts
-    Renders JSON metadata scripts for audio description and sign language
 
-    Arguments:
-    - {uniqueId} - Unique identifier for the player instance
-    - {audioDescriptionTracks} - Array of audio description tracks
-    - {audioDescription} - Audio description source URL
-    - {signLanguage} - Array of sign language videos
---></f:comment>
-
-<f:comment><!-- Audio Description (if available) --></f:comment>
 <f:if condition="{audioDescriptionTracks}">
     <script data-vidply-audio-description-tracks="{uniqueId}" type="application/json">
         <f:format.raw>{f:format.json(value: audioDescriptionTracks)}</f:format.raw>
     </script>
 </f:if>
+
 <f:if condition="{audioDescription}">
     <script data-vidply-audio-description="{uniqueId}" type="application/json">
         <f:format.raw>{f:format.json(value: {src: audioDescription})}</f:format.raw>
     </script>
 </f:if>
 
-<f:comment><!-- Sign Language (if available) --></f:comment>
 <f:if condition="{signLanguage}">
     <script data-vidply-sign-language="{uniqueId}" type="application/json">
         <f:format.raw>{f:format.json(value: signLanguage)}</f:format.raw>
@@ -30,4 +19,3 @@
 </f:if>
 
 </html>
-

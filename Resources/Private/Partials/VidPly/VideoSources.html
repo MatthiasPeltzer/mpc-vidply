@@ -1,51 +1,16 @@
 <html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
-<f:comment><!--
-    Partial: VidPly Video Sources
-    Renders source elements for video player
 
-    Arguments:
-    - {videoUrl} - External video URL (YouTube, Vimeo, HLS)
-    - {playlistData} - Playlist configuration object
-    - {sources} - Array of multiple video sources (different qualities/formats)
-    - {mediaFiles} - Array of media file objects
---></f:comment>
-
-<f:comment><!-- External video sources (YouTube, Vimeo, HLS) handled via src attribute on video element --></f:comment>
 <f:if condition="{videoUrl}">
-    <f:then>
-        <f:comment><!-- For YouTube, Vimeo, HLS, the src is already set on the video element --></f:comment>
-    </f:then>
     <f:else>
-        <f:comment><!-- Local media files --></f:comment>
         <f:if condition="{playlistData}">
-            <f:then>
-                <f:comment><!-- Playlist mode: Only render first source, PlaylistManager handles the rest --></f:comment>
-                <f:if condition="{mediaFiles.0}">
-                    <source
-                        src="{mediaFiles.0.publicUrl}"
-                        type="{mediaFiles.0.mimeType}"
-                        <f:if condition="{mediaFiles.0.descSrc}">
-                            data-desc-src="{mediaFiles.0.descSrc}"
-                            data-orig-src="{mediaFiles.0.publicUrl}"
-                        </f:if>
-                    >
-                </f:if>
-            </f:then>
             <f:else>
-                <f:comment><!-- Non-playlist mode: Render all sources for quality switching --></f:comment>
                 <f:if condition="{sources}">
                     <f:then>
-                        <f:comment><!-- Use sources array if available (multiple formats) --></f:comment>
                         <f:for each="{sources}" as="source">
-                            <source
-                                src="{source.src}"
-                                type="{source.type}"
-                                <f:if condition="{source.label}">label="{source.label}"</f:if>
-                            >
+                            <source src="{source.src}" type="{source.type}" <f:if condition="{source.label}">label="{source.label}"</f:if>>
                         </f:for>
                     </f:then>
                     <f:else>
-                        <f:comment><!-- Single file: Use first mediaFile only --></f:comment>
                         <f:if condition="{mediaFiles.0.publicUrl}">
                             <source
                                 src="{mediaFiles.0.publicUrl}"
@@ -65,4 +30,3 @@
 </f:if>
 
 </html>
-
