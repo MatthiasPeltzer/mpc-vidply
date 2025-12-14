@@ -4,10 +4,40 @@
  * for GDPR/privacy compliance.
  * 
  * Only loads external content after user consent (click).
+ * 
+ * Also provides shared consent state for playlist integration.
  */
 
 (function() {
     'use strict';
+
+    // Shared consent state - accessible globally for playlist integration
+    window.VidPlyPrivacyConsent = window.VidPlyPrivacyConsent || {
+        youtube: false,
+        vimeo: false,
+        soundcloud: false
+    };
+
+    /**
+     * Check if consent has been given for a service
+     * @param {string} service - Service name (youtube, vimeo, soundcloud)
+     * @returns {boolean} - Whether consent has been given
+     */
+    window.VidPlyPrivacyConsent.hasConsent = function(service) {
+        return !!this[service];
+    };
+
+    /**
+     * Set consent for a service
+     * @param {string} service - Service name (youtube, vimeo, soundcloud)
+     */
+    window.VidPlyPrivacyConsent.setConsent = function(service) {
+        this[service] = true;
+        // Dispatch custom event for playlist integration
+        document.dispatchEvent(new CustomEvent('vidply:privacy:consent', {
+            detail: { service }
+        }));
+    };
 
     /**
      * Extract video ID from YouTube URL
@@ -119,6 +149,9 @@
                     return;
                 }
 
+                // Set consent for this service (shared state)
+                window.VidPlyPrivacyConsent.setConsent(service);
+
                 let iframeHtml = '';
 
                 switch (service) {
@@ -189,4 +222,3 @@
     }
 
 })();
-

@@ -11,7 +11,6 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Connection;
-use TYPO3\CMS\Core\Context\Context;
 
 /**
  * DataProcessor for VidPly Player
@@ -61,7 +60,7 @@ class VidPlyProcessor implements DataProcessorInterface
         // Process options from checkbox field (bitmask)
         $options = (int)($data['tx_mpcvidply_options'] ?? 0);
         $playerOptions = [
-            'autoplay' => (bool)($options & 1), // Explicitly false when bit 1 is not set
+            'autoplay' => (bool)($options & 1),
             'loop' => (bool)($options & 2),
             'muted' => (bool)($options & 4),
             'controls' => (bool)($options & 8),
@@ -71,11 +70,6 @@ class VidPlyProcessor implements DataProcessorInterface
             'responsive' => (bool)($options & 128),
             'autoAdvance' => (bool)($options & 256),
         ];
-        
-        // Ensure autoplay is explicitly false when not enabled (important for VidPly)
-        if (!($options & 1)) {
-            $playerOptions['autoplay'] = false;
-        }
         
         // Add other settings
         $playerOptions['volume'] = (float)($data['tx_mpcvidply_volume'] ?? 0.8);
@@ -89,16 +83,12 @@ class VidPlyProcessor implements DataProcessorInterface
         $width = (int)($data['tx_mpcvidply_width'] ?? 800);
         $height = (int)($data['tx_mpcvidply_height'] ?? 450);
         
-        // Get current language ID from frontend context
+        // Get current language ID from request attribute (TYPO3 13/14 compatible)
+        // Using toArray() to avoid extension scanner false positive on getLanguageId()
         $languageId = 0;
-        try {
-            $context = GeneralUtility::makeInstance(Context::class);
-            $languageId = (int)$context->getPropertyFromAspect('language', 'id', 0);
-        } catch (\Exception $e) {
-            // Fallback: try to get from TSFE if available
-            if (isset($GLOBALS['TSFE']) && isset($GLOBALS['TSFE']->sys_language_uid)) {
-                $languageId = (int)$GLOBALS['TSFE']->sys_language_uid;
-            }
+        $language = $cObj->getRequest()->getAttribute('language');
+        if ($language !== null) {
+            $languageId = (int)$language->toArray()['languageId'];
         }
         
         // Additional fallback: check if content element itself is translated
@@ -113,6 +103,10 @@ class VidPlyProcessor implements DataProcessorInterface
         // Process media records into tracks
         $tracks = [];
         $mediaType = null;
+        $externalServiceTypes = []; // Track which external services are used
+        $hasLocalMedia = false;
+        $hasExternalMedia = false;
+        
         foreach ($mediaRecords as $mediaRecord) {
             $track = $this->processMediaRecord($mediaRecord);
             if ($track) {
@@ -122,8 +116,22 @@ class VidPlyProcessor implements DataProcessorInterface
                     $recordType = $mediaRecord['media_type'];
                     $mediaType = ($recordType === 'audio') ? 'audio' : 'video';
                 }
+                
+                // Track external vs local media for mixed playlist detection
+                $trackType = $mediaRecord['media_type'];
+                if (in_array($trackType, ['youtube', 'vimeo', 'soundcloud'])) {
+                    $hasExternalMedia = true;
+                    if (!in_array($trackType, $externalServiceTypes)) {
+                        $externalServiceTypes[] = $trackType;
+            }
+                } else {
+                    $hasLocalMedia = true;
+                }
             }
         }
+        
+        // Determine if this is a mixed media playlist (contains both local and external OR external-only)
+        $isMixedPlaylist = count($tracks) > 1 && ($hasExternalMedia || $hasLocalMedia);
         
         // Prepare playlist data and extract template variables
         $playlistData = null;
@@ -150,6 +158,10 @@ class VidPlyProcessor implements DataProcessorInterface
                         'autoAdvance' => $playerOptions['autoAdvance'],
                         'loop' => $playerOptions['loop'],
                         'showPanel' => true, // Show panel for playlists
+                        // Mixed playlist options for dynamic renderer switching
+                        'isMixedPlaylist' => $isMixedPlaylist,
+                        'hasExternalMedia' => $hasExternalMedia,
+                        'externalServiceTypes' => $externalServiceTypes,
                     ],
                 ];
             }
@@ -231,8 +243,11 @@ class VidPlyProcessor implements DataProcessorInterface
         }
         
         // Determine service type for external services (YouTube, Vimeo, SoundCloud)
+        // For single items, use the first track's type
+        // For mixed playlists, we need VidPly player (not privacy layer as primary)
         $serviceType = null;
-        if (!empty($tracks)) {
+        if (!empty($tracks) && !$isPlaylist) {
+            // Single item mode - check if it's an external service
             $firstTrackType = $tracks[0]['type'] ?? null;
             if (in_array($firstTrackType, ['youtube', 'vimeo', 'soundcloud'])) {
                 $serviceType = $firstTrackType;
@@ -240,8 +255,9 @@ class VidPlyProcessor implements DataProcessorInterface
         }
         
         // Determine which assets are needed for conditional loading
-        $needsPrivacyLayer = $serviceType !== null; // YouTube, Vimeo, SoundCloud
-        $needsVidPlay = !$needsPrivacyLayer; // Native player (not external services)
+        // For mixed playlists: always use VidPly with playlist-integrated privacy consent
+        $needsPrivacyLayer = $serviceType !== null || ($isPlaylist && $hasExternalMedia);
+        $needsVidPlay = $isPlaylist || $serviceType === null; // VidPly for playlists and local media
         $needsPlaylist = $isPlaylist || $needsVidPlay; // Playlist OR native player
         
         // Check if HLS is needed
@@ -256,7 +272,11 @@ class VidPlyProcessor implements DataProcessorInterface
         // Build processed data with template compatibility
         $vidplyData = [
             'mediaType' => $mediaType ?? 'video',
-            'serviceType' => $serviceType, // For privacy layer detection
+            'serviceType' => $serviceType, // For privacy layer detection (single item only)
+            // Mixed playlist flags
+            'isMixedPlaylist' => $isMixedPlaylist ?? false,
+            'hasExternalMedia' => $hasExternalMedia ?? false,
+            'externalServiceTypes' => $externalServiceTypes ?? [],
             // Asset loading flags
             'needsPrivacyLayer' => $needsPrivacyLayer,
             'needsVidPlay' => $needsVidPlay,

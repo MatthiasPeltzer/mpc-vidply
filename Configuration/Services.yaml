@@ -1,5 +1,4 @@
 # VidPly Extension - Dependency Injection Configuration
-# TYPO3 13/14 - Modern Service Configuration
 
 services:
   _defaults:
@@ -7,17 +6,10 @@ services:
     autoconfigure: true
     public: false
 
-  # DataProcessors - Must be public for TypoScript instantiation
   Mpc\MpcVidply\DataProcessing\:
     resource: '../Classes/DataProcessing/*'
     public: true
 
-  # Make specific DataProcessor explicitly public
   Mpc\MpcVidply\DataProcessing\VidPlyProcessor:
     public: true
     autowire: true
-
-  # Backend Form Components
-  Mpc\MpcVidply\Backend\Form\:
-    resource: '../Classes/Backend/Form/*'
-    public: true
