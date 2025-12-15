@@ -6,6 +6,19 @@
 
 import {Player, PlaylistManager} from './vidply/vidply.esm.min.js';
 
+// Constants
+const AUTOPLAY_TIMEOUTS = [100, 500, 1000, 2000];
+const HLS_QUALITY_CHECK_TIMEOUT = 500;
+const HLS_QUALITY_CHECK_MAX_ATTEMPTS = 10;
+const OVERLAY_INSERT_DELAY = 300;
+const ERROR_ADVANCE_DELAY = 1000;
+
+const PRIVACY_POLICY_URLS = {
+    youtube: 'https://policies.google.com/privacy',
+    vimeo: 'https://vimeo.com/privacy',
+    soundcloud: 'https://soundcloud.com/pages/privacy'
+};
+
 // Track initialized players to prevent double-init
 const initializedPlayers = new WeakSet();
 
@@ -13,7 +26,6 @@ const initializedPlayers = new WeakSet();
 const originalConsoleLog = console.log;
 const suppressVidPlyLogs = (fn) => {
     console.log = (...args) => {
-        // Only suppress VidPly Playlist logs
         if (args[0]?.toString().startsWith('VidPly')) return;
         originalConsoleLog.apply(console, args);
     };
@@ -57,17 +69,13 @@ const getServiceType = (src) => {
     return null;
 };
 
-const getPrivacyPolicyUrl = (service) => ({
-    youtube: 'https://policies.google.com/privacy',
-    vimeo: 'https://vimeo.com/privacy',
-    soundcloud: 'https://soundcloud.com/pages/privacy'
-}[service] || '#');
+const getPrivacyPolicyUrl = (service) => PRIVACY_POLICY_URLS[service] || '#';
 
 // Language utilities
 const getPageLanguage = () => (document.documentElement.lang || 'en').split('-')[0].toLowerCase();
 
 // Translations
-const translations = {
+const TRANSLATIONS = {
     en: {
         videoIntro: 'To activate the video, you must click on the button. After activating the button,',
         widgetIntro: 'To activate the widget, you must click on the button. After activating the button,',
@@ -142,24 +150,20 @@ const translations = {
     }
 };
 
-const getTranslation = (key) => {
-    const lang = getPageLanguage();
-    return (translations[lang] || translations.en)[key] || translations.en[key];
+const TRANSLATION_KEY_MAP = {
+    introText: {youtube: 'videoIntro', vimeo: 'videoIntro', soundcloud: 'widgetIntro'},
+    policyText: {youtube: 'googlePolicy', vimeo: 'vimeoPolicy', soundcloud: 'soundcloudPolicy'},
+    buttonLabel: {youtube: 'loadYoutube', vimeo: 'loadVimeo', soundcloud: 'loadSoundcloud'}
 };
 
-const getPrivacyIntroText = (service) => getTranslation(service === 'soundcloud' ? 'widgetIntro' : 'videoIntro');
+const getTranslation = (key) => {
+    const lang = getPageLanguage();
+    return (TRANSLATIONS[lang] || TRANSLATIONS.en)[key] || TRANSLATIONS.en[key];
+};
 
-const getPrivacyPolicyLinkText = (service) => getTranslation({
-    youtube: 'googlePolicy',
-    vimeo: 'vimeoPolicy',
-    soundcloud: 'soundcloudPolicy'
-}[service] || 'googlePolicy');
-
-const getButtonAriaLabel = (service) => getTranslation({
-    youtube: 'loadYoutube',
-    vimeo: 'loadVimeo',
-    soundcloud: 'loadSoundcloud'
-}[service] || 'loadDefault');
+const getPrivacyIntroText = (service) => getTranslation(TRANSLATION_KEY_MAP.introText[service] || 'videoIntro');
+const getPrivacyPolicyLinkText = (service) => getTranslation(TRANSLATION_KEY_MAP.policyText[service] || 'googlePolicy');
+const getButtonAriaLabel = (service) => getTranslation(TRANSLATION_KEY_MAP.buttonLabel[service] || 'loadDefault');
 
 /**
  * Create the privacy consent overlay for a playlist track
@@ -244,6 +248,24 @@ function createPrivacyOverlay(service, track, onConsent) {
 }
 
 /**
+ * Setup HLS quality checking for a player
+ */
+function setupHLSQualityCheck(player) {
+    player.on('ready', () => {
+        const checkQuality = (attempts = 0) => {
+            if (attempts >= HLS_QUALITY_CHECK_MAX_ATTEMPTS) return;
+            if (player.renderer?.hls?.levels?.length > 0) {
+                player.controls?.buildControlBar?.();
+                window.dispatchEvent(new Event('resize'));
+            } else {
+                setTimeout(() => checkQuality(attempts + 1), HLS_QUALITY_CHECK_TIMEOUT);
+            }
+        };
+        setTimeout(checkQuality, HLS_QUALITY_CHECK_TIMEOUT);
+    });
+}
+
+/**
  * Initialize a single media element
  */
 function initializeSingleElement(element) {
@@ -269,18 +291,7 @@ function initializeSingleElement(element) {
         });
 
         if (isHLS) {
-            player.on('ready', () => {
-                const checkQuality = (attempts = 0) => {
-                    if (attempts > 10) return;
-                    if (player.renderer?.hls?.levels?.length > 0) {
-                        player.controls?.buildControlBar?.();
-                        window.dispatchEvent(new Event('resize'));
-                    } else {
-                        setTimeout(() => checkQuality(attempts + 1), 500);
-                    }
-                };
-                setTimeout(checkQuality, 500);
-            });
+            setupHLSQualityCheck(player);
         }
 
         initializedPlayers.add(element);
@@ -288,6 +299,27 @@ function initializeSingleElement(element) {
     } catch (error) {
         console.error('[VidPly Init] Error:', error);
     }
+}
+
+/**
+ * Get media type for playlist element
+ */
+function getMediaType(element) {
+    if (element.tagName === 'DIV') {
+        return element.dataset.vidplyMediaType || 'video';
+    }
+    return element.tagName === 'AUDIO' ? 'audio' : 'video';
+}
+
+/**
+ * Create patched error handler for playlist
+ */
+function createPlaylistErrorHandler(playlist, autoAdvance) {
+    return function handleTrackError(e) {
+        const currentTrack = this.getCurrentTrack();
+        if (currentTrack?.src && isExternalRendererUrl(currentTrack.src)) return;
+        if (autoAdvance) setTimeout(() => this.next(), ERROR_ADVANCE_DELAY);
+    }.bind(playlist);
 }
 
 /**
@@ -303,9 +335,9 @@ function initializePlaylistElement(element) {
         const options = element.dataset.vidplyOptions ? JSON.parse(element.dataset.vidplyOptions) : {};
         const hasExternalMedia = element.dataset.playlistHasExternal === 'true';
         const wrapperElement = element.closest('.vidply-wrapper') || element.parentElement;
-        const mediaType = element.tagName === 'DIV'
-            ? (element.dataset.vidplyMediaType || 'video')
-            : (element.tagName === 'AUDIO' ? 'audio' : 'video');
+        const mediaType = getMediaType(element);
+        const autoPlayFirst = element.dataset.playlistAutoPlayFirst === 'true';
+        const autoAdvance = element.dataset.playlistAutoAdvance !== 'false';
 
         // Remove data-playlist before creating player for external media playlists
         if (hasExternalMedia) {
@@ -318,10 +350,8 @@ function initializePlaylistElement(element) {
         });
 
         player.on('ready', () => {
-            const autoPlayFirst = element.dataset.playlistAutoPlayFirst === 'true';
-
             const playlistOptions = {
-                autoAdvance: element.dataset.playlistAutoAdvance !== 'false',
+                autoAdvance,
                 autoPlayFirst: hasExternalMedia ? false : autoPlayFirst,
                 loop: element.dataset.playlistLoop === 'true',
                 showPanel: element.dataset.playlistShowPanel !== 'false',
@@ -339,11 +369,7 @@ function initializePlaylistElement(element) {
 
             // Patch error handler
             player.off('error', playlist.handleTrackError);
-            playlist.handleTrackError = function (e) {
-                const currentTrack = this.getCurrentTrack();
-                if (currentTrack?.src && isExternalRendererUrl(currentTrack.src)) return;
-                if (playlistOptions.autoAdvance) setTimeout(() => this.next(), 1000);
-            }.bind(playlist);
+            playlist.handleTrackError = createPlaylistErrorHandler(playlist, autoAdvance);
             player.on('error', playlist.handleTrackError);
 
             // Setup privacy interception for external media
@@ -360,151 +386,179 @@ function initializePlaylistElement(element) {
 }
 
 /**
- * Setup privacy consent interception for playlists with external media
+ * Remove privacy overlay and restore hidden elements
  */
-function setupPrivacyInterception(playlist, element, wrapperElement, tracks, autoPlayFirst) {
-    const originalLoadTrack = playlist.loadTrack.bind(playlist);
-    const originalPlay = playlist.play.bind(playlist);
+function removePrivacyOverlay(element, playlist) {
+    element.querySelector('.vidply-playlist-privacy-overlay')?.remove();
 
-    // Helper: Remove overlay and restore hidden elements
-    const removeExistingOverlay = () => {
-        element.querySelector('.vidply-playlist-privacy-overlay')?.remove();
+    const currentPlayer = playlist.player;
+    if (currentPlayer?.videoWrapper) {
+        currentPlayer.videoWrapper.style.display = '';
+        currentPlayer.videoWrapper.removeAttribute('data-vidply-hidden');
+    }
 
+    element.querySelectorAll('[data-vidply-hidden]').forEach(el => {
+        el.style.display = '';
+        el.removeAttribute('data-vidply-hidden');
+    });
+}
+
+/**
+ * Ensure autoplay after external content loads
+ */
+function ensureAutoplay(playlist) {
+    setTimeout(() => {
         const currentPlayer = playlist.player;
-        if (currentPlayer?.videoWrapper) {
-            currentPlayer.videoWrapper.style.display = '';
-            currentPlayer.videoWrapper.removeAttribute('data-vidply-hidden');
-        }
+        if (!currentPlayer) return;
 
-        element.querySelectorAll('[data-vidply-hidden]').forEach(el => {
-            el.style.display = '';
-            el.removeAttribute('data-vidply-hidden');
-        });
-    };
-
-    // Helper: Ensure autoplay after external content loads
-    const ensureAutoplay = (serviceType) => {
-        setTimeout(() => {
-            const currentPlayer = playlist.player;
-            if (!currentPlayer) return;
-
-            const tryPlay = () => {
-                try {
-                    if (currentPlayer.play) {
-                        currentPlayer.play();
-                    }
-                } catch (e) {
-                    // Autoplay might be blocked by browser
-                }
-            };
-
-            // For external services, wait for ready event or use longer timeout
-            if (typeof currentPlayer.on === 'function') {
-                currentPlayer.on('ready', () => setTimeout(tryPlay, 100));
-            }
-
-            // Also try after delays to handle different loading times
-            setTimeout(tryPlay, 500);
-            setTimeout(tryPlay, 1000);
-            setTimeout(tryPlay, 2000); // SoundCloud can be slow
-        }, 300);
-    };
-
-    // Helper: Show consent overlay then proceed
-    const showConsentThenProceed = (serviceType, track, index, proceedFn) => {
-        const currentPlayer = playlist.player;
-
-        if (currentPlayer) {
+        const tryPlay = () => {
             try {
-                currentPlayer.pause();
-                if (currentPlayer.videoWrapper) {
-                    currentPlayer.videoWrapper.style.display = 'none';
-                    currentPlayer.videoWrapper.setAttribute('data-vidply-hidden', 'true');
-                }
-                element.querySelector('.vidply-track-artwork')?.setAttribute('data-vidply-hidden', 'true');
-                element.querySelector('.vidply-track-artwork')?.style.setProperty('display', 'none');
-            } catch (e) { /* ignore */
+                currentPlayer.play?.();
+            } catch (e) {
+                // Autoplay might be blocked by browser
             }
+        };
+
+        // For external services, wait for ready event
+        if (typeof currentPlayer.on === 'function') {
+            currentPlayer.on('ready', () => setTimeout(tryPlay, AUTOPLAY_TIMEOUTS[0]));
         }
 
-        // Remove existing overlays
-        [element, element.parentElement, wrapperElement].forEach(target => {
-            target?.querySelector('.vidply-playlist-privacy-overlay')?.remove();
-        });
+        // Try after delays to handle different loading times
+        AUTOPLAY_TIMEOUTS.forEach(timeout => setTimeout(tryPlay, timeout));
+    }, OVERLAY_INSERT_DELAY);
+}
 
-        // Update playlist UI
-        playlist.currentIndex = index;
-        playlist.updatePlaylistUI?.();
-        playlist.updateTrackInfo?.(track);
+/**
+ * Pause player and hide elements before showing consent overlay
+ */
+function pauseAndHidePlayer(playlist, element) {
+    const currentPlayer = playlist.player;
+    if (!currentPlayer) return;
 
-        // Create and insert overlay
-        const overlay = createPrivacyOverlay(serviceType, track, () => {
-            // Restore visibility
-            const player = playlist.player;
-            if (player?.videoWrapper) {
-                player.videoWrapper.style.display = '';
-                player.videoWrapper.removeAttribute('data-vidply-hidden');
-            }
-            element.querySelectorAll('[data-vidply-hidden]').forEach(el => {
-                el.style.display = '';
-                el.removeAttribute('data-vidply-hidden');
-            });
-
-            // Proceed with original method
-            proceedFn();
-
-            // Autoplay after consent
-            ensureAutoplay(serviceType);
-        });
-
-        // Find insertion point
-        let insertBefore = null;
-        for (const child of element.children) {
-            if (child.classList.contains('vidply-video-wrapper') || child.classList.contains('vidply-player')) {
-                insertBefore = child;
-                break;
-            }
+    try {
+        currentPlayer.pause();
+        if (currentPlayer.videoWrapper) {
+            currentPlayer.videoWrapper.style.display = 'none';
+            currentPlayer.videoWrapper.setAttribute('data-vidply-hidden', 'true');
         }
-
-        if (insertBefore) {
-            element.insertBefore(overlay, insertBefore);
-        } else if (element.firstChild) {
-            element.insertBefore(overlay, element.firstChild);
-        } else {
-            element.appendChild(overlay);
+        const artwork = element.querySelector('.vidply-track-artwork');
+        if (artwork) {
+            artwork.setAttribute('data-vidply-hidden', 'true');
+            artwork.style.setProperty('display', 'none');
         }
-    };
+    } catch (e) {
+        // Ignore errors
+    }
+}
 
-    // Shared interceptor logic
-    const interceptTrackMethod = (index, userInitiated, originalFn) => {
+/**
+ * Restore visibility after consent
+ */
+function restorePlayerVisibility(playlist, element) {
+    const player = playlist.player;
+    if (player?.videoWrapper) {
+        player.videoWrapper.style.display = '';
+        player.videoWrapper.removeAttribute('data-vidply-hidden');
+    }
+    element.querySelectorAll('[data-vidply-hidden]').forEach(el => {
+        el.style.display = '';
+        el.removeAttribute('data-vidply-hidden');
+    });
+}
+
+/**
+ * Find insertion point for privacy overlay
+ */
+function findOverlayInsertionPoint(element) {
+    for (const child of element.children) {
+        if (child.classList.contains('vidply-video-wrapper') || child.classList.contains('vidply-player')) {
+            return child;
+        }
+    }
+    return element.firstChild;
+}
+
+/**
+ * Insert privacy overlay into DOM
+ */
+function insertPrivacyOverlay(overlay, element) {
+    const insertBefore = findOverlayInsertionPoint(element);
+    if (insertBefore) {
+        element.insertBefore(overlay, insertBefore);
+    } else {
+        element.appendChild(overlay);
+    }
+}
+
+/**
+ * Show consent overlay then proceed with track loading
+ */
+function showConsentOverlay(playlist, element, wrapperElement, serviceType, track, index, proceedFn) {
+    pauseAndHidePlayer(playlist, element);
+
+    // Remove existing overlays from all potential containers
+    [element, element.parentElement, wrapperElement].forEach(target => {
+        target?.querySelector('.vidply-playlist-privacy-overlay')?.remove();
+    });
+
+    // Update playlist UI
+    playlist.currentIndex = index;
+    playlist.updatePlaylistUI?.();
+    playlist.updateTrackInfo?.(track);
+
+    // Create and insert overlay
+    const overlay = createPrivacyOverlay(serviceType, track, () => {
+        restorePlayerVisibility(playlist, element);
+        proceedFn();
+        ensureAutoplay(playlist);
+    });
+
+    insertPrivacyOverlay(overlay, element);
+}
+
+/**
+ * Intercept track loading to handle privacy consent
+ */
+function createTrackInterceptor(playlist, element, wrapperElement, originalFn) {
+    return (index, userInitiated) => {
         const track = playlist.tracks[index];
         if (!track) return originalFn(index, userInitiated);
 
         const serviceType = getServiceType(track.src);
 
         if (serviceType && !privacyConsent.hasConsent(serviceType)) {
-            showConsentThenProceed(serviceType, track, index, () => originalFn(index, userInitiated));
+            showConsentOverlay(playlist, element, wrapperElement, serviceType, track, index, 
+                () => originalFn(index, userInitiated));
             return;
         }
 
-        removeExistingOverlay();
+        removePrivacyOverlay(element, playlist);
         const result = originalFn(index, userInitiated);
 
-        // For external services with consent, also ensure autoplay
+        // For external services with consent, ensure autoplay
         if (serviceType) {
-            ensureAutoplay(serviceType);
+            ensureAutoplay(playlist);
         }
 
         return result;
     };
+}
 
-    // Patch methods with shared logic
+/**
+ * Setup privacy consent interception for playlists with external media
+ */
+function setupPrivacyInterception(playlist, element, wrapperElement, tracks, autoPlayFirst) {
+    const originalLoadTrack = playlist.loadTrack.bind(playlist);
+    const originalPlay = playlist.play.bind(playlist);
+
+    // Patch methods with interceptor
     playlist.loadTrack = function (index) {
-        return interceptTrackMethod(index, undefined, (idx) => originalLoadTrack(idx));
+        return createTrackInterceptor(playlist, element, wrapperElement, (idx) => originalLoadTrack(idx))(index);
     };
 
     playlist.play = function (index, userInitiated) {
-        return interceptTrackMethod(index, userInitiated, (idx, ui) => originalPlay(idx, ui));
+        return createTrackInterceptor(playlist, element, wrapperElement, (idx, ui) => originalPlay(idx, ui))(index, userInitiated);
     };
 
     // Load playlist with patched methods
