@@ -37,6 +37,9 @@ $vidplyFields = [
             'minitems' => 1,
             'maxitems' => 999,
             'autoSizeMax' => 10,
+            'behaviour' => [
+                'allowLanguageSynchronization' => true,
+            ],
             'fieldControl' => [
                 'editPopup' => ['disabled' => false],
                 'addRecord' => [

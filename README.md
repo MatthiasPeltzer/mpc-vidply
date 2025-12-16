@@ -31,11 +31,11 @@ Then:
 **List Module → VidPly Media**
 
 Choose media type:
-- **HTML5 Video/Audio** - Upload MP4, WebM, MP3
-- **YouTube** - Paste video URL
-- **Vimeo** - Paste video URL  
-- **SoundCloud** - Paste track/set URL
-- **HLS** - Enter .m3u8 stream URL
+- **HTML5 Video/Audio** - Upload MP4, WebM, MP3 (VidPly player)
+- **YouTube** - Paste video URL (native YouTube player)
+- **Vimeo** - Paste video URL (native Vimeo player)
+- **SoundCloud** - Paste track/set URL (native SoundCloud player)
+- **HLS** - Enter .m3u8 stream URL (VidPly player)
 
 Add:
 - Title
@@ -68,7 +68,7 @@ For YouTube, Vimeo, and SoundCloud:
 - **No tracking** before user consent
 - **Play button overlay** with privacy notice
 - **One-click activation** - loads and plays immediately
-- **Auto-translated** - German and English supported
+- **Auto-translated** - German and English supported (only playlist, players are native)
 - **No VidPlay** - Uses native service players
 
 ## Configuration
