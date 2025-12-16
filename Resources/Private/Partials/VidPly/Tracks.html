@@ -2,12 +2,14 @@
 
 <f:for each="{captions}" as="caption">
     <track kind="{caption.kind}" src="{caption.src}" srclang="{caption.srclang}" label="{caption.label}"
+        <f:if condition="{caption.describedSrc}">data-desc-src="{caption.describedSrc}"</f:if>
         <f:if condition="{languageSelection} && {caption.srclang} == {languageSelection}"> default</f:if>>
 </f:for>
 
 <f:for each="{chapters}" as="chapter">
     <track kind="{chapter.kind}" src="{chapter.src}" srclang="{chapter.srclang}"
-        <f:if condition="{chapter.label}">label="{chapter.label}"</f:if>>
+        <f:if condition="{chapter.label}">label="{chapter.label}"</f:if>
+        <f:if condition="{chapter.describedSrc}">data-desc-src="{chapter.describedSrc}"</f:if>>
 </f:for>
 
 </html>
