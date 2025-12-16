@@ -536,24 +536,40 @@ class VidPlyProcessor implements DataProcessorInterface
             $properties = $captionFile->getProperties();
             $trackKind = $properties['tx_track_kind'] ?: 'captions';
             // Support both 'captions' and 'descriptions' track kinds
-            $textTracks[] = [
+            $trackData = [
                 'src' => $captionFile->getPublicUrl(),
                 'kind' => $trackKind,
                 'srclang' => $properties['tx_lang_code'] ?: 'en',
                 'label' => $properties['title'] ?: ($trackKind === 'descriptions' ? 'Descriptions' : 'Captions'),
             ];
+            
+            // Check for described source file (audio description version of this track)
+            $descSrcUrl = $this->getDescribedSourceUrl($captionFile);
+            if ($descSrcUrl !== null) {
+                $trackData['describedSrc'] = $descSrcUrl;
+            }
+            
+            $textTracks[] = $trackData;
         }
         
         // Chapters
         $chapterFiles = $this->fileRepository->findByRelation('tx_mpcvidply_media', 'chapters', $mediaUid);
         foreach ($chapterFiles as $chapterFile) {
             $properties = $chapterFile->getProperties();
-            $textTracks[] = [
+            $trackData = [
                 'src' => $chapterFile->getPublicUrl(),
                 'kind' => 'chapters',
                 'srclang' => $properties['tx_lang_code'] ?: 'en',
                 'label' => $properties['title'] ?: 'Chapters',
             ];
+            
+            // Check for described source file (audio description version of this track)
+            $descSrcUrl = $this->getDescribedSourceUrl($chapterFile);
+            if ($descSrcUrl !== null) {
+                $trackData['describedSrc'] = $descSrcUrl;
+            }
+            
+            $textTracks[] = $trackData;
         }
         
         if (!empty($textTracks)) {
@@ -578,6 +594,31 @@ class VidPlyProcessor implements DataProcessorInterface
         }
         
         return $track;
+    }
+
+    /**
+     * Get the public URL for the described source file of a track
+     * 
+     * The described source is an alternative VTT file to use when audio description mode is enabled.
+     * This is stored as a file reference in the tx_desc_src_file field of the track's file reference.
+     */
+    protected function getDescribedSourceUrl(FileReference $trackFileReference): ?string
+    {
+        // Get the UID of the file reference record
+        $fileReferenceUid = $trackFileReference->getUid();
+        
+        // Find file references that point to this file reference for the tx_desc_src_file field
+        $descSrcFiles = $this->fileRepository->findByRelation(
+            'sys_file_reference',
+            'tx_desc_src_file',
+            $fileReferenceUid
+        );
+        
+        if (!empty($descSrcFiles)) {
+            return $descSrcFiles[0]->getPublicUrl();
+        }
+        
+        return null;
     }
 }
 

@@ -6,7 +6,8 @@ CREATE TABLE sys_file_reference
 (
 	tx_lang_code  varchar(10) DEFAULT ''         NOT NULL,
 	tx_track_kind varchar(50) DEFAULT 'captions' NOT NULL,
-    tx_quality_label varchar(50)         DEFAULT ''  NOT NULL
+    tx_quality_label varchar(50)         DEFAULT ''  NOT NULL,
+    tx_desc_src_file int(11) unsigned DEFAULT '0' NOT NULL
 );
 
 #

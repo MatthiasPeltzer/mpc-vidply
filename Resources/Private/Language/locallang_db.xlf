@@ -226,6 +226,15 @@
             <trans-unit id="sys_file_reference.tx_track_kind.metadata">
                 <source>Metadata</source>
             </trans-unit>
+            <trans-unit id="sys_file_reference.tx_desc_src_file">
+                <source>Audio Description Version</source>
+            </trans-unit>
+            <trans-unit id="sys_file_reference.tx_desc_src_file.description">
+                <source>Alternative VTT file to use when audio description mode is enabled. This file is used instead of the main track when the user activates audio description.</source>
+            </trans-unit>
+            <trans-unit id="sys_file_reference.tx_desc_src_file.add">
+                <source>Select audio description version</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

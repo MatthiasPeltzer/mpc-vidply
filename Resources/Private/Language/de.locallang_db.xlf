@@ -289,6 +289,18 @@
                 <source>Metadata</source>
                 <target>Metadaten</target>
             </trans-unit>
+            <trans-unit id="sys_file_reference.tx_desc_src_file">
+                <source>Audio Description Version</source>
+                <target>Audiodeskriptions-Version</target>
+            </trans-unit>
+            <trans-unit id="sys_file_reference.tx_desc_src_file.description">
+                <source>Alternative VTT file to use when audio description mode is enabled. This file is used instead of the main track when the user activates audio description.</source>
+                <target>Alternative VTT-Datei, die verwendet wird, wenn der Audiodeskriptionsmodus aktiviert ist. Diese Datei ersetzt die Hauptspur, wenn der Benutzer die Audiodeskription aktiviert.</target>
+            </trans-unit>
+            <trans-unit id="sys_file_reference.tx_desc_src_file.add">
+                <source>Select audio description version</source>
+                <target>Audiodeskriptions-Version auswählen</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

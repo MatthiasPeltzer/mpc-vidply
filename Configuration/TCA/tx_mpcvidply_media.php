@@ -533,6 +533,29 @@ return [
                                 'default' => 'captions',
                             ],
                         ],
+                        'tx_desc_src_file' => [
+                            'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:sys_file_reference.tx_desc_src_file',
+                            'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:sys_file_reference.tx_desc_src_file.description',
+                            'config' => [
+                                'type' => 'file',
+                                'allowed' => 'vtt',
+                                'maxitems' => 1,
+                                'overrideChildTca' => [
+                                    'columns' => [
+                                        'title' => [
+                                            'config' => [
+                                                'type' => 'passthrough',
+                                            ],
+                                        ],
+                                        'description' => [
+                                            'config' => [
+                                                'type' => 'passthrough',
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
                         'description' => [
                             'config' => [
                                 'type' => 'passthrough',
@@ -549,6 +572,7 @@ return [
                             'showitem' => '
                                 tx_track_kind,title,tx_lang_code,
                                 --palette--;;filePalette,
+                                tx_desc_src_file,
                             ',
                         ],
                     ],
@@ -599,6 +623,29 @@ return [
                                 'default' => 'chapters',
                             ],
                         ],
+                        'tx_desc_src_file' => [
+                            'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:sys_file_reference.tx_desc_src_file',
+                            'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:sys_file_reference.tx_desc_src_file.description',
+                            'config' => [
+                                'type' => 'file',
+                                'allowed' => 'vtt',
+                                'maxitems' => 1,
+                                'overrideChildTca' => [
+                                    'columns' => [
+                                        'title' => [
+                                            'config' => [
+                                                'type' => 'passthrough',
+                                            ],
+                                        ],
+                                        'description' => [
+                                            'config' => [
+                                                'type' => 'passthrough',
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
                         'description' => [
                             'config' => [
                                 'type' => 'passthrough',
@@ -615,6 +662,7 @@ return [
                             'showitem' => '
                                 title,tx_lang_code,tx_track_kind,
                                 --palette--;;filePalette,
+                                tx_desc_src_file,
                             ',
                         ],
                     ],
