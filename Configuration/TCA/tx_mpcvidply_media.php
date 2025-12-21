@@ -30,7 +30,6 @@ return [
         'transOrigPointerField' => 'l10n_parent',
         'transOrigDiffSourceField' => 'l10n_diffsource',
         'translationSource' => 'l10n_source',
-        'searchFields' => 'title,artist,description,media_url',
         'iconfile' => 'EXT:mpc_vidply/Resources/Public/Icons/Extension.svg',
         'security' => [
             'ignorePageTypeRestriction' => true,
@@ -306,6 +305,7 @@ return [
             'config' => [
                 'type' => 'datetime',
                 'default' => 0,
+                'searchable' => false,
             ],
         ],
         'endtime' => [
@@ -317,6 +317,7 @@ return [
                 'range' => [
                     'upper' => mktime(0, 0, 0, 1, 1, 2038),
                 ],
+                'searchable' => false,
             ],
         ],
         'media_type' => [
