@@ -1,16 +1,29 @@
 <html data-namespace-typo3-fluid="true" xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers">
 
+<f:variable name="settings" value="{privacySettings.{service}}" />
+<f:variable name="headline" value="{settings.headline}" />
+<f:variable name="introText" value="{settings.intro_text}" />
+<f:variable name="outroText" value="{settings.outro_text}" />
+<f:variable name="policyLink" value="{settings.policy_link}" />
+<f:variable name="linkText" value="{settings.link_text -> f:format.trim()}" />
+<f:variable name="buttonLabel" value="{settings.button_label}" />
+
 <div class="vidply-privacy-layer vidply-privacy-{service}" 
      data-vidply-privacy="{service}"
      data-vidply-url="{videoUrl}"
      data-vidply-id="{uniqueId}"
-     style="position: relative; width: 100%; padding-bottom: 56.25%; background-color: var(--bs-gray-dark, #343a40); <f:if condition="{poster}">background-image: url('{poster}'); background-size: cover; background-position: center;</f:if> overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+     <f:if condition="{poster}">style="background-image: url('{poster}'); background-size: cover; background-position: center;"</f:if>>
     
+    <f:variable name="finalButtonLabel">
+        <f:if condition="{buttonLabel}">
+            <f:then>{buttonLabel}</f:then>
+            <f:else>{f:translate(key: 'privacy.load_content', arguments: {0: service}, extensionName: 'mpc_vidply')}</f:else>
+        </f:if>
+    </f:variable>
     <button class="vidply-privacy-button" 
             type="button"
-            aria-label="{f:translate(key: 'privacy.load_content', arguments: {0: service}, extensionName: 'mpc_vidply')}"
-            style="background: transparent; border: none; cursor: pointer; padding: 0; transition: transform 0.3s ease; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;">
-        <svg class="vidply-play-overlay" viewBox="0 0 80 80" width="80" height="80" aria-hidden="true" role="presentation" style="cursor: pointer;">
+            aria-label="{finalButtonLabel}">
+        <svg class="vidply-play-overlay" viewBox="0 0 80 80" width="80" height="80" aria-hidden="true" role="presentation">
             <defs>
                 <filter id="vidply-play-shadow-privacy-{uniqueId}" x="-50%" y="-50%" width="200%" height="200%">
                     <feGaussianBlur in="SourceAlpha" stdDeviation="3"></feGaussianBlur>
@@ -24,30 +37,38 @@
         </svg>
     </button>
     
-    <div class="vidply-privacy-text" style="position: absolute; bottom: 0; left: 0; right: 0; color: #fff; background: rgba(0, 0, 0, 0.8); padding: 1rem; text-align: center; z-index: 9;">
-        <p style="margin: 0; font-size: 0.85rem;">
-            <f:if condition="{service} == 'soundcloud'">
-                <f:then><f:translate key="privacy.activate_intro_widget" extensionName="mpc_vidply" /></f:then>
-                <f:else><f:translate key="privacy.activate_intro" extensionName="mpc_vidply" /></f:else>
+    <div class="vidply-privacy-text">
+
+        <p>
+            <f:if condition="{headline}">
+                <span class="h6">{headline}</span>
             </f:if>
-            <f:switch expression="{service}">
-                <f:case value="youtube">
-                    <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" style="color: #fff; text-decoration: underline;">
-                        <f:translate key="privacy.youtube.policy_link" extensionName="mpc_vidply" />
-                    </a>
-                </f:case>
-                <f:case value="vimeo">
-                    <a href="https://vimeo.com/privacy" target="_blank" rel="noopener noreferrer" style="color: #fff; text-decoration: underline;">
-                        <f:translate key="privacy.vimeo.policy_link" extensionName="mpc_vidply" />
-                    </a>
-                </f:case>
-                <f:case value="soundcloud">
-                    <a href="https://soundcloud.com/pages/privacy" target="_blank" rel="noopener noreferrer" style="color: #fff; text-decoration: underline;">
-                        <f:translate key="privacy.soundcloud.policy_link" extensionName="mpc_vidply" />
-                    </a>
-                </f:case>
-            </f:switch>
-            <f:translate key="privacy.activate_outro" extensionName="mpc_vidply" />
+            <f:if condition="{introText}">
+                <f:then>{introText}</f:then>
+                <f:else>
+                    <f:if condition="{service} == 'soundcloud'">
+                        <f:then><f:translate key="privacy.activate_intro_widget" extensionName="mpc_vidply" /></f:then>
+                        <f:else><f:translate key="privacy.activate_intro" extensionName="mpc_vidply" /></f:else>
+                    </f:if>
+                </f:else>
+            </f:if>
+            <f:variable name="finalPolicyLink">
+                <f:if condition="{policyLink}">
+                    <f:then>{policyLink}</f:then>
+                    <f:else>
+                        <f:switch expression="{service}">
+                            <f:case value="youtube">https://policies.google.com/privacy</f:case>
+                            <f:case value="vimeo">https://vimeo.com/privacy</f:case>
+                            <f:case value="soundcloud">https://soundcloud.com/pages/privacy</f:case>
+                        </f:switch>
+                    </f:else>
+                </f:if>
+            </f:variable>
+            <a href="{finalPolicyLink}" class="external-link" target="_blank" rel="noreferrer"><f:if condition="{linkText}"><f:then>{linkText}</f:then><f:else><f:switch expression="{service}"><f:case value="youtube"><f:translate key="privacy.youtube.policy_link" extensionName="mpc_vidply" /></f:case><f:case value="vimeo"><f:translate key="privacy.vimeo.policy_link" extensionName="mpc_vidply" /></f:case><f:case value="soundcloud"><f:translate key="privacy.soundcloud.policy_link" extensionName="mpc_vidply" /></f:case></f:switch></f:else></f:if></a>
+            <f:if condition="{outroText}">
+                <f:then>{outroText}</f:then>
+                <f:else><f:translate key="privacy.activate_outro" extensionName="mpc_vidply" /></f:else>
+            </f:if>
         </p>
     </div>
 </div>

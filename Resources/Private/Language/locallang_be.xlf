@@ -178,6 +178,11 @@
             <trans-unit id="tt_content.tx_mpcvidply_playlist_items.description">
                 <source>Add media items (video or audio files). Each item can have its own title, poster, captions, chapters, audio description, and sign language video. Add 1 item for a single video/audio, or multiple items to create a playlist.</source>
             </trans-unit>
+            
+            <!-- Privacy Settings Table -->
+            <trans-unit id="tx_mpcvidply_privacy_settings">
+                <source>Privacy Layer Settings</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

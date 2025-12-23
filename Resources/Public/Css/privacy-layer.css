@@ -1,0 +1,129 @@
+/* Privacy Layer Styles for VidPly Extension */
+
+.vidply-privacy-layer {
+    align-items: center;
+    background-color: var(--bs-gray-dark, #343a40);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    position: relative;
+    width: 100%;
+}
+
+/* Playlist-specific privacy overlay */
+.vidply-playlist-privacy-overlay {
+    height: 0;
+    overflow: visible;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    pointer-events: auto;
+    position: relative;
+    width: 100%;
+    z-index: 9999;
+}
+
+.vidply-privacy-inner-container {
+    align-items: center;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.vidply-privacy-layer.vidply-privacy-youtube,
+.vidply-privacy-layer.vidply-privacy-vimeo,
+.vidply-privacy-layer.vidply-privacy-soundcloud {
+    /* Background image can be set inline via style attribute for poster */
+}
+
+.vidply-privacy-button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    left: 50%;
+    padding: 0;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transition: transform 0.3s ease;
+    z-index: 10;
+}
+
+.vidply-privacy-button:hover {
+    transform: translate(-50%, -50%) scale(1.05);
+}
+
+.vidply-play-overlay {
+    cursor: pointer;
+}
+
+.vidply-play-overlay-bg {
+    fill: rgb(255 255 255 / 95%);
+}
+
+.vidply-play-overlay-icon {
+    fill: #0a406e;
+}
+
+.vidply-privacy-text {
+    background: rgb(0 0 0 / 80%);
+    bottom: 0;
+    color: #fff;
+    left: 0;
+    padding: 0.5rem;
+    position: absolute;
+    right: 0;
+    text-align: center;
+    z-index: 9;
+}
+
+@media (width >= 768px) {
+    .vidply-privacy-text {
+        padding: 1rem;
+    }
+}
+
+@media (width < 768px) {
+    a .icon::before {
+        height: 0.75rem;
+        mask-size: 0.75rem;
+        top: 0.0625rem;
+    }
+}
+
+.vidply-privacy-text .h6 {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin: 0 0 0.25rem;
+    text-align: center;
+}
+
+.vidply-privacy-text p {
+    font-size: 0.625rem;
+    margin: 0;
+}
+
+@media (width >= 768px) {
+    .vidply-privacy-text .h6 {
+        font-size: 1rem;
+    }
+
+    .vidply-privacy-text p {
+        font-size: 0.85rem;
+    }
+}
+
+.vidply-privacy-text a {
+    color: #fff;
+    text-decoration: underline;
+}
+
+.vidply-privacy-text a:hover {
+    text-decoration: none;
+}

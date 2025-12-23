@@ -8,7 +8,7 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 
 | Flag | Loads | When |
 |------|-------|------|
-| `needsPrivacyLayer` | PrivacyLayer.js | YouTube, Vimeo, or SoundCloud present |
+| `needsPrivacyLayer` | PrivacyLayer.js + privacy-layer.css | YouTube, Vimeo, or SoundCloud present |
 | `needsVidPlay` | VidPlay core (vidply.esm.min.js, VidPlyWrapper.js) | Local video/audio or HLS (not external services) |
 | `needsPlaylist` | PlaylistInit.js | 2+ media items OR native player |
 | `needsHLS` | hls.js (CDN) | HLS stream (.m3u8) detected |
@@ -20,6 +20,7 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 ### Single YouTube Video
 **Loaded:**
 - vidply.min.css (styling)
+- privacy-layer.css (privacy layer styles)
 - PrivacyLayer.js (consent handling)
 
 **Not Loaded:**
@@ -60,11 +61,12 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 ### Mixed Playlist (YouTube + Vimeo)
 **Loaded:**
 - vidply.min.css
+- privacy-layer.css
 - PrivacyLayer.js
+- PlaylistInit.js (for playlist management)
 
 **Not Loaded:**
 - VidPlay player (external services use native players)
-- PlaylistInit.js (external services don't use playlists)
 - hls.js
 
 ## Performance Impact
@@ -74,7 +76,7 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 - Total: ~350KB (including hls.js from CDN)
 
 **After optimization:**
-- Single YouTube: ~5KB (PrivacyLayer.js only)
+- Single YouTube: ~7KB (PrivacyLayer.js + privacy-layer.css)
 - Single local video: ~180KB (VidPlay core + PlaylistInit)
 - HLS stream: ~530KB (VidPlay + PlaylistInit + hls.js)
 

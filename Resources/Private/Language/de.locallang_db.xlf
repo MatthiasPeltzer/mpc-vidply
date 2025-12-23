@@ -301,6 +301,166 @@
                 <source>Select audio description version</source>
                 <target>Audiodeskriptions-Version auswählen</target>
             </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_privacy_settings.tabs.youtube">
+                <source>YouTube</source>
+                <target>YouTube</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.tabs.vimeo">
+                <source>Vimeo</source>
+                <target>Vimeo</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.tabs.soundcloud">
+                <source>SoundCloud</source>
+                <target>SoundCloud</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_privacy_settings.youtube_headline">
+                <source>Headline (optional)</source>
+                <target>Überschrift (optional)</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.youtube_headline.description">
+                <source>Optional headline displayed above the privacy text</source>
+                <target>Optionale Überschrift, die über dem Datenschutztext angezeigt wird</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.youtube_intro_text">
+                <source>Intro Text</source>
+                <target>Einleitungstext</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.youtube_intro_text.description">
+                <source>Text displayed before the privacy policy link (e.g., "To activate the video, you must click on the button. After activating the button,")</source>
+                <target>Text, der vor dem Datenschutzrichtlinien-Link angezeigt wird (z.B. "Um das Video zu aktivieren, müssen Sie auf die Schaltfläche klicken. Nach Aktivierung der Schaltfläche,")</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.youtube_outro_text">
+                <source>Outro Text</source>
+                <target>Abschlusstext</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.youtube_outro_text.description">
+                <source>Text displayed after the privacy policy link (e.g., "applies.")</source>
+                <target>Text, der nach dem Datenschutzrichtlinien-Link angezeigt wird (z.B. "gilt.")</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.youtube_policy_link">
+                <source>Privacy Policy Link</source>
+                <target>Datenschutzrichtlinien-Link</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.youtube_policy_link.description">
+                <source>URL to the privacy policy page (e.g., "https://policies.google.com/privacy")</source>
+                <target>URL zur Datenschutzrichtlinien-Seite (z.B. "https://policies.google.com/privacy")</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.youtube_link_text">
+                <source>Link Text</source>
+                <target>Link-Text</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.youtube_link_text.description">
+                <source>Text displayed as the clickable link. If empty, uses default translation.</source>
+                <target>Text, der als klickbarer Link angezeigt wird. Wenn leer, wird die Standard-Übersetzung verwendet.</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.youtube_button_label">
+                <source>Button Label (optional)</source>
+                <target>Schaltflächen-Beschriftung (optional)</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.youtube_button_label.description">
+                <source>Accessible label for the play button. If empty, uses default translation.</source>
+                <target>Barrierefreie Beschriftung für die Wiedergabe-Schaltfläche. Wenn leer, wird die Standard-Übersetzung verwendet.</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_privacy_settings.vimeo_headline">
+                <source>Headline (optional)</source>
+                <target>Überschrift (optional)</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.vimeo_headline.description">
+                <source>Optional headline displayed above the privacy text</source>
+                <target>Optionale Überschrift, die über dem Datenschutztext angezeigt wird</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.vimeo_intro_text">
+                <source>Intro Text</source>
+                <target>Einleitungstext</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.vimeo_intro_text.description">
+                <source>Text displayed before the privacy policy link (e.g., "To activate the video, you must click on the button. After activating the button,")</source>
+                <target>Text, der vor dem Datenschutzrichtlinien-Link angezeigt wird (z.B. "Um das Video zu aktivieren, müssen Sie auf die Schaltfläche klicken. Nach Aktivierung der Schaltfläche,")</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.vimeo_outro_text">
+                <source>Outro Text</source>
+                <target>Abschlusstext</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.vimeo_outro_text.description">
+                <source>Text displayed after the privacy policy link (e.g., "applies.")</source>
+                <target>Text, der nach dem Datenschutzrichtlinien-Link angezeigt wird (z.B. "gilt.")</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.vimeo_policy_link">
+                <source>Privacy Policy Link</source>
+                <target>Datenschutzrichtlinien-Link</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.vimeo_policy_link.description">
+                <source>URL to the privacy policy page (e.g., "https://vimeo.com/privacy")</source>
+                <target>URL zur Datenschutzrichtlinien-Seite (z.B. "https://vimeo.com/privacy")</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.vimeo_link_text">
+                <source>Link Text</source>
+                <target>Link-Text</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.vimeo_link_text.description">
+                <source>Text displayed as the clickable link. If empty, uses default translation.</source>
+                <target>Text, der als klickbarer Link angezeigt wird. Wenn leer, wird die Standard-Übersetzung verwendet.</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.vimeo_button_label">
+                <source>Button Label (optional)</source>
+                <target>Schaltflächen-Beschriftung (optional)</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.vimeo_button_label.description">
+                <source>Accessible label for the play button. If empty, uses default translation.</source>
+                <target>Barrierefreie Beschriftung für die Wiedergabe-Schaltfläche. Wenn leer, wird die Standard-Übersetzung verwendet.</target>
+            </trans-unit>
+            
+            <trans-unit id="tx_mpcvidply_privacy_settings.soundcloud_headline">
+                <source>Headline (optional)</source>
+                <target>Überschrift (optional)</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.soundcloud_headline.description">
+                <source>Optional headline displayed above the privacy text</source>
+                <target>Optionale Überschrift, die über dem Datenschutztext angezeigt wird</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.soundcloud_intro_text">
+                <source>Intro Text</source>
+                <target>Einleitungstext</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.soundcloud_intro_text.description">
+                <source>Text displayed before the privacy policy link (e.g., "To activate the widget, you must click on the button. After activating the button,")</source>
+                <target>Text, der vor dem Datenschutzrichtlinien-Link angezeigt wird (z.B. "Um das Widget zu aktivieren, müssen Sie auf die Schaltfläche klicken. Nach Aktivierung der Schaltfläche,")</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.soundcloud_outro_text">
+                <source>Outro Text</source>
+                <target>Abschlusstext</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.soundcloud_outro_text.description">
+                <source>Text displayed after the privacy policy link (e.g., "applies.")</source>
+                <target>Text, der nach dem Datenschutzrichtlinien-Link angezeigt wird (z.B. "gilt.")</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.soundcloud_policy_link">
+                <source>Privacy Policy Link</source>
+                <target>Datenschutzrichtlinien-Link</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.soundcloud_policy_link.description">
+                <source>URL to the privacy policy page (e.g., "https://soundcloud.com/pages/privacy")</source>
+                <target>URL zur Datenschutzrichtlinien-Seite (z.B. "https://soundcloud.com/pages/privacy")</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.soundcloud_link_text">
+                <source>Link Text</source>
+                <target>Link-Text</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.soundcloud_link_text.description">
+                <source>Text displayed as the clickable link. If empty, uses default translation.</source>
+                <target>Text, der als klickbarer Link angezeigt wird. Wenn leer, wird die Standard-Übersetzung verwendet.</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.soundcloud_button_label">
+                <source>Button Label (optional)</source>
+                <target>Schaltflächen-Beschriftung (optional)</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_privacy_settings.soundcloud_button_label.description">
+                <source>Accessible label for the play button. If empty, uses default translation.</source>
+                <target>Barrierefreie Beschriftung für die Wiedergabe-Schaltfläche. Wenn leer, wird die Standard-Übersetzung verwendet.</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

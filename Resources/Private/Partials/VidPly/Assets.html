@@ -2,8 +2,11 @@
 
 <f:asset.css href="EXT:mpc_vidply/Resources/Public/Css/vidply.min.css" identifier="vidplyCSS"/>
 
-<f:if condition="{needsPrivacyLayer} && !{needsPlaylist}">
-    <f:asset.script identifier="vidPlyPrivacy" src="EXT:mpc_vidply/Resources/Public/JavaScript/PrivacyLayer.min.js" type="module"/>
+<f:if condition="{needsPrivacyLayer}">
+    <f:asset.css href="EXT:mpc_vidply/Resources/Public/Css/privacy-layer.css" identifier="vidplyPrivacyLayerCSS"/>
+    <f:if condition="!{needsPlaylist}">
+        <f:asset.script identifier="vidPlyPrivacy" src="EXT:mpc_vidply/Resources/Public/JavaScript/PrivacyLayer.min.js" type="module"/>
+    </f:if>
 </f:if>
 
 <f:if condition="{needsHLS}">

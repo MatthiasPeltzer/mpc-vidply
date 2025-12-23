@@ -88,3 +88,53 @@ CREATE TABLE tx_mpcvidply_content_media_mm (
 	KEY uid_foreign (uid_foreign)
 );
 
+#
+# Table structure for table 'tx_mpcvidply_privacy_settings'
+# Site-wide privacy layer configuration for external services
+# Supports multilingual content via sys_language_uid
+#
+CREATE TABLE tx_mpcvidply_privacy_settings (
+	uid int(11) NOT NULL auto_increment,
+	pid int(11) DEFAULT '0' NOT NULL,
+	
+	# YouTube Settings
+	youtube_headline varchar(255) DEFAULT '' NOT NULL,
+	youtube_intro_text text,
+	youtube_outro_text text,
+	youtube_policy_link varchar(255) DEFAULT '' NOT NULL,
+	youtube_link_text varchar(255) DEFAULT '' NOT NULL,
+	youtube_button_label varchar(255) DEFAULT '' NOT NULL,
+	
+	# Vimeo Settings
+	vimeo_headline varchar(255) DEFAULT '' NOT NULL,
+	vimeo_intro_text text,
+	vimeo_outro_text text,
+	vimeo_policy_link varchar(255) DEFAULT '' NOT NULL,
+	vimeo_link_text varchar(255) DEFAULT '' NOT NULL,
+	vimeo_button_label varchar(255) DEFAULT '' NOT NULL,
+	
+	# SoundCloud Settings
+	soundcloud_headline varchar(255) DEFAULT '' NOT NULL,
+	soundcloud_intro_text text,
+	soundcloud_outro_text text,
+	soundcloud_policy_link varchar(255) DEFAULT '' NOT NULL,
+	soundcloud_link_text varchar(255) DEFAULT '' NOT NULL,
+	soundcloud_button_label varchar(255) DEFAULT '' NOT NULL,
+	
+	# Standard TYPO3 fields
+	tstamp int(11) unsigned DEFAULT '0' NOT NULL,
+	crdate int(11) unsigned DEFAULT '0' NOT NULL,
+	cruser_id int(11) unsigned DEFAULT '0' NOT NULL,
+	deleted tinyint(4) unsigned DEFAULT '0' NOT NULL,
+	hidden tinyint(4) unsigned DEFAULT '0' NOT NULL,
+	
+	# Language/Translation fields
+	sys_language_uid int(11) DEFAULT '0' NOT NULL,
+	l10n_parent int(11) DEFAULT '0' NOT NULL,
+	l10n_diffsource mediumblob,
+	
+	PRIMARY KEY (uid),
+	KEY parent (pid),
+	KEY language (l10n_parent,sys_language_uid)
+);
+

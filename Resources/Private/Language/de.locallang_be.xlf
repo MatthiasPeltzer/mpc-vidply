@@ -234,6 +234,12 @@
                 <source>Add media items (video or audio files). Each item can have its own title, poster, captions, chapters, audio description, and sign language video. Add 1 item for a single video/audio, or multiple items to create a playlist.</source>
                 <target>Fügen Sie Medien-Elemente hinzu (Video- oder Audiodateien). Jedes Element kann einen eigenen Titel, Vorschaubild, Untertitel, Kapitel, Audiodeskription und Gebärdensprach-Video haben. Fügen Sie 1 Element für ein einzelnes Video/Audio hinzu, oder mehrere Elemente um eine Wiedergabeliste zu erstellen.</target>
             </trans-unit>
+            
+            <!-- Privacy Settings Table -->
+            <trans-unit id="tx_mpcvidply_privacy_settings">
+                <source>Privacy Layer Settings</source>
+                <target>Datenschutz-Einstellungen</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

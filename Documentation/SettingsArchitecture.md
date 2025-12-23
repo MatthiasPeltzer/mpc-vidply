@@ -4,6 +4,20 @@ Analysis of settings distribution between Player (content element) and Media Ite
 
 ## Current Architecture
 
+### Privacy Layer Settings (tx_mpcvidply_privacy_settings)
+**Site-wide settings for external service privacy layers:**
+
+| Setting | Type | Description |
+|---------|------|-------------|
+| Headline | String | Optional headline above privacy text |
+| Intro Text | Text | Text before privacy policy link |
+| Outro Text | Text | Text after privacy policy link |
+| Policy Link | String | URL to privacy policy page |
+| Link Text | String | Text for privacy policy link |
+| Button Label | String | Accessible label for play button |
+
+Available for YouTube, Vimeo, and SoundCloud. Supports multilingual content via `sys_language_uid`. Empty fields fall back to language file translations.
+
 ### Player Settings (tt_content)
 **Global settings that apply to entire player instance:**
 
@@ -52,6 +66,13 @@ Analysis of settings distribution between Player (content element) and Media Ite
 
 ## Best Practices
 
+### Privacy Layer Settings (Site-Wide)
+Use for settings that should be **consistent across all external services**:
+- Privacy notice texts
+- Policy links
+- Button labels
+- Multilingual translations
+
 ### Player-Level (Global)
 Use for settings that should be **consistent across all tracks**:
 - UI behavior (controls, keyboard)
@@ -69,9 +90,11 @@ Use for settings that are **specific to content**:
 ## Rationale
 
 This separation provides:
-- **Consistency** - Same player UX for all tracks
+- **Consistency** - Same privacy layer UX across all external services
+- **Centralization** - Privacy texts managed in one place
+- **Multilingual** - Privacy settings can be translated per language
 - **Flexibility** - Per-item content customization
-- **Maintainability** - Clear distinction between global/local settings
+- **Maintainability** - Clear distinction between site-wide/global/local settings
 - **Reusability** - Media items work in different contexts
 
 ## Future Considerations
