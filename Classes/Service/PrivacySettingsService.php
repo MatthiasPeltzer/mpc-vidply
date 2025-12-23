@@ -47,11 +47,14 @@ class PrivacySettingsService
         $settings = $this->getAllSettings($languageId);
         
         if ($settings === null) {
-            // Return empty array with fallbacks
+            // No record exists at all - use language file fallbacks
             return $this->getFallbackSettings($service, $languageId);
         }
         
         $serviceKey = $service . '_';
+        $recordLanguageId = (int)($settings['sys_language_uid'] ?? 0);
+        
+        // Extract values from database
         $result = [
             'headline' => $settings[$serviceKey . 'headline'] ?? '',
             'intro_text' => $settings[$serviceKey . 'intro_text'] ?? '',
@@ -61,31 +64,45 @@ class PrivacySettingsService
             'button_label' => $settings[$serviceKey . 'button_label'] ?? '',
         ];
         
-        // Fallback to default language if current language has empty values
-        if (empty($result['intro_text']) && $languageId > 0) {
-            $defaultSettings = $this->getAllSettings(0);
-            if ($defaultSettings !== null) {
-                $result['headline'] = $defaultSettings[$serviceKey . 'headline'] ?? '';
-                $result['intro_text'] = $defaultSettings[$serviceKey . 'intro_text'] ?? '';
-                $result['outro_text'] = $defaultSettings[$serviceKey . 'outro_text'] ?? '';
-                $result['policy_link'] = $defaultSettings[$serviceKey . 'policy_link'] ?? '';
-                $result['link_text'] = $defaultSettings[$serviceKey . 'link_text'] ?? '';
-                $result['button_label'] = $defaultSettings[$serviceKey . 'button_label'] ?? '';
+        // For translated languages (languageId > 0):
+        // - If translated record exists but is empty, use language file fallbacks (not default language DB values)
+        // - If no translated record exists (we got default language record), use language file fallbacks
+        // For default language (languageId === 0):
+        // - Use default language DB values if set, otherwise language file fallbacks
+        if ($languageId > 0) {
+            // Check if we actually got a translated record
+            if ($recordLanguageId === $languageId) {
+                // Translated record exists - if empty, use language file fallbacks for this language
+                if (empty($result['intro_text'])) {
+                    $result['intro_text'] = $this->getDefaultIntroText($service, $languageId);
+                }
+                if (empty($result['outro_text'])) {
+                    $result['outro_text'] = $this->getDefaultOutroText($languageId);
+                }
+                if (empty($result['policy_link'])) {
+                    $result['policy_link'] = $this->getDefaultPolicyLink($service);
+                }
+                if (empty($result['link_text'])) {
+                    $result['link_text'] = $this->getDefaultLinkText($service, $languageId);
+                }
+            } else {
+                // No translated record exists (we got default language record) - use language file fallbacks for requested language
+                $result = $this->getFallbackSettings($service, $languageId);
             }
-        }
-        
-        // Fallback to language file translations if still empty
-        if (empty($result['intro_text'])) {
-            $result['intro_text'] = $this->getDefaultIntroText($service, $languageId);
-        }
-        if (empty($result['outro_text'])) {
-            $result['outro_text'] = $this->getDefaultOutroText($languageId);
-        }
-        if (empty($result['policy_link'])) {
-            $result['policy_link'] = $this->getDefaultPolicyLink($service);
-        }
-        if (empty($result['link_text'])) {
-            $result['link_text'] = $this->getDefaultLinkText($service, $languageId);
+        } else {
+            // Default language (languageId === 0) - use language file fallbacks if DB values are empty
+            if (empty($result['intro_text'])) {
+                $result['intro_text'] = $this->getDefaultIntroText($service, $languageId);
+            }
+            if (empty($result['outro_text'])) {
+                $result['outro_text'] = $this->getDefaultOutroText($languageId);
+            }
+            if (empty($result['policy_link'])) {
+                $result['policy_link'] = $this->getDefaultPolicyLink($service);
+            }
+            if (empty($result['link_text'])) {
+                $result['link_text'] = $this->getDefaultLinkText($service, $languageId);
+            }
         }
         
         return $result;
