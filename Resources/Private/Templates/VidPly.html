@@ -24,7 +24,8 @@
                     videoUrl: vidply.videoUrl,
                     poster: vidply.poster,
                     title: data.header,
-                    uniqueId: vidply.uniqueId
+                    uniqueId: vidply.uniqueId,
+                    privacySettings: vidply.privacySettings
                 }" />
             </f:then>
             <f:else>
@@ -151,6 +152,7 @@
         data-playlist-show-panel="{f:if(condition: vidply.playlistData.options.showPanel, then: 'true', else: 'false')}"
         data-playlist-has-external="true"
         data-playlist-external-services='{f:format.json(value: vidply.externalServiceTypes)}'
+        data-playlist-privacy-settings='{f:format.json(value: vidply.privacySettings)}'
         data-vidply-media-type="{vidply.mediaType}"
     ></div>
 </f:section>

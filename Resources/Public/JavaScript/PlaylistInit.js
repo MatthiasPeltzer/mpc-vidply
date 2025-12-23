@@ -166,42 +166,61 @@ const getPrivacyPolicyLinkText = (service) => getTranslation(TRANSLATION_KEY_MAP
 const getButtonAriaLabel = (service) => getTranslation(TRANSLATION_KEY_MAP.buttonLabel[service] || 'loadDefault');
 
 /**
+ * Get privacy settings for a service, with fallback to translations
+ */
+function getPrivacySettings(service, privacySettings) {
+    const settings = privacySettings?.[service];
+    if (!settings) {
+        // Fallback to hardcoded translations
+        return {
+            headline: '',
+            intro_text: getPrivacyIntroText(service),
+            outro_text: getTranslation('applies'),
+            policy_link: getPrivacyPolicyUrl(service),
+            link_text: getPrivacyPolicyLinkText(service),
+            button_label: getButtonAriaLabel(service)
+        };
+    }
+
+    // Use database settings, with fallback to translations if empty
+    return {
+        headline: settings.headline || '',
+        intro_text: settings.intro_text || getPrivacyIntroText(service),
+        outro_text: settings.outro_text || getTranslation('applies'),
+        policy_link: settings.policy_link || getPrivacyPolicyUrl(service),
+        link_text: settings.link_text || getPrivacyPolicyLinkText(service),
+        button_label: settings.button_label || getButtonAriaLabel(service)
+    };
+}
+
+/**
  * Create the privacy consent overlay for a playlist track
  */
-function createPrivacyOverlay(service, track, onConsent) {
+function createPrivacyOverlay(service, track, onConsent, privacySettings = null) {
+    const settings = getPrivacySettings(service, privacySettings);
+
     const overlay = document.createElement('div');
     overlay.className = `vidply-playlist-privacy-overlay vidply-privacy-layer vidply-privacy-${service}`;
     overlay.setAttribute('data-privacy-service', service);
 
-    const bgStyle = track.poster
-        ? `background-color: #1a1a1a; background-image: url('${track.poster}'); background-size: cover; background-position: center;`
-        : 'background-color: #1a1a1a;';
-
-    overlay.style.cssText = `
-        position: relative !important; padding-bottom: 56.25% !important; height: 0 !important;
-        width: 100% !important; z-index: 9999 !important; overflow: visible !important;
-        pointer-events: auto !important; ${bgStyle}
-    `;
+    // Only set background image inline if poster exists (dynamic content)
+    if (track.poster) {
+        overlay.style.backgroundImage = `url('${track.poster}')`;
+        overlay.style.backgroundSize = 'cover';
+        overlay.style.backgroundPosition = 'center';
+    }
 
     const innerContainer = document.createElement('div');
-    innerContainer.style.cssText = `
-        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-    `;
+    innerContainer.className = 'vidply-privacy-inner-container';
 
     const playButton = document.createElement('button');
     playButton.className = 'vidply-privacy-button';
     playButton.type = 'button';
-    playButton.setAttribute('aria-label', getButtonAriaLabel(service));
-    playButton.style.cssText = `
-        background: transparent; border: none; cursor: pointer; padding: 0;
-        transition: transform 0.3s ease; position: absolute; top: 50%; left: 50%;
-        transform: translate(-50%, -50%); z-index: 10;
-    `;
+    playButton.setAttribute('aria-label', settings.button_label);
 
     const filterId = `vidply-play-shadow-privacy-${Date.now()}`;
     playButton.innerHTML = `
-        <svg class="vidply-play-overlay" viewBox="0 0 80 80" width="80" height="80" aria-hidden="true" style="cursor: pointer;">
+        <svg class="vidply-play-overlay" viewBox="0 0 80 80" width="80" height="80" aria-hidden="true">
             <defs>
                 <filter id="${filterId}" x="-50%" y="-50%" width="200%" height="200%">
                     <feGaussianBlur in="SourceAlpha" stdDeviation="3"></feGaussianBlur>
@@ -210,28 +229,27 @@ function createPrivacyOverlay(service, track, onConsent) {
                     <feMerge><feMergeNode></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge>
                 </filter>
             </defs>
-            <circle cx="40" cy="40" r="40" fill="rgba(255, 255, 255, 0.95)" filter="url(#${filterId})"></circle>
-            <polygon points="32,28 32,52 54,40" fill="currentColor" class="vidply-play-overlay-icon"></polygon>
+            <circle cx="40" cy="40" r="40" fill="rgba(255, 255, 255, 0.95)" filter="url(#${filterId})" class="vidply-play-overlay-bg"></circle>
+            <polygon points="32,28 32,52 54,40" fill="#0a406e" class="vidply-play-overlay-icon"></polygon>
         </svg>
     `;
-
-    playButton.addEventListener('mouseenter', () => playButton.style.transform = 'translate(-50%, -50%) scale(1.1)');
-    playButton.addEventListener('mouseleave', () => playButton.style.transform = 'translate(-50%, -50%) scale(1)');
 
     innerContainer.appendChild(playButton);
 
     const privacyText = document.createElement('div');
     privacyText.className = 'vidply-privacy-text';
-    privacyText.style.cssText = `
-        position: absolute; bottom: 0; left: 0; right: 0; color: #fff;
-        background: rgba(0, 0, 0, 0.8); padding: 1rem; text-align: center; z-index: 9;
-    `;
-    privacyText.innerHTML = `<p style="margin: 0; font-size: 0.85rem;">
-        ${getPrivacyIntroText(service)} 
-        <a href="${getPrivacyPolicyUrl(service)}" target="_blank" rel="noopener noreferrer" style="color: #fff; text-decoration: underline;">
-            ${getPrivacyPolicyLinkText(service)}
-        </a> ${getTranslation('applies')}
-    </p>`;
+
+    // Build privacy text HTML with optional headline
+    let privacyHtml = '<p>';
+    if (settings.headline) {
+        privacyHtml += `<span class="h6">${settings.headline}</span> `;
+    }
+    privacyHtml += `${settings.intro_text} `;
+    privacyHtml += `<a href="${settings.policy_link}" target="_blank" rel="noreferrer" class="external-link">`;
+    privacyHtml += `${settings.link_text}</a> ${settings.outro_text}`;
+    privacyHtml += '</p>';
+
+    privacyText.innerHTML = privacyHtml;
 
     innerContainer.appendChild(privacyText);
     overlay.appendChild(innerContainer);
@@ -338,6 +356,7 @@ function initializePlaylistElement(element) {
         const mediaType = getMediaType(element);
         const autoPlayFirst = element.dataset.playlistAutoPlayFirst === 'true';
         const autoAdvance = element.dataset.playlistAutoAdvance !== 'false';
+        const privacySettings = element.dataset.playlistPrivacySettings ? JSON.parse(element.dataset.playlistPrivacySettings) : null;
 
         // Remove data-playlist before creating player for external media playlists
         if (hasExternalMedia) {
@@ -374,7 +393,7 @@ function initializePlaylistElement(element) {
 
             // Setup privacy interception for external media
             if (hasExternalMedia) {
-                setupPrivacyInterception(playlist, element, wrapperElement, tracks, autoPlayFirst);
+                setupPrivacyInterception(playlist, element, wrapperElement, tracks, autoPlayFirst, privacySettings);
             }
         });
 
@@ -494,7 +513,7 @@ function insertPrivacyOverlay(overlay, element) {
 /**
  * Show consent overlay then proceed with track loading
  */
-function showConsentOverlay(playlist, element, wrapperElement, serviceType, track, index, proceedFn) {
+function showConsentOverlay(playlist, element, wrapperElement, serviceType, track, index, proceedFn, privacySettings = null) {
     pauseAndHidePlayer(playlist, element);
 
     // Remove existing overlays from all potential containers
@@ -512,7 +531,7 @@ function showConsentOverlay(playlist, element, wrapperElement, serviceType, trac
         restorePlayerVisibility(playlist, element);
         proceedFn();
         ensureAutoplay(playlist);
-    });
+    }, privacySettings);
 
     insertPrivacyOverlay(overlay, element);
 }
@@ -520,7 +539,7 @@ function showConsentOverlay(playlist, element, wrapperElement, serviceType, trac
 /**
  * Intercept track loading to handle privacy consent
  */
-function createTrackInterceptor(playlist, element, wrapperElement, originalFn) {
+function createTrackInterceptor(playlist, element, wrapperElement, originalFn, privacySettings = null) {
     return (index, userInitiated) => {
         const track = playlist.tracks[index];
         if (!track) return originalFn(index, userInitiated);
@@ -528,8 +547,8 @@ function createTrackInterceptor(playlist, element, wrapperElement, originalFn) {
         const serviceType = getServiceType(track.src);
 
         if (serviceType && !privacyConsent.hasConsent(serviceType)) {
-            showConsentOverlay(playlist, element, wrapperElement, serviceType, track, index, 
-                () => originalFn(index, userInitiated));
+            showConsentOverlay(playlist, element, wrapperElement, serviceType, track, index,
+                () => originalFn(index, userInitiated), privacySettings);
             return;
         }
 
@@ -548,17 +567,17 @@ function createTrackInterceptor(playlist, element, wrapperElement, originalFn) {
 /**
  * Setup privacy consent interception for playlists with external media
  */
-function setupPrivacyInterception(playlist, element, wrapperElement, tracks, autoPlayFirst) {
+function setupPrivacyInterception(playlist, element, wrapperElement, tracks, autoPlayFirst, privacySettings = null) {
     const originalLoadTrack = playlist.loadTrack.bind(playlist);
     const originalPlay = playlist.play.bind(playlist);
 
     // Patch methods with interceptor
     playlist.loadTrack = function (index) {
-        return createTrackInterceptor(playlist, element, wrapperElement, (idx) => originalLoadTrack(idx))(index);
+        return createTrackInterceptor(playlist, element, wrapperElement, (idx) => originalLoadTrack(idx), privacySettings)(index);
     };
 
     playlist.play = function (index, userInitiated) {
-        return createTrackInterceptor(playlist, element, wrapperElement, (idx, ui) => originalPlay(idx, ui))(index, userInitiated);
+        return createTrackInterceptor(playlist, element, wrapperElement, (idx, ui) => originalPlay(idx, ui), privacySettings)(index, userInitiated);
     };
 
     // Load playlist with patched methods

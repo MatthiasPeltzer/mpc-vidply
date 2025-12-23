@@ -99,6 +99,24 @@ Media library records with types: `video`, `audio`, `youtube`, `vimeo`, `soundcl
 
 MM relation between `tt_content` and `tx_mpcvidply_media`.
 
+### `tx_mpcvidply_privacy_settings`
+
+Site-wide privacy layer configuration for external services (YouTube, Vimeo, SoundCloud).
+
+**Key columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `youtube_headline` | varchar(255) | Optional headline |
+| `youtube_intro_text` | text | Intro text before link |
+| `youtube_outro_text` | text | Outro text after link |
+| `youtube_policy_link` | varchar(255) | Privacy policy URL |
+| `youtube_link_text` | varchar(255) | Link text |
+| `youtube_button_label` | varchar(255) | Button aria-label |
+| `vimeo_*` | (same fields) | Vimeo settings |
+| `soundcloud_*` | (same fields) | SoundCloud settings |
+| `sys_language_uid` | int | Language ID (multilingual) |
+
 ---
 
 ## 🎬 Content Element
@@ -169,6 +187,7 @@ tt_content.mpc_vidply {
 {hasLocalMedia}        <!-- Has video/audio/hls -->
 {hasExternalService}   <!-- Has YouTube/Vimeo/SoundCloud -->
 {playerOptions}        <!-- Decoded options array -->
+{privacySettings}      <!-- Privacy layer settings per service -->
 ```
 
 ---
@@ -248,25 +267,44 @@ import('vidply/vidply.esm.min.js').then(({ default: VidPly }) => {
 
 External services (YouTube, Vimeo, SoundCloud) show consent overlay:
 
-1. Template renders poster + play button (no iframe)
-2. `PrivacyLayer.js` handles click
-3. On consent: Creates iframe, loads service player
-4. No tracking until user explicitly clicks play
+1. `PrivacySettingsService` fetches settings from `tx_mpcvidply_privacy_settings` table
+2. Template renders poster + play button (no iframe) with database settings
+3. `PrivacyLayer.js` / `PlaylistInit.js` handles click
+4. On consent: Creates iframe, loads service player
+5. No tracking until user explicitly clicks play
+
+### Privacy Settings Service
+
+`Classes/Service/PrivacySettingsService.php` provides:
+
+```php
+$privacySettings = $privacySettingsService->getSettingsForService('youtube', $languageId);
+// Returns: ['headline', 'intro_text', 'outro_text', 'policy_link', 'link_text', 'button_label']
+```
+
+Settings fall back to language file translations if database fields are empty.
 
 ### Customize Privacy Notice
 
-Override `Partials/VidPly/PrivacyLayer.html`:
+**Recommended:** Configure via backend (List Module → Privacy Layer Settings)
+
+**Or override template:** `Partials/VidPly/PrivacyLayer.html`
 
 ```html
 <div class="vidply-privacy-layer" 
      data-service="{service}" 
      data-embed-url="{embedUrl}">
+    <f:if condition="{privacySettings.headline}">
+        <h3>{privacySettings.headline}</h3>
+    </f:if>
     <img src="{poster}" alt="{title}" />
     <button class="vidply-privacy-play">
-        <f:translate key="privacy.play" extensionName="mpc_vidply" />
+        {privacySettings.button_label}
     </button>
     <p class="vidply-privacy-notice">
-        <f:translate key="privacy.notice.{service}" extensionName="mpc_vidply" />
+        {privacySettings.intro_text}
+        <a href="{privacySettings.policy_link}">{privacySettings.link_text}</a>
+        {privacySettings.outro_text}
     </p>
 </div>
 ```
@@ -405,8 +443,10 @@ composer require mpc/mpc-vidply
 | Media TCA | `Configuration/TCA/tx_mpcvidply_media.php` |
 | Content TCA | `Configuration/TCA/Overrides/tt_content.php` |
 | DataProcessor | `Classes/DataProcessing/VidPlyProcessor.php` |
+| Privacy Service | `Classes/Service/PrivacySettingsService.php` |
 | Main Template | `Resources/Private/Templates/VidPly.html` |
 | Privacy JS | `Resources/Public/JavaScript/PrivacyLayer.js` |
+| Privacy CSS | `Resources/Public/Css/privacy-layer.css` |
 
 ### Database
 
@@ -414,6 +454,7 @@ composer require mpc/mpc-vidply
 -- Tables
 tx_mpcvidply_media          -- Media library
 tx_mpcvidply_content_media_mm -- Content-to-media relation
+tx_mpcvidply_privacy_settings -- Privacy layer configuration
 ```
 
 ---

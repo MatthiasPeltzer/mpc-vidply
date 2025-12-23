@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\DataProcessing;
 
+use Mpc\MpcVidply\Service\PrivacySettingsService;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Resource\FileRepository;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -28,6 +29,7 @@ class VidPlyProcessor implements DataProcessorInterface
 {
     private readonly FileRepository $fileRepository;
     private readonly ConnectionPool $connectionPool;
+    private readonly PrivacySettingsService $privacySettingsService;
 
     /**
      * Constructor with dependency injection support
@@ -40,10 +42,12 @@ class VidPlyProcessor implements DataProcessorInterface
      */
     public function __construct(
         ?FileRepository $fileRepository = null,
-        ?ConnectionPool $connectionPool = null
+        ?ConnectionPool $connectionPool = null,
+        ?PrivacySettingsService $privacySettingsService = null
     ) {
         $this->fileRepository = $fileRepository ?? GeneralUtility::makeInstance(FileRepository::class);
         $this->connectionPool = $connectionPool ?? GeneralUtility::makeInstance(ConnectionPool::class);
+        $this->privacySettingsService = $privacySettingsService ?? GeneralUtility::makeInstance(PrivacySettingsService::class);
     }
 
     /**
@@ -254,6 +258,18 @@ class VidPlyProcessor implements DataProcessorInterface
             }
         }
         
+        // Load privacy settings for external services from database
+        // Use language ID for multilingual support
+        $privacySettings = [];
+        if ($serviceType !== null) {
+            $privacySettings[$serviceType] = $this->privacySettingsService->getSettingsForService($serviceType, $languageId);
+        } elseif ($isPlaylist && $hasExternalMedia) {
+            // For playlists with external media, load settings for all used services
+            foreach ($externalServiceTypes as $extService) {
+                $privacySettings[$extService] = $this->privacySettingsService->getSettingsForService($extService, $languageId);
+            }
+        }
+        
         // Determine which assets are needed for conditional loading
         // For mixed playlists: always use VidPly with playlist-integrated privacy consent
         $needsPrivacyLayer = $serviceType !== null || ($isPlaylist && $hasExternalMedia);
@@ -301,6 +317,7 @@ class VidPlyProcessor implements DataProcessorInterface
             'uniqueId' => 'vidply-' . $data['uid'],
             'playlistData' => $playlistData,
             'tracks' => $tracks,
+            'privacySettings' => $privacySettings, // Privacy layer settings for external services
         ];
         
         // Only set mediaFiles if we don't have sources (to avoid duplication)

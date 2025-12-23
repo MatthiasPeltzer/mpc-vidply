@@ -31,6 +31,7 @@ Modular template structure for maintainability and customization.
 - `vidply.min.css` - Player styling
 
 **Conditionally loads based on media types:**
+- `privacy-layer.css` - Privacy layer styles (external services only)
 - `PrivacyLayer.js` - YouTube, Vimeo, SoundCloud
 - `hls.js` (CDN) - HLS streams only
 - `VidPlyWrapper.js` - Native player only
@@ -125,11 +126,24 @@ Used by video players for audio description and sign language.
     videoUrl: vidply.videoUrl,
     poster: vidply.poster,
     title: data.header,
-    uniqueId: vidply.uniqueId
+    uniqueId: vidply.uniqueId,
+    privacySettings: vidply.privacySettings.youtube
 }" />
 ```
 
-Displays play button with privacy notice for YouTube, Vimeo, and SoundCloud. Loads iframe on consent.
+Displays play button with privacy notice for YouTube, Vimeo, and SoundCloud. Uses database settings from `tx_mpcvidply_privacy_settings` table with fallback to language file translations. Loads iframe on consent.
+
+**Privacy settings structure:**
+```php
+[
+    'headline' => 'Optional headline',
+    'intro_text' => 'Text before link',
+    'outro_text' => 'Text after link',
+    'policy_link' => 'https://...',
+    'link_text' => 'Link text',
+    'button_label' => 'Button aria-label'
+]
+```
 
 ---
 

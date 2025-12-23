@@ -341,6 +341,24 @@ For YouTube, Vimeo, and SoundCloud:
 3. **User clicks play:** Video loads and plays immediately
 4. **No cookies** until user explicitly consents
 
+### Configure Privacy Layer Settings
+
+**List Module → Privacy Layer Settings**
+
+Customize the privacy layer content for all external services:
+
+1. Create a new Privacy Layer Settings record
+2. Configure settings for each service (YouTube, Vimeo, SoundCloud):
+   - **Headline** (optional) - Display above privacy text
+   - **Intro Text** - Text before privacy policy link
+   - **Outro Text** - Text after privacy policy link
+   - **Policy Link** - URL to privacy policy page
+   - **Link Text** - Text for the privacy policy link
+   - **Button Label** (optional) - Accessible label for play button
+3. For multilingual sites: Create translated versions of the record
+
+Settings apply to both single items and playlists. Empty fields automatically use default translations.
+
 ### What Users See
 
 ```
@@ -350,10 +368,11 @@ For YouTube, Vimeo, and SoundCloud:
 │                                 │
 │         ▶ Play                  │
 │                                 │
-│  ⚠️ Privacy Notice: Clicking   │
-│  play will load content from    │
-│  YouTube and send data to       │
-│  Google.                        │
+│  [Optional Headline]            │
+│  Privacy Notice: Clicking play  │
+│  will load content from YouTube │
+│  and send data to Google.       │
+│  [Privacy Policy Link] applies. │
 └─────────────────────────────────┘
 ```
 
@@ -399,6 +418,7 @@ For YouTube, Vimeo, and SoundCloud:
 | Captions not loading | Validate VTT syntax; check CORS headers |
 | YouTube not loading | Check URL format; clear caches |
 | Privacy layer stuck | Clear TYPO3 caches; check JS loading |
+| Privacy settings not showing | Verify Privacy Layer Settings record exists and is not hidden |
 | No sound | Check muted option; volume setting |
 
 ### VTT Validation
@@ -419,6 +439,7 @@ Ensure your VTT files:
 | Add YouTube | List → New VidPly Media → YouTube → Paste URL |
 | Add captions | Edit media → Captions tab → Add VTT |
 | Create playlist | VidPly Player → Select 2+ items |
+| Configure privacy layer | List → Privacy Layer Settings → Create record |
 | Enable privacy | Automatic for YouTube/Vimeo/SoundCloud |
 
 ---
