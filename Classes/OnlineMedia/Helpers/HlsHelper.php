@@ -11,7 +11,12 @@ use TYPO3\CMS\Core\Resource\Folder;
 use TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\AbstractOnlineMediaHelper;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-final class ExternalAudioHelper extends AbstractOnlineMediaHelper
+/**
+ * Online media helper for HLS playlist URLs.
+ *
+ * Creates a FAL container file with extension ".hls" that stores the playlist URL as online media id.
+ */
+final class HlsHelper extends AbstractOnlineMediaHelper
 {
     private ExtensionConfiguration $extensionConfiguration;
 
@@ -32,6 +37,7 @@ final class ExternalAudioHelper extends AbstractOnlineMediaHelper
         if (!is_array($parts) || empty($parts['scheme']) || empty($parts['host'])) {
             return null;
         }
+
         $scheme = strtolower((string)$parts['scheme']);
         if (!in_array($scheme, ['http', 'https'], true)) {
             return null;
@@ -39,23 +45,23 @@ final class ExternalAudioHelper extends AbstractOnlineMediaHelper
 
         $path = (string)($parts['path'] ?? '');
         $fileExtension = strtolower((string)pathinfo($path, PATHINFO_EXTENSION));
-        // Allow direct audio files and audio HLS manifests (.m3u8) for radio streams
-        if (!in_array($fileExtension, ['mp3', 'wav', 'm4a', 'aac', 'flac', 'oga', 'm3u8'], true)) {
+        // HLS playlists are typically .m3u8
+        if ($fileExtension !== 'm3u8') {
             return null;
         }
 
-        if (!$this->isHostAllowed($scheme, strtolower((string)$parts['host']), $this->getAllowedDomains('allowedAudioDomains'))) {
+        if (!$this->isHostAllowed($scheme, strtolower((string)$parts['host']), $this->getAllowedDomains('allowedVideoDomains'))) {
             return null;
         }
 
         $onlineMediaId = $url;
         $existing = $this->findExistingFileByOnlineMediaId($onlineMediaId, $targetFolder, $this->extension);
         if ($existing !== null) {
-            throw new OnlineMediaAlreadyExistsException($existing, 1735061002);
+            throw new OnlineMediaAlreadyExistsException($existing, 1735063001);
         }
 
         $baseName = basename($path);
-        $fileName = $this->buildFileName($baseName !== '' ? $baseName : 'audio.' . $fileExtension, $this->extension);
+        $fileName = $this->buildFileName($baseName !== '' ? $baseName : 'stream.m3u8', $this->extension);
         return $this->createNewFile($targetFolder, $fileName, $onlineMediaId);
     }
 
@@ -68,7 +74,7 @@ final class ExternalAudioHelper extends AbstractOnlineMediaHelper
     public function getPreviewImage(File $file)
     {
         // Used by TYPO3 Filelist thumbnail rendering for online media files
-        return (string)GeneralUtility::getFileAbsFileName('EXT:mpc_vidply/Resources/Public/Images/audio.png');
+        return (string)GeneralUtility::getFileAbsFileName('EXT:mpc_vidply/Resources/Public/Images/video.png');
     }
 
     public function getMetaData(File $file)
@@ -153,17 +159,15 @@ final class ExternalAudioHelper extends AbstractOnlineMediaHelper
     {
         $baseName = trim($baseName);
         if ($baseName === '') {
-            $baseName = 'external-audio';
+            $baseName = 'hls';
         }
-        $baseName = preg_replace('/[^a-zA-Z0-9._-]+/', '_', $baseName) ?? 'external-audio';
+        $baseName = preg_replace('/[^a-zA-Z0-9._-]+/', '_', $baseName) ?? 'hls';
         $nameWithoutExtension = pathinfo($baseName, PATHINFO_FILENAME);
         if ($nameWithoutExtension === '') {
-            $nameWithoutExtension = 'external-audio';
+            $nameWithoutExtension = 'hls';
         }
         return $nameWithoutExtension . '.' . $containerExtension;
     }
-
-    // no preview image generation needed (we ship a static preview image)
 }
 
 

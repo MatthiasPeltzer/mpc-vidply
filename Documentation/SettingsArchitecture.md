@@ -51,7 +51,7 @@ Available for YouTube, Vimeo, and SoundCloud. Supports multilingual content via 
 
 | Setting | Description |
 |---------|-------------|
-| Media Type | video, audio, youtube, vimeo, soundcloud, hls, m3u |
+| Media Type | video, audio, youtube, vimeo, soundcloud, hls |
 | Media File/URL | Source file or URL |
 | Title | Track title |
 | Artist | Creator/artist name |

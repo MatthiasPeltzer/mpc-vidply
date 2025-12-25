@@ -29,15 +29,25 @@
             <trans-unit id="tx_mpcvidply_media.media_type.hls">
                 <source>HLS Stream</source>
             </trans-unit>
-            <trans-unit id="tx_mpcvidply_media.media_type.m3u">
-                <source>M3U Playlist</source>
+
+            <trans-unit id="tx_mpcvidply_media.hls_kind">
+                <source>HLS Type</source>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.hls_kind.description">
+                <source>Choose whether the HLS stream is audio-only (radio) or video</source>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.hls_kind.video">
+                <source>Video</source>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.hls_kind.audio">
+                <source>Audio (radio)</source>
             </trans-unit>
             
             <trans-unit id="tx_mpcvidply_media.media_url">
                 <source>Media URL</source>
             </trans-unit>
             <trans-unit id="tx_mpcvidply_media.media_url.description">
-                <source>Enter the URL for YouTube, Vimeo, SoundCloud, HLS stream, or M3U playlist</source>
+                <source>Enter the URL for YouTube, Vimeo, SoundCloud, or HLS stream</source>
             </trans-unit>
             
             <trans-unit id="tx_mpcvidply_media.media_file">

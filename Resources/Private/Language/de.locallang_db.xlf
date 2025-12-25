@@ -37,9 +37,22 @@
                 <source>HLS Stream</source>
                 <target>HLS Stream</target>
             </trans-unit>
-            <trans-unit id="tx_mpcvidply_media.media_type.m3u">
-                <source>M3U Playlist</source>
-                <target>M3U Wiedergabeliste</target>
+
+            <trans-unit id="tx_mpcvidply_media.hls_kind">
+                <source>HLS Type</source>
+                <target>HLS-Typ</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.hls_kind.description">
+                <source>Choose whether the HLS stream is audio-only (radio) or video</source>
+                <target>Wählen Sie aus, ob der HLS-Stream nur Audio (Radio) oder Video ist</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.hls_kind.video">
+                <source>Video</source>
+                <target>Video</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.hls_kind.audio">
+                <source>Audio (radio)</source>
+                <target>Audio (Radio)</target>
             </trans-unit>
             
             <trans-unit id="tx_mpcvidply_media.media_url">
@@ -47,8 +60,8 @@
                 <target>Medien-URL</target>
             </trans-unit>
             <trans-unit id="tx_mpcvidply_media.media_url.description">
-                <source>Enter the URL for YouTube, Vimeo, SoundCloud, HLS stream, or M3U playlist</source>
-                <target>Geben Sie die URL für YouTube, Vimeo, SoundCloud, HLS-Stream oder M3U-Wiedergabeliste ein</target>
+                <source>Enter the URL for YouTube, Vimeo, SoundCloud, or HLS stream</source>
+                <target>Geben Sie die URL für YouTube, Vimeo, SoundCloud oder HLS-Stream ein</target>
             </trans-unit>
             
             <trans-unit id="tx_mpcvidply_media.media_file">
