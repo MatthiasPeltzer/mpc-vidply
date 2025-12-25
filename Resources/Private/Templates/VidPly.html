@@ -122,6 +122,7 @@
             <f:else>
                 data-vidply-init
                 data-vidply-options='{f:format.json(value: vidply.options)}'
+                <f:if condition="{vidply.videoUrl}">data-vidply-src="{vidply.videoUrl}"</f:if>
             </f:else>
         </f:if>
         preload="metadata"

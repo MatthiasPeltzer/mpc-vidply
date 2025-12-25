@@ -123,6 +123,9 @@ class VidPlyProcessor implements DataProcessorInterface
         $playerOptions['playbackSpeed'] = (float)($data['tx_mpcvidply_playback_speed'] ?? 1.0);
         $playerOptions['language'] = $data['tx_mpcvidply_language'] ?? '';
         $playerOptions['defaultTranscriptLanguage'] = $playerOptions['language'];
+        // UX defaults for VidPly library (applied per-player):
+        // Hide speed control for HLS streams (audio + video).
+        $playerOptions['hideSpeedForHls'] = true;
         
         // Audio description and sign language will be added after processing tracks
         
@@ -237,7 +240,7 @@ class VidPlyProcessor implements DataProcessorInterface
                 $firstTrack = $tracks[0];
                 
                 // Handle media source
-                if (in_array($firstTrack['type'], ['youtube', 'vimeo', 'soundcloud', 'hls', 'm3u'])) {
+                if (in_array($firstTrack['type'], ['youtube', 'vimeo', 'soundcloud', 'hls'], true)) {
                     $videoUrl = $firstTrack['src'];
                 } else {
                     // Local file(s) - handle multiple sources if available
@@ -305,6 +308,7 @@ class VidPlyProcessor implements DataProcessorInterface
                     $playerOptions['signLanguageButton'] = true;
                     $playerOptions['signLanguagePosition'] = 'bottom-right';
                 }
+
             }
         }
         
@@ -341,15 +345,55 @@ class VidPlyProcessor implements DataProcessorInterface
         // Check if HLS is needed
         $needsHLS = false;
         foreach ($tracks as $track) {
-            if (in_array($track['type'] ?? '', ['hls', 'm3u', 'application/x-mpegurl', 'application/vnd.apple.mpegurl'])) {
+            if (in_array($track['type'] ?? '', ['hls', 'application/x-mpegurl', 'application/vnd.apple.mpegurl'], true)) {
                 $needsHLS = true;
                 break;
+            }
+        }
+
+        // Derive effective media type for template rendering (<audio> vs <video>).
+        // This is important for stream types (e.g. audio HLS) which should not render a <video> element.
+        $resolvedMediaType = $mediaType ?? 'video';
+        if (!empty($tracks)) {
+            $hasVideoTrack = false;
+            $hasAudioTrack = false;
+            foreach ($tracks as $track) {
+                $type = (string)($track['type'] ?? '');
+                if ($type === '') {
+                    continue;
+                }
+
+                // Explicit hint from processing (preferred)
+                $kind = (string)($track['kind'] ?? '');
+                if ($kind === 'video') {
+                    $hasVideoTrack = true;
+                    continue;
+                }
+                if ($kind === 'audio') {
+                    $hasAudioTrack = true;
+                    continue;
+                }
+
+                // MIME-based detection (local files and inferred external media)
+                if (str_starts_with($type, 'video/')) {
+                    $hasVideoTrack = true;
+                } elseif (str_starts_with($type, 'audio/')) {
+                    $hasAudioTrack = true;
+                } elseif (in_array($type, ['youtube', 'vimeo', 'hls'], true)) {
+                    $hasVideoTrack = true;
+                } elseif ($type === 'soundcloud') {
+                    $hasAudioTrack = true;
+                }
+            }
+
+            if ($hasAudioTrack && !$hasVideoTrack) {
+                $resolvedMediaType = 'audio';
             }
         }
         
         // Build processed data with template compatibility
         $vidplyData = [
-            'mediaType' => $mediaType ?? 'video',
+            'mediaType' => $resolvedMediaType,
             'serviceType' => $serviceType, // For privacy layer detection (single item only)
             // Mixed playlist flags
             'isMixedPlaylist' => $isMixedPlaylist ?? false,
@@ -618,6 +662,7 @@ class VidPlyProcessor implements DataProcessorInterface
                 // TYPO3's online media helpers store the URL in the file's properties
                 $track['src'] = $mediaFile->getPublicUrl();
                 $track['type'] = $mediaType;
+                $track['kind'] = 'video';
                 break;
                 
             case 'soundcloud':
@@ -629,16 +674,20 @@ class VidPlyProcessor implements DataProcessorInterface
                 $mediaFile = $mediaFiles[0];
                 $track['src'] = $this->getPublicUrlCached($mediaFile);
                 $track['type'] = 'soundcloud';
+                $track['kind'] = 'audio';
                 break;
                 
             case 'hls':
-            case 'm3u':
-                // URL-based media
-                if (empty($mediaRecord['media_url'])) {
-                    return null; // Skip if no URL
+                // File-based online media container file (.hls) or playlist file (.m3u8)
+                $mediaFiles = $this->getFileReferencesForMedia($mediaUid, 'media_file');
+                if (empty($mediaFiles)) {
+                    return null; // Skip if no file
                 }
-                $track['src'] = $mediaRecord['media_url'];
+                $mediaFile = $mediaFiles[0];
+                $track['src'] = $this->getPublicUrlCached($mediaFile);
                 $track['type'] = $mediaType;
+                $hlsKind = strtolower((string)($mediaRecord['hls_kind'] ?? 'video'));
+                $track['kind'] = in_array($hlsKind, ['audio', 'video'], true) ? $hlsKind : 'video';
                 break;
                 
             case 'video':
@@ -648,6 +697,7 @@ class VidPlyProcessor implements DataProcessorInterface
                 if (empty($mediaFiles)) {
                     return null; // Skip if no file
                 }
+                $track['kind'] = $mediaType;
                 // If multiple files, create sources array for HTML5 video/audio element
                 if (count($mediaFiles) > 1) {
                     $track['sources'] = [];
@@ -656,7 +706,7 @@ class VidPlyProcessor implements DataProcessorInterface
                         $mimeType = $this->getMimeTypeCached($mediaFile);
                         // Online media container files (externalaudio/externalvideo) are stored as text/plain in FAL
                         // but the HTML5 <source type="..."> must match the actual remote media type.
-                        if (in_array($mediaFile->getExtension(), ['externalaudio', 'externalvideo'], true)) {
+                        if (in_array($mediaFile->getExtension(), ['externalaudio', 'externalvideo', 'hls', 'm3u8'], true)) {
                             $mimeType = $this->inferMimeTypeFromUrlCached($publicUrl, $mimeType);
                         }
                         $track['sources'][] = [
@@ -673,7 +723,7 @@ class VidPlyProcessor implements DataProcessorInterface
                     $mediaFile = $mediaFiles[0];
                     $track['src'] = $this->getPublicUrlCached($mediaFile);
                     $track['type'] = $this->getMimeTypeCached($mediaFile);
-                    if (in_array($mediaFile->getExtension(), ['externalaudio', 'externalvideo'], true)) {
+                    if (in_array($mediaFile->getExtension(), ['externalaudio', 'externalvideo', 'hls', 'm3u8'], true)) {
                         $track['type'] = $this->inferMimeTypeFromUrlCached((string)$track['src'], (string)$track['type']);
                     }
                 }
@@ -776,6 +826,8 @@ class VidPlyProcessor implements DataProcessorInterface
             'm4a' => 'audio/mp4',
             'aac' => 'audio/aac',
             'flac' => 'audio/flac',
+            // streaming playlists
+            'm3u8' => 'application/vnd.apple.mpegurl',
             // video
             'mp4' => 'video/mp4',
             'm4v' => 'video/x-m4v',

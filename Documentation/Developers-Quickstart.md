@@ -77,7 +77,7 @@ Or via Backend: Site Management → Sites → Sets → Add VidPly.
 
 ### `tx_mpcvidply_media`
 
-Media library records with types: `video`, `audio`, `youtube`, `vimeo`, `soundcloud`, `hls`, `m3u`
+Media library records with types: `video`, `audio`, `youtube`, `vimeo`, `soundcloud`, `hls`
 
 **Key columns:**
 

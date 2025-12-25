@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Mpc\MpcVidply\OnlineMedia\Helpers\ExternalAudioHelper;
 use Mpc\MpcVidply\OnlineMedia\Helpers\ExternalVideoHelper;
+use Mpc\MpcVidply\OnlineMedia\Helpers\HlsHelper;
 use Mpc\MpcVidply\OnlineMedia\Helpers\SoundCloudHelper;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -34,6 +35,16 @@ if (trim((string)($extConf['allowedAudioDomains'] ?? '')) !== '') {
     $mediaExt = GeneralUtility::trimExplode(',', (string)($GLOBALS['TYPO3_CONF_VARS']['SYS']['mediafile_ext'] ?? ''), true);
     if (!in_array('externalaudio', $mediaExt, true)) {
         $mediaExt[] = 'externalaudio';
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['mediafile_ext'] = implode(',', $mediaExt);
+    }
+}
+
+// HLS / M3U stream playlists (Add media by URL) - guarded by allow-lists
+if (trim((string)($extConf['allowedVideoDomains'] ?? '')) !== '') {
+    $GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['onlineMediaHelpers']['hls'] ??= HlsHelper::class;
+    $mediaExt = GeneralUtility::trimExplode(',', (string)($GLOBALS['TYPO3_CONF_VARS']['SYS']['mediafile_ext'] ?? ''), true);
+    if (!in_array('hls', $mediaExt, true)) {
+        $mediaExt[] = 'hls';
         $GLOBALS['TYPO3_CONF_VARS']['SYS']['mediafile_ext'] = implode(',', $mediaExt);
     }
 }

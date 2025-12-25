@@ -105,7 +105,7 @@ if (in_array($firstTrackType, ['youtube', 'vimeo', 'soundcloud'])) {
 
 // Check for HLS streams
 foreach ($tracks as $track) {
-    if (in_array($track['type'], ['hls', 'm3u', 'application/x-mpegurl'])) {
+    if (in_array($track['type'], ['hls', 'application/x-mpegurl'])) {
         $needsHLS = true;
         break;
     }
