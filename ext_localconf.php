@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Mpc\MpcVidply\OnlineMedia\Helpers\ExternalAudioHelper;
 use Mpc\MpcVidply\OnlineMedia\Helpers\ExternalVideoHelper;
+use Mpc\MpcVidply\OnlineMedia\Helpers\SoundCloudHelper;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -35,6 +36,15 @@ if (trim((string)($extConf['allowedAudioDomains'] ?? '')) !== '') {
         $mediaExt[] = 'externalaudio';
         $GLOBALS['TYPO3_CONF_VARS']['SYS']['mediafile_ext'] = implode(',', $mediaExt);
     }
+}
+
+// SoundCloud is safe to advertise unconditionally: URLs are validated by host/scheme.
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['onlineMediaHelpers']['soundcloud'] ??= SoundCloudHelper::class;
+// Ensure Filelist treats the online media container file as a media file so thumbnails are rendered
+$mediaExt = GeneralUtility::trimExplode(',', (string)($GLOBALS['TYPO3_CONF_VARS']['SYS']['mediafile_ext'] ?? ''), true);
+if (!in_array('soundcloud', $mediaExt, true)) {
+    $mediaExt[] = 'soundcloud';
+    $GLOBALS['TYPO3_CONF_VARS']['SYS']['mediafile_ext'] = implode(',', $mediaExt);
 }
 
 
