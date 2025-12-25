@@ -19,6 +19,7 @@ final class RegisterOnlineMediaIconsEventListener
         // Register external video/audio online media container file extensions
         $this->iconRegistry->registerFileExtension('externalvideo', 'mimetypes-media-video');
         $this->iconRegistry->registerFileExtension('externalaudio', 'mimetypes-media-audio');
+        $this->iconRegistry->registerFileExtension('soundcloud', 'mimetypes-media-audio');
     }
 }
 

@@ -183,7 +183,7 @@ return [
             'showitem' => '
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,
                     media_type,
-                    media_url,
+                    media_file,
                     --palette--;;metadata,
                     poster,
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:categories,
@@ -192,6 +192,14 @@ return [
                     hidden,
                     --palette--;;timeRestriction,
             ',
+            'columnsOverrides' => [
+                'media_file' => [
+                    'config' => [
+                        'allowed' => 'soundcloud',
+                        'maxitems' => 1,
+                    ],
+                ],
+            ],
         ],
         'hls' => [
             'showitem' => '

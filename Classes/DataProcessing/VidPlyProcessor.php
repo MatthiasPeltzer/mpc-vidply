@@ -621,12 +621,14 @@ class VidPlyProcessor implements DataProcessorInterface
                 break;
                 
             case 'soundcloud':
-                // SoundCloud: URL-based media (no TYPO3 online media helper)
-                if (empty($mediaRecord['media_url'])) {
-                    return null; // Skip if no URL
+                // SoundCloud: file-based online media container file (.soundcloud)
+                $mediaFiles = $this->getFileReferencesForMedia($mediaUid, 'media_file');
+                if (empty($mediaFiles)) {
+                    return null; // Skip if no file
                 }
-                $track['src'] = $mediaRecord['media_url'];
-                $track['type'] = $mediaType;
+                $mediaFile = $mediaFiles[0];
+                $track['src'] = $this->getPublicUrlCached($mediaFile);
+                $track['type'] = 'soundcloud';
                 break;
                 
             case 'hls':
