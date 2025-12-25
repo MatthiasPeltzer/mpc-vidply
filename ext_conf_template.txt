@@ -1,0 +1,6 @@
+# cat=config/cmedia/10; type=string; label=LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:config.allowedVideoDomains
+allowedVideoDomains =
+# cat=config/cmedia/20; type=string; label=LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:config.allowedAudioDomains
+allowedAudioDomains =
+
+

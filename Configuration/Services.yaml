@@ -6,6 +6,12 @@ services:
     autoconfigure: true
     public: false
 
+  Mpc\MpcVidply\EventListener\RegisterOnlineMediaIconsEventListener:
+    tags:
+      - name: event.listener
+        identifier: 'mpc/mpc-vidply/register-online-media-icons'
+        event: TYPO3\CMS\Core\Core\Event\BootCompletedEvent
+
   Mpc\MpcVidply\DataProcessing\:
     resource: '../Classes/DataProcessing/*'
     public: true
