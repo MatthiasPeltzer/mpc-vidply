@@ -3,6 +3,19 @@
     <file source-language="en" datatype="plaintext" original="messages" date="2025-11-21T00:00:00Z" product-name="mpc_vidply">
         <header/>
         <body>
+            <trans-unit id="config.allowedVideoDomains">
+                <source>Allowed domains for external videos</source>
+            </trans-unit>
+            <trans-unit id="config.allowedVideoDomains.list">
+                <source>Comma or newline separated list of allowed domains for external video URLs (e.g. *.xyz.de, www.xyz.de, https://*.xyz.de)</source>
+            </trans-unit>
+            <trans-unit id="config.allowedAudioDomains">
+                <source>Allowed domains for external audio files</source>
+            </trans-unit>
+            <trans-unit id="config.allowedAudioDomains.list">
+                <source>Comma or newline separated list of allowed domains for external audio URLs (e.g. *.xyz.de, www.xyz.de, https://*.xyz.de)</source>
+            </trans-unit>
+
             <trans-unit id="player.play">
                 <source>Play</source>
             </trans-unit>

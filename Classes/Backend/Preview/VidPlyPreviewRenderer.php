@@ -8,14 +8,21 @@ use TYPO3\CMS\Backend\Preview\StandardContentPreviewRenderer;
 use TYPO3\CMS\Backend\View\BackendLayout\Grid\GridColumnItem;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Resource\FileRepository;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\PathUtility;
 
 /**
  * Custom preview renderer for VidPly content element
  */
 class VidPlyPreviewRenderer extends StandardContentPreviewRenderer
 {
+    /**
+     * @var array<int, string|null>
+     */
+    protected array $externalTypeLabelCache = [];
+
     public function renderPageModulePreviewContent(GridColumnItem $item): string
     {
         $record = $item->getRecord();
@@ -65,13 +72,21 @@ class VidPlyPreviewRenderer extends StandardContentPreviewRenderer
                     $html .= '<img src="' . htmlspecialchars($posterUrl) . '" alt="Poster" style="width: 60px; height: 60px; object-fit: cover; border-radius: var(--typo3-border-radius); border: 1px solid var(--typo3-border-color);" />';
                     $html .= '</div>';
                 } else {
-                    // Show icon placeholder
+                    // Show fallback image (audio/video) when no poster is set
                     $mediaType = $mediaItem['media_type'] ?? 'video';
-                    $iconClass = in_array($mediaType, ['audio', 'mp3']) ? 'mimetypes-media-audio' : 'mimetypes-media-video';
-                    $html .= '<div style="flex-shrink: 0; width: 60px; height: 60px; background: var(--typo3-surface-base); border: 1px solid var(--typo3-border-color); border-radius: var(--typo3-border-radius); display: flex; align-items: center; justify-content: center;">';
-                    $html .= '<span class="t3js-icon icon icon-size-medium icon-state-default icon-' . htmlspecialchars($iconClass) . '" data-identifier="' . htmlspecialchars($iconClass) . '">';
-                    $html .= '<span class="icon-markup"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="24" height="24" fill="currentColor"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M6.271 5.055a.5.5 0 0 1 .52.038l3.5 2.5a.5.5 0 0 1 0 .814l-3.5 2.5A.5.5 0 0 1 6 10.5v-5a.5.5 0 0 1 .271-.445z"/></svg></span>';
-                    $html .= '</span></div>';
+                    $isAudio = in_array($mediaType, ['audio', 'soundcloud'], true);
+                    $fallbackImage = $isAudio ? 'audio.png' : 'video.png';
+                    $fallbackAbsPath = GeneralUtility::getFileAbsFileName('EXT:mpc_vidply/Resources/Public/Images/' . $fallbackImage);
+                    $fallbackUrl = $fallbackAbsPath ? PathUtility::getAbsoluteWebPath($fallbackAbsPath) : '';
+
+                    $html .= '<div style="flex-shrink: 0;">';
+                    if ($fallbackUrl !== '') {
+                        $html .= '<img src="' . htmlspecialchars($fallbackUrl) . '" alt="" style="width: 60px; height: 60px; object-fit: contain; border-radius: var(--typo3-border-radius); border: 1px solid var(--typo3-border-color); background: var(--typo3-surface-base);" />';
+                    } else {
+                        // If for some reason the fallback image is missing, show an empty box
+                        $html .= '<div style="width: 60px; height: 60px; background: var(--typo3-surface-base); border: 1px solid var(--typo3-border-color); border-radius: var(--typo3-border-radius);"></div>';
+                    }
+                    $html .= '</div>';
                 }
                 
                 $html .= '<div style="flex: 1; min-width: 0;">';
@@ -82,7 +97,9 @@ class VidPlyPreviewRenderer extends StandardContentPreviewRenderer
                 }
                 
                 $html .= ' <span class="badge badge-info" style="margin-left: 5px;">';
-                $html .= htmlspecialchars(strtoupper($mediaItem['media_type'] ?? 'video'));
+                $badgeLabel = $this->getExternalTypeLabel((int)$mediaItem['uid'])
+                    ?? strtoupper((string)($mediaItem['media_type'] ?? 'video'));
+                $html .= htmlspecialchars($badgeLabel);
                 $html .= '</span>';
                 $html .= '</div>';
                 
@@ -185,6 +202,45 @@ class VidPlyPreviewRenderer extends StandardContentPreviewRenderer
         }
         
         return null;
+    }
+
+    /**
+     * If the attached media file is an online-media container (externalaudio/externalvideo),
+     * return a nicer label for the page-module preview.
+     */
+    protected function getExternalTypeLabel(int $mediaUid): ?string
+    {
+        if ($mediaUid === 0) {
+            return null;
+        }
+        if (array_key_exists($mediaUid, $this->externalTypeLabelCache)) {
+            return $this->externalTypeLabelCache[$mediaUid];
+        }
+
+        try {
+            $fileRepository = GeneralUtility::makeInstance(FileRepository::class);
+            $fileReferences = $fileRepository->findByRelation('tx_mpcvidply_media', 'media_file', $mediaUid);
+            foreach ($fileReferences as $fileReference) {
+                if (!$fileReference instanceof FileReference) {
+                    continue;
+                }
+                $file = $fileReference->getOriginalFile();
+                if ($file === null) {
+                    continue;
+                }
+                $ext = strtolower((string)$file->getExtension());
+                if ($ext === 'externalaudio') {
+                    return $this->externalTypeLabelCache[$mediaUid] = 'External Audio';
+                }
+                if ($ext === 'externalvideo') {
+                    return $this->externalTypeLabelCache[$mediaUid] = 'External Video';
+                }
+            }
+        } catch (\Throwable) {
+            // ignore
+        }
+
+        return $this->externalTypeLabelCache[$mediaUid] = null;
     }
 }
 
