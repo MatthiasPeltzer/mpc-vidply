@@ -1,7 +1,8 @@
 <?php
 
-return [
-    'ctrl' => [
+use TYPO3\CMS\Core\Information\Typo3Version;
+
+$ctrl = [
         'title' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tx_mpcvidply_privacy_settings',
         'label' => 'uid',
         'label_userFunc' => \Mpc\MpcVidply\Tca\PrivacySettingsLabel::class . '->getLabel',
@@ -13,11 +14,18 @@ return [
             'ignorePageTypeRestriction' => true,
         ],
         'iconfile' => 'EXT:mpc_vidply/Resources/Public/Icons/Extension.svg',
-        'searchFields' => 'uid',
         'languageField' => 'sys_language_uid',
         'transOrigPointerField' => 'l10n_parent',
         'transOrigDiffSourceField' => 'l10n_diffsource',
-    ],
+];
+
+// TYPO3 v13 still evaluates ctrl.searchFields, TYPO3 v14 removed it.
+if ((new Typo3Version())->getMajorVersion() < 14) {
+    $ctrl['searchFields'] = 'uid';
+}
+
+return [
+    'ctrl' => $ctrl,
     'types' => [
         '0' => [
             'showitem' => '
@@ -97,6 +105,8 @@ return [
             'exclude' => false,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.youtube_headline',
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.youtube_headline.description',
+            // TYPO3 v14: ctrl.searchFields removed. This settings table should not be included in backend search.
+            'searchable' => false,
             'config' => [
                 'type' => 'input',
                 'size' => 50,
@@ -108,6 +118,7 @@ return [
             'exclude' => false,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.youtube_intro_text',
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.youtube_intro_text.description',
+            'searchable' => false,
             'config' => [
                 'type' => 'text',
                 'rows' => 3,
@@ -120,6 +131,7 @@ return [
             'exclude' => false,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.youtube_outro_text',
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.youtube_outro_text.description',
+            'searchable' => false,
             'config' => [
                 'type' => 'text',
                 'rows' => 2,
@@ -132,6 +144,7 @@ return [
             'exclude' => false,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.youtube_policy_link',
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.youtube_policy_link.description',
+            'searchable' => false,
             'config' => [
                 'type' => 'input',
                 'size' => 50,
@@ -144,6 +157,7 @@ return [
             'exclude' => false,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.youtube_link_text',
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.youtube_link_text.description',
+            'searchable' => false,
             'config' => [
                 'type' => 'input',
                 'size' => 50,
@@ -155,6 +169,7 @@ return [
             'exclude' => false,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.youtube_button_label',
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.youtube_button_label.description',
+            'searchable' => false,
             'config' => [
                 'type' => 'input',
                 'size' => 50,
@@ -168,6 +183,7 @@ return [
             'exclude' => false,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.vimeo_headline',
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.vimeo_headline.description',
+            'searchable' => false,
             'config' => [
                 'type' => 'input',
                 'size' => 50,
@@ -179,6 +195,7 @@ return [
             'exclude' => false,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.vimeo_intro_text',
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.vimeo_intro_text.description',
+            'searchable' => false,
             'config' => [
                 'type' => 'text',
                 'rows' => 3,
@@ -191,6 +208,7 @@ return [
             'exclude' => false,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.vimeo_outro_text',
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.vimeo_outro_text.description',
+            'searchable' => false,
             'config' => [
                 'type' => 'text',
                 'rows' => 2,
@@ -203,6 +221,7 @@ return [
             'exclude' => false,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.vimeo_policy_link',
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.vimeo_policy_link.description',
+            'searchable' => false,
             'config' => [
                 'type' => 'input',
                 'size' => 50,
@@ -215,6 +234,7 @@ return [
             'exclude' => false,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.vimeo_link_text',
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.vimeo_link_text.description',
+            'searchable' => false,
             'config' => [
                 'type' => 'input',
                 'size' => 50,
@@ -226,6 +246,7 @@ return [
             'exclude' => false,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.vimeo_button_label',
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.vimeo_button_label.description',
+            'searchable' => false,
             'config' => [
                 'type' => 'input',
                 'size' => 50,
@@ -239,6 +260,7 @@ return [
             'exclude' => false,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.soundcloud_headline',
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.soundcloud_headline.description',
+            'searchable' => false,
             'config' => [
                 'type' => 'input',
                 'size' => 50,
@@ -250,6 +272,7 @@ return [
             'exclude' => false,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.soundcloud_intro_text',
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.soundcloud_intro_text.description',
+            'searchable' => false,
             'config' => [
                 'type' => 'text',
                 'rows' => 3,
@@ -262,6 +285,7 @@ return [
             'exclude' => false,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.soundcloud_outro_text',
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.soundcloud_outro_text.description',
+            'searchable' => false,
             'config' => [
                 'type' => 'text',
                 'rows' => 2,
@@ -274,6 +298,7 @@ return [
             'exclude' => false,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.soundcloud_policy_link',
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.soundcloud_policy_link.description',
+            'searchable' => false,
             'config' => [
                 'type' => 'input',
                 'size' => 50,
@@ -286,6 +311,7 @@ return [
             'exclude' => false,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.soundcloud_link_text',
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.soundcloud_link_text.description',
+            'searchable' => false,
             'config' => [
                 'type' => 'input',
                 'size' => 50,
@@ -297,6 +323,7 @@ return [
             'exclude' => false,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.soundcloud_button_label',
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_privacy_settings.soundcloud_button_label.description',
+            'searchable' => false,
             'config' => [
                 'type' => 'input',
                 'size' => 50,
