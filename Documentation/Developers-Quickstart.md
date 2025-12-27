@@ -231,7 +231,7 @@ VidPly only loads JavaScript needed for current media types:
 | Scenario | Assets Loaded | Size |
 |----------|---------------|------|
 | YouTube/Vimeo/SoundCloud only | PrivacyLayer.js | ~5KB |
-| Local video/audio | vidply.esm.min.js + PlaylistInit.js | ~180KB |
+| Local video/audio | `vidply/vidply.esm.min.js` (+ chunks) + PlaylistInit.js | ~180KB |
 | HLS streaming | + hls.min.js | +60KB |
 | Playlist (2+ items) | + PlaylistInit.js | +5KB |
 
@@ -249,14 +249,17 @@ VidPly only loads JavaScript needed for current media types:
 ### Player Initialization
 
 ```javascript
-// VidPly uses ESM modules with dynamic imports
-import('vidply/vidply.esm.min.js').then(({ default: VidPly }) => {
-    const player = new VidPly('#my-player', {
-        controls: true,
-        keyboard: true,
-        responsive: true,
-    });
+// This is roughly what `PlaylistInit.js` does internally:
+import { Player, PlaylistManager } from './vidply/vidply.esm.min.js';
+
+const player = new Player('#my-player', {
+    controls: true,
+    keyboard: true,
+    responsive: true,
 });
+
+// Optional: attach a playlist
+const playlist = new PlaylistManager(player, { autoAdvance: true });
 ```
 
 ---

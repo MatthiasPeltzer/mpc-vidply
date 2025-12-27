@@ -115,6 +115,10 @@ For YouTube, Vimeo, and SoundCloud:
 **Single Item** → Single player  
 **2+ Items** → Automatic playlist with visual panel, track navigation, auto-advance, and loop options
 
+**Lazy loading behavior (local MP4/MP3 + HLS):**
+- If **Autoplay is off**, the extension configures VidPly to **defer network loading** until the user starts playback (reduced initial bandwidth for pages with many players).
+- In **playlists**, selecting a track initializes the UI/metadata (poster, duration, captions/chapters menus) and a click on a playlist item **loads and plays** that track.
+
 ## Advanced
 
 ### Conditional Asset Loading

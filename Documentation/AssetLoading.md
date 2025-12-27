@@ -1,6 +1,6 @@
 # Conditional Asset Loading
 
-VidPlay intelligently loads only the JavaScript assets needed for your specific media types, improving performance by avoiding unnecessary downloads.
+VidPly intelligently loads only the JavaScript assets needed for your specific media types, improving performance by avoiding unnecessary downloads.
 
 ## How It Works
 
@@ -9,7 +9,7 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 | Flag | Loads | When |
 |------|-------|------|
 | `needsPrivacyLayer` | PrivacyLayer.js + privacy-layer.css | YouTube, Vimeo, or SoundCloud present |
-| `needsVidPlay` | VidPlay core (vidply.esm.min.js, VidPlyWrapper.js) | Local video/audio or HLS (not external services) |
+| `needsVidPlay` | VidPly core (`vidply/vidply.esm.min.js` + code-split chunks) | Local video/audio or HLS (not external services) |
 | `needsPlaylist` | PlaylistInit.js | 2+ media items OR native player |
 | `needsHLS` | hls.js (CDN) | HLS stream (.m3u8) detected |
 
@@ -24,14 +24,14 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 - PrivacyLayer.js (consent handling)
 
 **Not Loaded:**
-- VidPlay player
+- VidPly player
 - PlaylistInit.js
 - hls.js
 
 ### Single Local MP4 Video
 **Loaded:**
 - vidply.min.css
-- VidPlay player (vidply.esm.min.js, VidPlyWrapper.js)
+- VidPly player (`vidply/vidply.esm.min.js` + chunks)
 - PlaylistInit.js (player initialization)
 
 **Not Loaded:**
@@ -41,7 +41,7 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 ### HLS Stream
 **Loaded:**
 - vidply.min.css
-- VidPlay player
+- VidPly player
 - PlaylistInit.js
 - hls.js (adaptive streaming)
 
@@ -51,7 +51,7 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 ### Playlist with 3 MP4 Videos
 **Loaded:**
 - vidply.min.css
-- VidPlay player
+- VidPly player
 - PlaylistInit.js (playlist + player)
 
 **Not Loaded:**
@@ -66,19 +66,19 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 - PlaylistInit.js (for playlist management)
 
 **Not Loaded:**
-- VidPlay player (external services use native players)
+- VidPly player (external services use native players)
 - hls.js
 
 ## Performance Impact
 
 **Before optimization:**
-- All 5 JavaScript files loaded on every page with VidPlay
+- All 5 JavaScript files loaded on every page with VidPly
 - Total: ~350KB (including hls.js from CDN)
 
 **After optimization:**
 - Single YouTube: ~7KB (PrivacyLayer.js + privacy-layer.css)
-- Single local video: ~180KB (VidPlay core + PlaylistInit)
-- HLS stream: ~530KB (VidPlay + PlaylistInit + hls.js)
+- Single local video: ~180KB (VidPly core + PlaylistInit)
+- HLS stream: ~530KB (VidPly + PlaylistInit + hls.js)
 
 **Savings:**
 - External services: 97% reduction (350KB → 5KB)
@@ -136,7 +136,7 @@ foreach ($tracks as $track) {
     <f:asset.script identifier="vidPlyHLS" src="https://cdn.jsdelivr.net/..." />
 </f:if>
 
-<!-- VidPlay Core - only for native player -->
+<!-- VidPly Core - only for native player -->
 <f:if condition="{needsVidPlay}">
     <f:asset.script identifier="vidPlyWrapper" src="..." />
     <f:asset.script identifier="vidPly" src="..." type="module"/>
@@ -172,7 +172,7 @@ To verify conditional loading:
 2. Create page with single YouTube video
 3. Reload page, check only PrivacyLayer.js loads
 4. Create page with local MP4
-5. Reload, verify VidPlay core loads but PrivacyLayer.js doesn't
+5. Reload, verify VidPly core loads but PrivacyLayer.js doesn't
 
 ## Troubleshooting
 
@@ -194,7 +194,7 @@ To verify conditional loading:
 
 Potential future optimizations:
 - Lazy load CSS (currently always loads)
-- Split VidPlay core into smaller modules
+- Split VidPly core into smaller modules
 - Preload critical assets based on above-the-fold content
 - Service worker for offline caching
 
