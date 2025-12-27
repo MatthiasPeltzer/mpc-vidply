@@ -1,4 +1,4 @@
-# VidPlay Template Partials
+# VidPly Template Partials
 
 Modular template structure for maintainability and customization.
 
@@ -23,7 +23,7 @@ Modular template structure for maintainability and customization.
 
 **Arguments:**
 - `needsPrivacyLayer` - Load PrivacyLayer.js (external services)
-- `needsVidPlay` - Load VidPlay core (native player)
+- `needsVidPlay` - Load VidPly core (native player)
 - `needsPlaylist` - Load PlaylistInit.js (playlists/player init)
 - `needsHLS` - Load hls.js (HLS streaming)
 
@@ -34,9 +34,8 @@ Modular template structure for maintainability and customization.
 - `privacy-layer.css` - Privacy layer styles (external services only)
 - `PrivacyLayer.js` - YouTube, Vimeo, SoundCloud
 - `hls.js` (CDN) - HLS streams only
-- `VidPlyWrapper.js` - Native player only
 - `PlaylistInit.js` - Playlists or player init
-- `vidply.esm.min.js` - Native player only
+- `vidply/vidply.esm.min.js` - Native player only (plus code-split chunks)
 
 See `Documentation/AssetLoading.md` for optimization details.
 

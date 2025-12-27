@@ -22,7 +22,7 @@ page.includeJSFooter {
 }
 ```
 
-### 2. VidPlay HLS Renderer
+### 2. VidPly HLS Renderer
 
 **File:** `libs/vidply/src/renderers/HLSRenderer.js`
 
@@ -57,7 +57,7 @@ Required CSP directives:
 
 ### Backend
 
-1. Create VidPlay media record
+1. Create VidPly media record
 2. Select **HLS Stream** media type
 3. Enter stream URL: `https://example.com/stream.m3u8`
 4. Add poster image

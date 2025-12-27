@@ -1,4 +1,4 @@
-# VidPlay Settings Architecture
+# VidPly Settings Architecture
 
 Analysis of settings distribution between Player (content element) and Media Items (media records).
 

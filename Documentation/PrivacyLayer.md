@@ -1,4 +1,4 @@
-# VidPlay Privacy Layer
+# VidPly Privacy Layer
 
 GDPR-compliant loading of external media services (YouTube, Vimeo, SoundCloud).
 
@@ -64,14 +64,14 @@ Settings support multilingual content via TYPO3's translation system. Empty fiel
 ### Create Media Records
 
 **YouTube/Vimeo:**
-1. Create VidPlay media record
+1. Create VidPly media record
 2. Select **YouTube** or **Vimeo** media type
 3. Add video URL or use TYPO3 online media helper
 4. Add poster image (recommended)
 5. Save
 
 **SoundCloud:**
-1. Create VidPlay media record
+1. Create VidPly media record
 2. Select **SoundCloud** media type
 3. Paste track or set URL:
    - Track: `https://soundcloud.com/user/track`
@@ -110,7 +110,7 @@ button.addEventListener('click', function() {
         <f:render partial="VidPly/PrivacyLayer" />
     </f:then>
     <f:else>
-        <!-- VidPlay player (local, HLS) -->
+        <!-- VidPly player (local, HLS) -->
         <f:render section="VideoPlayer" />
     </f:else>
 </f:if>
@@ -128,7 +128,7 @@ button.addEventListener('click', function() {
 ### UX
 - Single click activation
 - Auto-play (no double-click)
-- Visual play button (VidPlay style)
+- Visual play button (VidPly style)
 - 16:9 aspect ratio maintained
 - Customizable headlines, texts, and links
 
@@ -277,6 +277,6 @@ ddev typo3 cache:flush
 - **Zero impact** until user interaction
 - **~5KB** JavaScript (PrivacyLayer.js)
 - **~2KB** CSS (privacy-layer.css, loaded conditionally)
-- **No VidPlay initialization** for external services
+- **No VidPly initialization** for external services
 - **Cached after first load**
 - **Database queries** cached by TYPO3
