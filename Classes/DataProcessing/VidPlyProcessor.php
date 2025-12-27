@@ -126,6 +126,16 @@ class VidPlyProcessor implements DataProcessorInterface
         // UX defaults for VidPly library (applied per-player):
         // Hide speed control for HLS streams (audio + video).
         $playerOptions['hideSpeedForHls'] = true;
+        // Performance defaults:
+        // - Do not start fetching MP4/MP3/HLS until the user actually hits play.
+        // - Keep autoplay behavior intact (autoplay must initialize and load immediately).
+        $playerOptions['deferLoad'] = !$playerOptions['autoplay'];
+        // If you want duration/timebar available before play, use 'metadata' here.
+        // This will still perform a small network request, but much less than full media.
+        $playerOptions['preload'] = 'metadata';
+        // UX: if media is not started yet (deferLoad), show a short notice instead of
+        // toggling audio-description/sign-language before playback.
+        $playerOptions['requirePlaybackForAccessibilityToggles'] = $playerOptions['deferLoad'];
         
         // Audio description and sign language will be added after processing tracks
         
@@ -267,6 +277,11 @@ class VidPlyProcessor implements DataProcessorInterface
                     $poster = $firstTrack['poster'];
                     // Add poster to player options for single audio files (used for track artwork)
                     $playerOptions['poster'] = $poster;
+                }
+
+                // Provide initial duration so UI can show it without loading media metadata
+                if (!empty($firstTrack['duration'])) {
+                    $playerOptions['initialDuration'] = (int)$firstTrack['duration'];
                 }
                 
                 // Extract captions/chapters/descriptions
