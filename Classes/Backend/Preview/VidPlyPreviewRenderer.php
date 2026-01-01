@@ -109,22 +109,6 @@ class VidPlyPreviewRenderer extends StandardContentPreviewRenderer
             $html .= '</div>';
         }
         
-        // Add dimensions if set
-        if (!empty($record['tx_mpcvidply_width']) || !empty($record['tx_mpcvidply_height'])) {
-            $html .= '<div style="margin-top: 8px; font-size: 12px; color: var(--typo3-text-color-secondary);">';
-            $html .= '<strong>Dimensions:</strong> ';
-            if (!empty($record['tx_mpcvidply_width'])) {
-                $html .= htmlspecialchars((string)$record['tx_mpcvidply_width']) . 'px';
-            }
-            if (!empty($record['tx_mpcvidply_width']) && !empty($record['tx_mpcvidply_height'])) {
-                $html .= ' × ';
-            }
-            if (!empty($record['tx_mpcvidply_height'])) {
-                $html .= htmlspecialchars((string)$record['tx_mpcvidply_height']) . 'px';
-            }
-            $html .= '</div>';
-        }
-        
         return $html;
     }
     

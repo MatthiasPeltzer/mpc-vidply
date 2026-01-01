@@ -1,0 +1,15 @@
+{
+  "name": "@mpc/mpc-vidply-assets",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "terser": "^5.44.1"
+  },
+  "scripts": {
+    "minify:playlist": "terser Resources/Public/JavaScript/PlaylistInit.js --compress --mangle --module --output Resources/Public/JavaScript/PlaylistInit.min.js",
+    "minify:privacy": "terser Resources/Public/JavaScript/PrivacyLayer.js --compress --mangle --output Resources/Public/JavaScript/PrivacyLayer.min.js",
+    "minify": "npm run minify:playlist && npm run minify:privacy"
+  }
+}
+
+

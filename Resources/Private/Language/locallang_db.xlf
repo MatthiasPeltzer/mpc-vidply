@@ -117,6 +117,13 @@
             <trans-unit id="tx_mpcvidply_media.enable_transcript">
                 <source>Enable Transcript</source>
             </trans-unit>
+
+            <trans-unit id="tx_mpcvidply_media.hide_speed_button">
+                <source>Hide speed button</source>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.hide_speed_button.description">
+                <source>When enabled and the record is rendered as a single item, the playback speed control will be hidden.</source>
+            </trans-unit>
             
             <trans-unit id="tabs.captions">
                 <source>Captions &amp; Chapters</source>

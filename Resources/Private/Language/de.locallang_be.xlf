@@ -146,14 +146,6 @@
                 <source>Add Sign Language Video</source>
                 <target>Gebärdensprach-Video hinzufügen</target>
             </trans-unit>
-            <trans-unit id="tt_content.tx_mpcvidply_width">
-                <source>Player Width (px)</source>
-                <target>Player-Breite (px)</target>
-            </trans-unit>
-            <trans-unit id="tt_content.tx_mpcvidply_height">
-                <source>Player Height (px)</source>
-                <target>Player-Höhe (px)</target>
-            </trans-unit>
             <trans-unit id="tt_content.tx_mpcvidply_options">
                 <source>Player Options</source>
                 <target>Player-Optionen</target>
@@ -178,17 +170,9 @@
                 <source>Captions On by Default</source>
                 <target>Untertitel standardmäßig aktiviert</target>
             </trans-unit>
-            <trans-unit id="tt_content.tx_mpcvidply_options.transcript">
-                <source>Enable Transcript</source>
-                <target>Transkript aktivieren</target>
-            </trans-unit>
             <trans-unit id="tt_content.tx_mpcvidply_options.keyboard">
                 <source>Keyboard Shortcuts</source>
                 <target>Tastaturkürzel</target>
-            </trans-unit>
-            <trans-unit id="tt_content.tx_mpcvidply_options.responsive">
-                <source>Responsive</source>
-                <target>Responsiv</target>
             </trans-unit>
             <trans-unit id="tt_content.tx_mpcvidply_options.auto_advance">
                 <source>Auto-advance to Next (Playlist)</source>
