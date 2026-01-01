@@ -43,6 +43,7 @@ return [
                     media_url,
                     --palette--;;metadata,
                     poster,
+                    --palette--;;ui,
                 --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tabs.captions,
                     captions,
                     chapters,
@@ -65,6 +66,7 @@ return [
                     media_url,
                     --palette--;;metadata,
                     poster,
+                    --palette--;;ui,
                 --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tabs.captions,
                     captions,
                     chapters,
@@ -86,6 +88,7 @@ return [
                     media_file,
                     --palette--;;metadata,
                     poster,
+                    --palette--;;ui,
                 --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tabs.captions,
                     captions,
                     chapters,
@@ -115,6 +118,7 @@ return [
                     media_file,
                     --palette--;;metadata,
                     poster,
+                    --palette--;;ui,
                 --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tabs.captions,
                     captions,
                     chapters,
@@ -141,6 +145,7 @@ return [
                     media_file,
                     --palette--;;metadata,
                     poster,
+                    --palette--;;ui,
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:categories,
                     categories,
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access,
@@ -163,6 +168,7 @@ return [
                     media_file,
                     --palette--;;metadata,
                     poster,
+                    --palette--;;ui,
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:categories,
                     categories,
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access,
@@ -185,6 +191,7 @@ return [
                     media_file,
                     --palette--;;metadata,
                     poster,
+                    --palette--;;ui,
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:categories,
                     categories,
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access,
@@ -208,6 +215,7 @@ return [
                     media_file,
                     --palette--;;metadata,
                     poster,
+                    --palette--;;ui,
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:categories,
                     categories,
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access,
@@ -227,6 +235,9 @@ return [
     'palettes' => [
         'metadata' => [
             'showitem' => 'title,--linebreak--,artist,--linebreak--,description,--linebreak--,duration,audio_description_duration',
+        ],
+        'ui' => [
+            'showitem' => 'hide_speed_button',
         ],
         'timeRestriction' => [
             'showitem' => 'starttime,endtime',
@@ -721,6 +732,20 @@ return [
         'enable_transcript' => [
             'exclude' => true,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.enable_transcript',
+            'config' => [
+                'type' => 'check',
+                'renderType' => 'checkboxToggle',
+                'items' => [
+                    [
+                        'label' => '',
+                    ],
+                ],
+            ],
+        ],
+        'hide_speed_button' => [
+            'exclude' => true,
+            'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.hide_speed_button',
+            'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.hide_speed_button.description',
             'config' => [
                 'type' => 'check',
                 'renderType' => 'checkboxToggle',

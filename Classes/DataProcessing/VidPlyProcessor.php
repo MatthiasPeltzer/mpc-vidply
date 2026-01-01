@@ -112,11 +112,15 @@ class VidPlyProcessor implements DataProcessorInterface
             'muted' => (bool)($options & 4),
             'controls' => (bool)($options & 8),
             'captionsDefault' => (bool)($options & 16),
-            'transcript' => (bool)($options & 32),
             'keyboard' => (bool)($options & 64),
-            'responsive' => (bool)($options & 128),
             'autoAdvance' => (bool)($options & 256),
         ];
+
+        // Opinionated defaults (not configurable via CE fields):
+        // - Always responsive, never fixed px sizing.
+        $playerOptions['responsive'] = true;
+        // - Transcript is controlled per media record (tx_mpcvidply_media.enable_transcript).
+        //   We'll set $playerOptions['transcript'] after building tracks.
         
         // Add other settings
         $playerOptions['volume'] = (float)($data['tx_mpcvidply_volume'] ?? 0.8);
@@ -138,10 +142,6 @@ class VidPlyProcessor implements DataProcessorInterface
         $playerOptions['requirePlaybackForAccessibilityToggles'] = $playerOptions['deferLoad'];
         
         // Audio description and sign language will be added after processing tracks
-        
-        // Dimensions
-        $width = (int)($data['tx_mpcvidply_width'] ?? 800);
-        $height = (int)($data['tx_mpcvidply_height'] ?? 450);
         
         // Get current language ID from request attribute (TYPO3 13/14 compatible)
         // Using toArray() to avoid extension scanner false positive on getLanguageId()
@@ -208,6 +208,20 @@ class VidPlyProcessor implements DataProcessorInterface
                 }
             }
         }
+
+        // Transcript should be per-track only:
+        // enable transcript UI if at least one selected track opts into it.
+        $playerOptions['transcript'] = false;
+        foreach ($tracks as $t) {
+            if (!empty($t['enableTranscript'])) {
+                $playerOptions['transcript'] = true;
+                break;
+            }
+        }
+        // VidPly core shows the transcript control based on `options.transcriptButton`
+        // (and whether captions/subtitles exist). To enforce "transcript per-track only",
+        // we explicitly gate the transcript button via the per-media enable flag.
+        $playerOptions['transcriptButton'] = $playerOptions['transcript'];
         
         // Determine if this is a mixed media playlist (contains both local and external OR external-only)
         $isMixedPlaylist = count($tracks) > 1 && ($hasExternalMedia || $hasLocalMedia);
@@ -227,6 +241,12 @@ class VidPlyProcessor implements DataProcessorInterface
             // 1 item = single media (no playlist controls)
             // 2+ items = playlist (show controls and panel)
             $isPlaylist = count($tracks) > 1;
+
+            // Per-media UI overrides (single item only)
+            // Note: In playlists, controls belong to the player, not to individual tracks.
+            if (!$isPlaylist && isset($mediaRecords[0]) && !empty($mediaRecords[0]['hide_speed_button'])) {
+                $playerOptions['speedButton'] = false;
+            }
             
             // Only create playlist data if there are 2+ items
             if ($isPlaylist) {
@@ -431,8 +451,6 @@ class VidPlyProcessor implements DataProcessorInterface
             'signLanguageHasMultiple' => count($signLanguage) > 1,
             'signLanguageAttributes' => [],
             'signLanguagePosition' => 'bottom-right',
-            'width' => $width,
-            'height' => $height,
             'options' => $playerOptions,
             'languageSelection' => $playerOptions['language'] ?? '',
             'uniqueId' => 'vidply-' . $data['uid'],
@@ -641,6 +659,11 @@ class VidPlyProcessor implements DataProcessorInterface
         $track = [
             'title' => $mediaRecord['title'] ?: 'Untitled',
         ];
+
+        // Per-track UI overrides (consumed by PlaylistInit.js / templates)
+        if (!empty($mediaRecord['hide_speed_button'])) {
+            $track['hideSpeedButton'] = true;
+        }
         
         // Add artist if available
         if (!empty($mediaRecord['artist'])) {

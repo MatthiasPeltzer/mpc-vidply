@@ -54,6 +54,9 @@ CREATE TABLE tx_mpcvidply_media (
 	
 	# Transcript
 	enable_transcript tinyint(4) unsigned DEFAULT '0' NOT NULL,
+
+	# Per-media UI overrides (applied when rendered as a single-item player)
+	hide_speed_button tinyint(4) unsigned DEFAULT '0' NOT NULL,
 	
 	# Standard TYPO3 fields
 	tstamp int(11) unsigned DEFAULT '0' NOT NULL,

@@ -128,8 +128,6 @@ Site-wide privacy layer configuration for external services (YouTube, Vimeo, Sou
 | Field | Type | Description |
 |-------|------|-------------|
 | `tx_mpcvidply_media_items` | group | Media record selection (MM) |
-| `tx_mpcvidply_width` | number | Player width (px) |
-| `tx_mpcvidply_height` | number | Player height (px) |
 | `tx_mpcvidply_options` | check | Bitmask options |
 | `tx_mpcvidply_volume` | decimal | Default volume (0-1) |
 | `tx_mpcvidply_playback_speed` | decimal | Default speed (0.25-2.0) |
@@ -143,13 +141,15 @@ const LOOP            = 2;    // Loop content
 const MUTED           = 4;    // Start muted
 const CONTROLS        = 8;    // Show controls
 const CAPTIONS_DEFAULT = 16;  // Captions on by default
-const TRANSCRIPT      = 32;   // Show transcript panel
 const KEYBOARD        = 64;   // Enable keyboard shortcuts
-const RESPONSIVE      = 128;  // Responsive sizing
 const AUTO_ADVANCE    = 256;  // Auto-play next in playlist
 
-// Default: 456 = CONTROLS + KEYBOARD + RESPONSIVE + AUTO_ADVANCE
+// Default: 328 = CONTROLS + KEYBOARD + AUTO_ADVANCE
 ```
+
+**Notes:**
+- Responsive sizing is always enabled (no toggle).
+- Transcript is controlled per media record (`tx_mpcvidply_media.enable_transcript`).
 
 **Check option in Fluid:**
 

@@ -386,6 +386,51 @@ function initializePlaylistElement(element) {
             });
             element._vidplyPlaylist = playlist;
 
+            /**
+             * Apply per-track UI overrides (e.g. hide speed button).
+             * We rebuild the control bar because VidPly decides which buttons exist
+             * at build time based on `player.options.*Button`.
+             */
+            const applyPerTrackUi = (track) => {
+                if (!track) return;
+                // If a track requests hiding the speed button, disable it for this track.
+                const hideSpeedButton = track.hideSpeedButton === true;
+                player.options.speedButton = !hideSpeedButton;
+                // Rebuild controls to reflect new option.
+                player.controls?.buildControlBar?.();
+            };
+
+            // Ensure initial state matches the first/current track.
+            try {
+                applyPerTrackUi(playlist.getCurrentTrack?.() || tracks[0]);
+            } catch (e) {
+                // ignore
+            }
+
+            // Patch loadTrack / play so switching tracks updates UI overrides.
+            // Important: setupPrivacyInterception (external media playlists) will patch these
+            // methods again; to keep behavior consistent, it should call applyPerTrackUi too.
+            const patchPlaylistMethodsForUi = () => {
+                const originalLoadTrack = playlist.loadTrack?.bind(playlist);
+                if (typeof originalLoadTrack === 'function') {
+                    playlist.loadTrack = function (index) {
+                        const t = playlist.tracks?.[index];
+                        applyPerTrackUi(t);
+                        return originalLoadTrack(index);
+                    };
+                }
+                const originalPlay = playlist.play?.bind(playlist);
+                if (typeof originalPlay === 'function') {
+                    playlist.play = function (index, userInitiated) {
+                        const idx = typeof index === 'number' ? index : playlist.currentIndex;
+                        const t = playlist.tracks?.[idx];
+                        applyPerTrackUi(t);
+                        return originalPlay(index, userInitiated);
+                    };
+                }
+            };
+            patchPlaylistMethodsForUi();
+
             // Patch error handler
             player.off('error', playlist.handleTrackError);
             playlist.handleTrackError = createPlaylistErrorHandler(playlist, autoAdvance);
@@ -393,7 +438,7 @@ function initializePlaylistElement(element) {
 
             // Setup privacy interception for external media
             if (hasExternalMedia) {
-                setupPrivacyInterception(playlist, element, wrapperElement, tracks, autoPlayFirst, privacySettings);
+                setupPrivacyInterception(playlist, element, wrapperElement, tracks, autoPlayFirst, privacySettings, applyPerTrackUi);
             }
         });
 
@@ -539,10 +584,15 @@ function showConsentOverlay(playlist, element, wrapperElement, serviceType, trac
 /**
  * Intercept track loading to handle privacy consent
  */
-function createTrackInterceptor(playlist, element, wrapperElement, originalFn, privacySettings = null) {
+function createTrackInterceptor(playlist, element, wrapperElement, originalFn, privacySettings = null, applyPerTrackUi = null) {
     return (index, userInitiated) => {
         const track = playlist.tracks[index];
         if (!track) return originalFn(index, userInitiated);
+
+        // Apply per-track UI overrides before switching sources.
+        if (typeof applyPerTrackUi === 'function') {
+            applyPerTrackUi(track);
+        }
 
         const serviceType = getServiceType(track.src);
 
@@ -567,17 +617,17 @@ function createTrackInterceptor(playlist, element, wrapperElement, originalFn, p
 /**
  * Setup privacy consent interception for playlists with external media
  */
-function setupPrivacyInterception(playlist, element, wrapperElement, tracks, autoPlayFirst, privacySettings = null) {
+function setupPrivacyInterception(playlist, element, wrapperElement, tracks, autoPlayFirst, privacySettings = null, applyPerTrackUi = null) {
     const originalLoadTrack = playlist.loadTrack.bind(playlist);
     const originalPlay = playlist.play.bind(playlist);
 
     // Patch methods with interceptor
     playlist.loadTrack = function (index) {
-        return createTrackInterceptor(playlist, element, wrapperElement, (idx) => originalLoadTrack(idx), privacySettings)(index);
+        return createTrackInterceptor(playlist, element, wrapperElement, (idx) => originalLoadTrack(idx), privacySettings, applyPerTrackUi)(index);
     };
 
     playlist.play = function (index, userInitiated) {
-        return createTrackInterceptor(playlist, element, wrapperElement, (idx, ui) => originalPlay(idx, ui), privacySettings)(index, userInitiated);
+        return createTrackInterceptor(playlist, element, wrapperElement, (idx, ui) => originalPlay(idx, ui), privacySettings, applyPerTrackUi)(index, userInitiated);
     };
 
     // Load playlist with patched methods

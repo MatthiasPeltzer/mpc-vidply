@@ -146,6 +146,12 @@ Every media record has a **metadata palette**:
 
 ---
 
+### Player UI Options (per media record)
+
+- **Hide speed button**: Hides the playback speed control for this media item.
+  - **Single item**: the speed control is hidden.
+  - **Playlist**: the speed control is hidden **only while this item is the active track** (it can re-appear for other tracks).
+
 ## Accessibility Features
 
 VidPly provides full WCAG 2.1 AA accessibility support.
@@ -259,22 +265,22 @@ Generate searchable text transcript from captions:
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| **Width** | 800 | Player width in pixels |
-| **Height** | 450 | Player height in pixels |
 | **Autoplay** | Off | Start playing automatically |
 | **Loop** | Off | Loop when finished |
 | **Muted** | Off | Start muted |
 | **Controls** | On | Show player controls |
 | **Captions Default** | Off | Show captions by default |
-| **Transcript** | Off | Show transcript panel |
 | **Keyboard** | On | Enable keyboard shortcuts |
-| **Responsive** | On | Adapt to container size |
 | **Auto Advance** | On | Auto-play next in playlist |
 
 **Playback Settings:**
 - **Volume**: Default volume (0.0 - 1.0)
 - **Playback Speed**: Default speed (0.25 - 2.0)
 - **Language**: Force specific UI language
+
+**Transcript (per media item):**
+- Enable transcript per media record: **Media record → Captions tab → “Enable Transcript”**
+- The transcript panel is shown if **at least one** selected item has transcript enabled.
 
 ---
 
@@ -404,7 +410,7 @@ Settings apply to both single items and playlists. Empty fields automatically us
 
 ### Mobile
 - Test on mobile devices
-- Responsive mode adapts to screen
+- The player is responsive by default and adapts to screen/container size
 - Touch controls work automatically
 
 ---

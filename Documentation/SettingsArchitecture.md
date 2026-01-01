@@ -23,9 +23,7 @@ Available for YouTube, Vimeo, and SoundCloud. Supports multilingual content via 
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| Width | Number | 800 | Player width (px) |
-| Height | Number | 450 | Player height (px) |
-| Options | Bitmask | 456 | Player features (see below) |
+| Options | Bitmask | 328 | Player features (see below) |
 | Volume | Float | 0.8 | Initial volume (0-1) |
 | Playback Speed | Float | 1.0 | Initial speed (0.25-2x) |
 | Language | String | Auto | UI language |
@@ -39,12 +37,14 @@ Available for YouTube, Vimeo, and SoundCloud. Supports multilingual content via 
 | 2 | 4 | Muted | Off |
 | 3 | 8 | Controls | On |
 | 4 | 16 | Captions Default | Off |
-| 5 | 32 | Transcript | Off |
-| 6 | 64 | Keyboard | On |
-| 7 | 128 | Responsive | On |
-| 8 | 256 | Auto Advance | On |
+| 5 | 64 | Keyboard | On |
+| 6 | 256 | Auto Advance | On |
 
-**Default**: 8 + 64 + 128 + 256 = **456**
+**Default**: 8 + 64 + 256 = **328**
+
+**Notes:**
+- Responsive sizing is always enabled (no toggle).
+- Transcript is controlled per media record (`tx_mpcvidply_media.enable_transcript`). The transcript UI is available if at least one selected item enables it.
 
 ### Media Item Settings (tx_mpcvidply_media)
 **Per-item settings specific to each media record:**
@@ -76,7 +76,6 @@ Use for settings that should be **consistent across all external services**:
 ### Player-Level (Global)
 Use for settings that should be **consistent across all tracks**:
 - UI behavior (controls, keyboard)
-- Display (width, height, responsive)
 - Initial state (volume, speed)
 - Playlist behavior (auto-advance)
 

@@ -60,24 +60,6 @@ $vidplyFields = [
         ],
     ],
     
-    // Player Dimensions
-    'tx_mpcvidply_width' => [
-        'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_width',
-        'config' => [
-            'type' => 'number',
-            'default' => 800,
-            'range' => ['lower' => 0],
-        ],
-    ],
-    'tx_mpcvidply_height' => [
-        'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_height',
-        'config' => [
-            'type' => 'number',
-            'default' => 450,
-            'range' => ['lower' => 0],
-        ],
-    ],
-    
     // Player Options
     'tx_mpcvidply_options' => [
         'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_options',
@@ -89,12 +71,12 @@ $vidplyFields = [
                 ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_options.muted', 'value' => 4],
                 ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_options.controls', 'value' => 8],
                 ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_options.captions_default', 'value' => 16],
-                ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_options.transcript', 'value' => 32],
                 ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_options.keyboard', 'value' => 64],
-                ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_options.responsive', 'value' => 128],
                 ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_options.auto_advance', 'value' => 256],
             ],
-            'default' => 456, // controls + keyboard + responsive + auto-advance (8 + 64 + 128 + 256)
+            // Default: controls + keyboard + auto-advance (8 + 64 + 256).
+            // Responsive is always enabled (no toggle), and transcript is per-media item only.
+            'default' => 328,
         ],
     ],
     
@@ -152,8 +134,6 @@ $GLOBALS['TCA']['tt_content']['types']['mpc_vidply'] = [
         --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tabs.media,
             tx_mpcvidply_media_items,
         --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tabs.settings,
-            tx_mpcvidply_width,
-            tx_mpcvidply_height,
             tx_mpcvidply_options,
             tx_mpcvidply_volume,
             tx_mpcvidply_playback_speed,
