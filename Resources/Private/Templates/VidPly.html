@@ -4,15 +4,6 @@
 
 <f:section name="Main">
     <f:variable name="wrapperClasses" value="vidply-wrapper" />
-    <f:if condition="{data.frame_class}">
-        <f:variable name="wrapperClasses" value="{wrapperClasses} frame-{data.frame_class}" />
-    </f:if>
-    <f:if condition="{data.space_before_class}">
-        <f:variable name="wrapperClasses" value="{wrapperClasses} frame-space-before-{data.space_before_class}" />
-    </f:if>
-    <f:if condition="{data.space_after_class}">
-        <f:variable name="wrapperClasses" value="{wrapperClasses} frame-space-after-{data.space_after_class}" />
-    </f:if>
 
     <div class="{wrapperClasses}" id="{vidply.uniqueId}-wrapper">
         <f:variable name="isSingleExternalService" value="{f:if(condition: '{vidply.serviceType}', then: '1', else: '0')}" />
