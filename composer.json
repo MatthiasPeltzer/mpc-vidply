@@ -11,7 +11,7 @@
     }
   ],
   "type": "typo3-cms-extension",
-  "version": "1.0.34",
+  "version": "1.0.35",
   "license": ["GPL-2.0-or-later"],
   "require": {
     "php": "^8.2",
