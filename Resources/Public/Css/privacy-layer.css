@@ -23,6 +23,13 @@
     z-index: 9999;
 }
 
+/* When switching from audio to external renderers (YouTube/Vimeo/SoundCloud),
+   VidPly may re-apply inline `display: block` on `.vidply-track-artwork`.
+   This flag must always win to avoid double posters behind the consent layer. */
+.vidply-track-artwork[data-vidply-artwork-forced-hidden="true"] {
+    display: none !important;
+}
+
 .vidply-privacy-inner-container {
     align-items: center;
     bottom: 0;
