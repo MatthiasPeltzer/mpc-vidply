@@ -461,10 +461,64 @@ function removePrivacyOverlay(element, playlist) {
         currentPlayer.videoWrapper.removeAttribute('data-vidply-hidden');
     }
 
-    element.querySelectorAll('[data-vidply-hidden]').forEach(el => {
-        el.style.display = '';
-        el.removeAttribute('data-vidply-hidden');
-    });
+    // `element` can be an <audio> which cannot contain children; restore from a broader scope.
+    const scopeRoots = [
+        currentPlayer?.container,
+        currentPlayer?.videoWrapper?.parentElement,
+        element.closest('.vidply-wrapper'),
+        element.parentElement,
+        element
+    ].filter(Boolean);
+
+    for (const root of scopeRoots) {
+        root.querySelectorAll?.('[data-vidply-hidden]').forEach(el => {
+            el.style.display = '';
+            el.removeAttribute('data-vidply-hidden');
+        });
+    }
+}
+
+/**
+ * Find the track artwork element, even when the playlist host is an <audio> element.
+ */
+function findTrackArtworkElement(playlist, element, wrapperElement = null) {
+    const player = playlist?.player;
+    const candidates = [
+        player?.container,
+        player?.videoWrapper?.parentElement,
+        wrapperElement,
+        element.closest?.('.vidply-wrapper'),
+        element.parentElement,
+        element
+    ].filter(Boolean);
+
+    for (const root of candidates) {
+        const artwork = root.querySelector?.('.vidply-track-artwork');
+        if (artwork) return artwork;
+    }
+    return null;
+}
+
+/**
+ * Force-hide the audio artwork when switching to external renderers (YouTube/Vimeo/SoundCloud),
+ * even if VidPly keeps using an <audio> host element internally.
+ */
+function setArtworkForcedHidden(playlist, element, wrapperElement, shouldHide) {
+    const artwork = findTrackArtworkElement(playlist, element, wrapperElement);
+    if (!artwork) return;
+
+    if (shouldHide) {
+        artwork.setAttribute('data-vidply-artwork-forced-hidden', 'true');
+        artwork.style.setProperty('display', 'none');
+        artwork.setAttribute('aria-hidden', 'true');
+        return;
+    }
+
+    if (artwork.getAttribute('data-vidply-artwork-forced-hidden') === 'true') {
+        artwork.removeAttribute('data-vidply-artwork-forced-hidden');
+        artwork.style.removeProperty('display');
+        artwork.removeAttribute('aria-hidden');
+    }
 }
 
 /**
@@ -496,7 +550,7 @@ function ensureAutoplay(playlist) {
 /**
  * Pause player and hide elements before showing consent overlay
  */
-function pauseAndHidePlayer(playlist, element) {
+function pauseAndHidePlayer(playlist, element, wrapperElement = null) {
     const currentPlayer = playlist.player;
     if (!currentPlayer) return;
 
@@ -506,7 +560,7 @@ function pauseAndHidePlayer(playlist, element) {
             currentPlayer.videoWrapper.style.display = 'none';
             currentPlayer.videoWrapper.setAttribute('data-vidply-hidden', 'true');
         }
-        const artwork = element.querySelector('.vidply-track-artwork');
+        const artwork = findTrackArtworkElement(playlist, element, wrapperElement);
         if (artwork) {
             artwork.setAttribute('data-vidply-hidden', 'true');
             artwork.style.setProperty('display', 'none');
@@ -519,16 +573,28 @@ function pauseAndHidePlayer(playlist, element) {
 /**
  * Restore visibility after consent
  */
-function restorePlayerVisibility(playlist, element) {
+function restorePlayerVisibility(playlist, element, wrapperElement = null) {
     const player = playlist.player;
     if (player?.videoWrapper) {
         player.videoWrapper.style.display = '';
         player.videoWrapper.removeAttribute('data-vidply-hidden');
     }
-    element.querySelectorAll('[data-vidply-hidden]').forEach(el => {
-        el.style.display = '';
-        el.removeAttribute('data-vidply-hidden');
-    });
+
+    const scopeRoots = [
+        player?.container,
+        player?.videoWrapper?.parentElement,
+        wrapperElement,
+        element.closest?.('.vidply-wrapper'),
+        element.parentElement,
+        element
+    ].filter(Boolean);
+
+    for (const root of scopeRoots) {
+        root.querySelectorAll?.('[data-vidply-hidden]').forEach(el => {
+            el.style.display = '';
+            el.removeAttribute('data-vidply-hidden');
+        });
+    }
 }
 
 /**
@@ -559,7 +625,9 @@ function insertPrivacyOverlay(overlay, element) {
  * Show consent overlay then proceed with track loading
  */
 function showConsentOverlay(playlist, element, wrapperElement, serviceType, track, index, proceedFn, privacySettings = null) {
-    pauseAndHidePlayer(playlist, element);
+    // External services should never show the audio artwork (it duplicates the privacy layer poster).
+    setArtworkForcedHidden(playlist, element, wrapperElement, true);
+    pauseAndHidePlayer(playlist, element, wrapperElement);
 
     // Remove existing overlays from all potential containers
     [element, element.parentElement, wrapperElement].forEach(target => {
@@ -573,7 +641,7 @@ function showConsentOverlay(playlist, element, wrapperElement, serviceType, trac
 
     // Create and insert overlay
     const overlay = createPrivacyOverlay(serviceType, track, () => {
-        restorePlayerVisibility(playlist, element);
+        restorePlayerVisibility(playlist, element, wrapperElement);
         proceedFn();
         ensureAutoplay(playlist);
     }, privacySettings);
@@ -595,6 +663,9 @@ function createTrackInterceptor(playlist, element, wrapperElement, originalFn, p
         }
 
         const serviceType = getServiceType(track.src);
+
+        // Keep audio artwork hidden for external tracks; allow VidPly to manage it otherwise.
+        setArtworkForcedHidden(playlist, element, wrapperElement, !!serviceType);
 
         if (serviceType && !privacyConsent.hasConsent(serviceType)) {
             showConsentOverlay(playlist, element, wrapperElement, serviceType, track, index,
