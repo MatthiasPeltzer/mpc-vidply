@@ -154,6 +154,35 @@
             <trans-unit id="tt_content.tx_mpcvidply_language.auto">
                 <source>Auto (detect from page language)</source>
             </trans-unit>
+
+            <!-- Privacy Layer UI -->
+            <trans-unit id="tt_content.tx_mpcvidply_privacy_play_icon">
+                <source>Privacy play button icon</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_privacy_play_icon.description">
+                <source>Optional. Overrides the default play icon shown on the privacy consent overlay.</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_privacy_play_position">
+                <source>Privacy play button position</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_privacy_play_position.inherit">
+                <source>Use global default</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_privacy_play_position.center">
+                <source>Center</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_privacy_play_position.left_top">
+                <source>Left top</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_privacy_play_position.right_top">
+                <source>Right top</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_privacy_play_position.left_bottom">
+                <source>Left bottom</source>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_privacy_play_position.right_bottom">
+                <source>Right bottom</source>
+            </trans-unit>
             <trans-unit id="tt_content.tx_mpcvidply_playlist">
                 <source>Enable Playlist Mode</source>
             </trans-unit>

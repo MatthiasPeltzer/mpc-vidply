@@ -5,7 +5,17 @@
 <f:section name="Main">
     <f:variable name="wrapperClasses" value="vidply-wrapper" />
 
-    <div class="{wrapperClasses}" id="{vidply.uniqueId}-wrapper">
+    <div class="{wrapperClasses}"
+         id="{vidply.uniqueId}-wrapper"
+         <f:if condition="{vidply.privacyPlayIconUrl}">data-vidply-privacy-play-icon="{vidply.privacyPlayIconUrl}"</f:if>
+         data-vidply-privacy-play-position="{vidply.privacyPlayButtonPosition}"
+         <f:if condition="{vidply.privacyPlayIconInlineSvg}">data-vidply-play-inline-svg="1"</f:if>
+         <f:if condition="!{vidply.privacyPlayIconInlineSvg} && {vidply.privacyPlayIconUrl}">style="--mpc-vidply-play-overlay-icon: url('{vidply.privacyPlayIconUrl}');"</f:if>>
+        <f:if condition="{vidply.privacyPlayIconInlineSvg}">
+            <template class="mpc-vidply-play-inline-svg">
+                <f:format.raw>{vidply.privacyPlayIconInlineSvg}</f:format.raw>
+            </template>
+        </f:if>
         <f:variable name="isSingleExternalService" value="{f:if(condition: '{vidply.serviceType}', then: '1', else: '0')}" />
         
         <f:if condition="{isSingleExternalService} && !{vidply.playlistData}">
@@ -16,7 +26,10 @@
                     poster: vidply.poster,
                     title: data.header,
                     uniqueId: vidply.uniqueId,
-                    privacySettings: vidply.privacySettings
+                    privacySettings: vidply.privacySettings,
+                    playIconUrl: vidply.privacyPlayIconUrl,
+                    playIconInlineSvg: vidply.privacyPlayIconInlineSvg,
+                    playButtonPosition: vidply.privacyPlayButtonPosition
                 }" />
             </f:then>
             <f:else>
@@ -50,6 +63,8 @@
 <f:section name="VideoPlayer">
     <video
         id="{vidply.uniqueId}"
+        <f:if condition="{vidply.privacyPlayIconUrl}">data-vidply-privacy-play-icon="{vidply.privacyPlayIconUrl}"</f:if>
+        data-vidply-privacy-play-position="{vidply.privacyPlayButtonPosition}"
         <f:if condition="{vidply.playlistData}">
             <f:then>
                 data-vidply-options='{f:format.json(value: vidply.options)}'
@@ -96,6 +111,8 @@
 <f:section name="AudioPlayer">
     <audio
         id="{vidply.uniqueId}"
+        <f:if condition="{vidply.privacyPlayIconUrl}">data-vidply-privacy-play-icon="{vidply.privacyPlayIconUrl}"</f:if>
+        data-vidply-privacy-play-position="{vidply.privacyPlayButtonPosition}"
         <f:if condition="{vidply.playlistData}">
             <f:then>
                 data-vidply-options='{f:format.json(value: vidply.options)}'
@@ -135,6 +152,8 @@
 <f:section name="MixedPlaylistPlayer">
     <div
         id="{vidply.uniqueId}"
+        <f:if condition="{vidply.privacyPlayIconUrl}">data-vidply-privacy-play-icon="{vidply.privacyPlayIconUrl}"</f:if>
+        data-vidply-privacy-play-position="{vidply.privacyPlayButtonPosition}"
         data-vidply-options='{f:format.json(value: vidply.options)}'
         data-playlist='{f:format.json(value: vidply.playlistData.tracks)}'
         data-playlist-auto-advance="{f:if(condition: vidply.playlistData.options.autoAdvance, then: 'true', else: 'false')}"

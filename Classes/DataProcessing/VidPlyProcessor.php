@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\DataProcessing;
 
+use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use Mpc\MpcVidply\Service\PrivacySettingsService;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
@@ -11,6 +12,7 @@ use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Resource\FileRepository;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Resource\Exception\ResourceDoesNotExistException;
+use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
@@ -35,6 +37,7 @@ class VidPlyProcessor implements DataProcessorInterface
     private readonly ResourceFactory $resourceFactory;
     private readonly ConnectionPool $connectionPool;
     private readonly PrivacySettingsService $privacySettingsService;
+    private readonly ExtensionConfiguration $extensionConfiguration;
 
     /**
      * Micro-caches for this request to avoid repeated work in playlists.
@@ -80,12 +83,14 @@ class VidPlyProcessor implements DataProcessorInterface
         ?FileRepository $fileRepository = null,
         ?ResourceFactory $resourceFactory = null,
         ?ConnectionPool $connectionPool = null,
-        ?PrivacySettingsService $privacySettingsService = null
+        ?PrivacySettingsService $privacySettingsService = null,
+        ?ExtensionConfiguration $extensionConfiguration = null
     ) {
         $this->fileRepository = $fileRepository ?? GeneralUtility::makeInstance(FileRepository::class);
         $this->resourceFactory = $resourceFactory ?? GeneralUtility::makeInstance(ResourceFactory::class);
         $this->connectionPool = $connectionPool ?? GeneralUtility::makeInstance(ConnectionPool::class);
         $this->privacySettingsService = $privacySettingsService ?? GeneralUtility::makeInstance(PrivacySettingsService::class);
+        $this->extensionConfiguration = $extensionConfiguration ?? GeneralUtility::makeInstance(ExtensionConfiguration::class);
     }
 
     /**
@@ -370,6 +375,86 @@ class VidPlyProcessor implements DataProcessorInterface
                 $privacySettings[$extService] = $this->privacySettingsService->getSettingsForService($extService, $languageId);
             }
         }
+
+        // Privacy play button UI overrides (per content element)
+        $privacyPlayIconUrl = null;
+        $privacyPlayIconInlineSvg = null;
+        $privacyPlayIconFileReference = null;
+        $privacyPlayIconRefs = $this->fileRepository->findByRelation(
+            'tt_content',
+            'tx_mpcvidply_privacy_play_icon',
+            (int)($data['uid'] ?? 0)
+        );
+        if (!empty($privacyPlayIconRefs)) {
+            $privacyPlayIconFileReference = $privacyPlayIconRefs[0];
+            $privacyPlayIconUrl = $this->getPublicUrlCached($privacyPlayIconFileReference);
+        }
+
+        $privacyPlayButtonPosition = (string)($data['tx_mpcvidply_privacy_play_position'] ?? '');
+
+        // Global defaults via extension configuration (Admin Tools -> Settings -> Extension Configuration)
+        $globalPrivacyPlayIcon = '';
+        $globalPrivacyPlayPosition = '';
+        try {
+            $extConf = $this->extensionConfiguration->get('mpc_vidply');
+        } catch (\Throwable) {
+            $extConf = [];
+        }
+        if (is_array($extConf)) {
+            $globalPrivacyPlayIcon = (string)($extConf['privacyPlayIcon'] ?? '');
+            $globalPrivacyPlayPosition = (string)($extConf['privacyPlayPosition'] ?? '');
+        }
+
+        // If configured icon is an SVG, inline it (sanitized) so it can be styled like VidPly's own SVGs
+        // Per-content-element icon wins over global config.
+        if ($privacyPlayIconFileReference instanceof FileReference) {
+            $privacyPlayIconInlineSvg = $this->getInlineSvgFromFileReference($privacyPlayIconFileReference);
+        }
+        if (($privacyPlayIconInlineSvg === null || $privacyPlayIconInlineSvg === '') && $globalPrivacyPlayIcon !== '') {
+            $privacyPlayIconInlineSvg = $this->getInlineSvgFromExtPath($globalPrivacyPlayIcon);
+        }
+
+        // If no per-element icon is set, use global one (supports EXT: paths)
+        if (($privacyPlayIconUrl === null || $privacyPlayIconUrl === '') && $globalPrivacyPlayIcon !== '') {
+            $globalIcon = trim($globalPrivacyPlayIcon);
+            if (str_starts_with($globalIcon, 'EXT:')) {
+                // Resolve to a public web path (Composer mode compatible)
+                $webPath = PathUtility::getPublicResourceWebPath($globalIcon);
+                if ($webPath === '') {
+                    // Common pitfall: using "-" instead of "_" in the extension key
+                    $fallbackIcon = preg_replace_callback(
+                        '/^EXT:([a-z0-9-]+)\\//i',
+                        static function (array $m): string {
+                            return 'EXT:' . str_replace('-', '_', $m[1]) . '/';
+                        },
+                        $globalIcon
+                    ) ?: $globalIcon;
+                    $webPath = PathUtility::getPublicResourceWebPath($fallbackIcon);
+                }
+                if ($webPath !== '') {
+                    $privacyPlayIconUrl = $webPath;
+                } else {
+                    // Last resort fallback for legacy non-composer installs
+                    $abs = GeneralUtility::getFileAbsFileName($globalIcon);
+                    $privacyPlayIconUrl = $abs ? PathUtility::getAbsoluteWebPath($abs) : null;
+                }
+            } else {
+                // allow absolute URLs and relative public paths
+                $privacyPlayIconUrl = $globalIcon;
+            }
+        }
+
+        // Position: prefer per-element setting; otherwise global; otherwise center
+        if ($privacyPlayButtonPosition === '' && $globalPrivacyPlayPosition !== '') {
+            $privacyPlayButtonPosition = $globalPrivacyPlayPosition;
+        }
+        if ($privacyPlayButtonPosition === '') {
+            $privacyPlayButtonPosition = 'center';
+        }
+        $allowedPositions = ['center', 'left-top', 'right-top', 'left-bottom', 'right-bottom'];
+        if (!in_array($privacyPlayButtonPosition, $allowedPositions, true)) {
+            $privacyPlayButtonPosition = 'center';
+        }
         
         // Determine which assets are needed for conditional loading
         // For mixed playlists: always use VidPly with playlist-integrated privacy consent
@@ -457,6 +542,9 @@ class VidPlyProcessor implements DataProcessorInterface
             'playlistData' => $playlistData,
             'tracks' => $tracks,
             'privacySettings' => $privacySettings, // Privacy layer settings for external services
+            'privacyPlayIconUrl' => $privacyPlayIconUrl,
+            'privacyPlayIconInlineSvg' => $privacyPlayIconInlineSvg,
+            'privacyPlayButtonPosition' => $privacyPlayButtonPosition,
         ];
         
         // Only set mediaFiles if we don't have sources (to avoid duplication)
@@ -470,6 +558,144 @@ class VidPlyProcessor implements DataProcessorInterface
         $processedData['vidply'] = array_merge($vidplyData, $processedData['vidply'] ?? []);
         
         return $processedData;
+    }
+
+    private function getInlineSvgFromFileReference(FileReference $fileReference): ?string
+    {
+        try {
+            $originalFile = $fileReference->getOriginalFile();
+        } catch (\Throwable) {
+            return null;
+        }
+
+        if (strtolower((string)$originalFile->getExtension()) !== 'svg') {
+            return null;
+        }
+
+        try {
+            $localPath = $originalFile->getForLocalProcessing(false);
+        } catch (\Throwable) {
+            return null;
+        }
+
+        return $this->loadAndSanitizeSvgFromAbsolutePath((string)$localPath);
+    }
+
+    private function getInlineSvgFromExtPath(string $extPathOrUrl): ?string
+    {
+        $value = trim($extPathOrUrl);
+        if ($value === '' || !str_starts_with($value, 'EXT:')) {
+            return null;
+        }
+        if (strtolower((string)pathinfo($value, PATHINFO_EXTENSION)) !== 'svg') {
+            return null;
+        }
+
+        // Handle common pitfall: "-" instead of "_" in extension key
+        $normalized = preg_replace_callback(
+            '/^EXT:([a-z0-9-]+)\\//i',
+            static function (array $m): string {
+                return 'EXT:' . str_replace('-', '_', $m[1]) . '/';
+            },
+            $value
+        ) ?: $value;
+
+        $abs = GeneralUtility::getFileAbsFileName($normalized);
+        if (!$abs) {
+            // try raw as a fallback
+            $abs = GeneralUtility::getFileAbsFileName($value);
+        }
+
+        return $abs ? $this->loadAndSanitizeSvgFromAbsolutePath((string)$abs) : null;
+    }
+
+    private function loadAndSanitizeSvgFromAbsolutePath(string $absolutePath): ?string
+    {
+        $absolutePath = trim($absolutePath);
+        if ($absolutePath === '' || !is_file($absolutePath)) {
+            return null;
+        }
+
+        // Avoid huge inline payloads
+        $maxBytes = 256 * 1024;
+        $size = @filesize($absolutePath);
+        if (is_int($size) && $size > $maxBytes) {
+            return null;
+        }
+
+        $raw = @file_get_contents($absolutePath);
+        if (!is_string($raw) || trim($raw) === '') {
+            return null;
+        }
+
+        $dom = new \DOMDocument();
+        $dom->preserveWhiteSpace = false;
+        $dom->formatOutput = false;
+
+        // Prevent network access and ignore external entities
+        $loaded = @$dom->loadXML($raw, \LIBXML_NONET | \LIBXML_NOERROR | \LIBXML_NOWARNING);
+        if (!$loaded) {
+            return null;
+        }
+
+        $svg = $dom->getElementsByTagName('svg')->item(0);
+        if (!$svg instanceof \DOMElement) {
+            return null;
+        }
+
+        // Remove potentially dangerous elements
+        foreach (['script', 'foreignObject'] as $tag) {
+            $nodes = $dom->getElementsByTagName($tag);
+            // NodeList is live; remove from end
+            for ($i = $nodes->length - 1; $i >= 0; $i--) {
+                $node = $nodes->item($i);
+                if ($node && $node->parentNode) {
+                    $node->parentNode->removeChild($node);
+                }
+            }
+        }
+
+        $xpath = new \DOMXPath($dom);
+
+        // Remove inline event handlers (onclick, onload, ...) and sanitize href-like attributes.
+        // We intentionally avoid XPath namespace prefixes (e.g. xlink:href) to prevent warnings
+        // when SVGs declare no xlink namespace.
+        $attrs = $xpath->query('//@*');
+        if ($attrs instanceof \DOMNodeList) {
+            for ($i = $attrs->length - 1; $i >= 0; $i--) {
+                $attr = $attrs->item($i);
+                if (!$attr instanceof \DOMAttr) {
+                    continue;
+                }
+                $name = strtolower($attr->name);
+                if (str_starts_with($name, 'on')) {
+                    $attr->ownerElement?->removeAttributeNode($attr);
+                    continue;
+                }
+
+                // Sanitize javascript: URLs in href-like attributes (href, xlink:href, ...)
+                if ($attr->localName === 'href') {
+                    $val = trim((string)$attr->value);
+                    if (stripos($val, 'javascript:') === 0) {
+                        $attr->ownerElement?->removeAttributeNode($attr);
+                    }
+                }
+            }
+        }
+
+        // Add our marker class, but avoid colliding with VidPly's own `.vidply-play-overlay`
+        // (that class has absolute positioning etc. for the main player overlay).
+        $existingClass = trim((string)$svg->getAttribute('class'));
+        $parts = preg_split('/\s+/', $existingClass) ?: [];
+        $parts = array_values(array_filter($parts, static fn(string $c): bool => $c !== '' && $c !== 'vidply-play-overlay'));
+        $parts[] = 'mpc-vidply-custom-play-icon';
+        $svg->setAttribute('class', implode(' ', array_values(array_unique($parts))));
+        $svg->setAttribute('aria-hidden', 'true');
+        $svg->setAttribute('focusable', 'false');
+        $svg->removeAttribute('width');
+        $svg->removeAttribute('height');
+
+        return $dom->saveXML($svg) ?: null;
     }
 
     /**

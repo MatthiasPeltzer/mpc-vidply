@@ -202,6 +202,44 @@
                 <source>Auto (detect from page language)</source>
                 <target>Automatisch (aus Seitensprache ermitteln)</target>
             </trans-unit>
+
+            <!-- Privacy Layer UI -->
+            <trans-unit id="tt_content.tx_mpcvidply_privacy_play_icon">
+                <source>Privacy play button icon</source>
+                <target>Play-Icon (Datenschutz-Overlay)</target>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_privacy_play_icon.description">
+                <source>Optional. Overrides the default play icon shown on the privacy consent overlay.</source>
+                <target>Optional. Überschreibt das Standard-Play-Icon im Datenschutz-Zustimmungs-Overlay.</target>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_privacy_play_position">
+                <source>Privacy play button position</source>
+                <target>Position des Play-Buttons (Datenschutz-Overlay)</target>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_privacy_play_position.inherit">
+                <source>Use global default</source>
+                <target>Globalen Standard verwenden</target>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_privacy_play_position.center">
+                <source>Center</source>
+                <target>Zentriert</target>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_privacy_play_position.left_top">
+                <source>Left top</source>
+                <target>Links oben</target>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_privacy_play_position.right_top">
+                <source>Right top</source>
+                <target>Rechts oben</target>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_privacy_play_position.left_bottom">
+                <source>Left bottom</source>
+                <target>Links unten</target>
+            </trans-unit>
+            <trans-unit id="tt_content.tx_mpcvidply_privacy_play_position.right_bottom">
+                <source>Right bottom</source>
+                <target>Rechts unten</target>
+            </trans-unit>
             <trans-unit id="tt_content.tx_mpcvidply_playlist">
                 <source>Enable Playlist Mode</source>
                 <target>Wiedergabelisten-Modus aktivieren</target>

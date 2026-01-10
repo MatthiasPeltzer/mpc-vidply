@@ -194,9 +194,63 @@ function getPrivacySettings(service, privacySettings) {
 }
 
 /**
+ * Inline SVG support for custom play overlay icons
+ */
+function getInlinePlaySvgMarkup(wrapperElement) {
+    const wrapper = wrapperElement?.closest?.('.vidply-wrapper') || wrapperElement;
+    const tpl = wrapper?.querySelector?.('template.mpc-vidply-play-inline-svg');
+    const html = tpl?.innerHTML?.trim?.() || '';
+    return html !== '' ? html : null;
+}
+
+function parseSvgFromMarkup(svgMarkup) {
+    if (!svgMarkup) return null;
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svgMarkup, 'image/svg+xml');
+    const svg = doc.querySelector('svg');
+    return svg || null;
+}
+
+function replaceVidplyPlayOverlaySvg(wrapperElement) {
+    const svgMarkup = getInlinePlaySvgMarkup(wrapperElement);
+    if (!svgMarkup) return;
+
+    const sourceSvg = parseSvgFromMarkup(svgMarkup);
+    if (!sourceSvg) return;
+
+    const targets = (wrapperElement || document).querySelectorAll?.('svg.vidply-play-overlay');
+    targets?.forEach?.((target) => {
+        if (!target || target.dataset?.mpcVidplyIconReplaced === '1') return;
+
+        const viewBox = sourceSvg.getAttribute('viewBox');
+        if (viewBox) {
+            target.setAttribute('viewBox', viewBox);
+        }
+        // Replace only contents; keep the original element instance for click handlers
+        target.innerHTML = sourceSvg.innerHTML;
+        target.dataset.mpcVidplyIconReplaced = '1';
+    });
+}
+
+function observeVidplyOverlays(wrapperElement) {
+    const wrapper = wrapperElement?.closest?.('.vidply-wrapper') || wrapperElement;
+    if (!wrapper) return;
+    if (!wrapper.hasAttribute('data-vidply-play-inline-svg')) return;
+
+    // Initial attempt
+    replaceVidplyPlayOverlaySvg(wrapper);
+
+    const observer = new MutationObserver(() => {
+        replaceVidplyPlayOverlaySvg(wrapper);
+    });
+    observer.observe(wrapper, {childList: true, subtree: true});
+    wrapper._mpcVidplyPlayIconObserver = observer;
+}
+
+/**
  * Create the privacy consent overlay for a playlist track
  */
-function createPrivacyOverlay(service, track, onConsent, privacySettings = null) {
+function createPrivacyOverlay(service, track, onConsent, privacySettings = null, playIconUrl = null, playButtonPosition = 'center', playIconInlineSvg = null) {
     const settings = getPrivacySettings(service, privacySettings);
 
     const overlay = document.createElement('div');
@@ -214,25 +268,37 @@ function createPrivacyOverlay(service, track, onConsent, privacySettings = null)
     innerContainer.className = 'vidply-privacy-inner-container';
 
     const playButton = document.createElement('button');
-    playButton.className = 'vidply-privacy-button';
+    const position = playButtonPosition || 'center';
+    playButton.className = `vidply-privacy-button vidply-privacy-button--pos-${position}`;
     playButton.type = 'button';
     playButton.setAttribute('aria-label', settings.button_label);
 
-    const filterId = `vidply-play-shadow-privacy-${Date.now()}`;
-    playButton.innerHTML = `
-        <svg class="vidply-play-overlay" viewBox="0 0 80 80" width="80" height="80" aria-hidden="true">
-            <defs>
-                <filter id="${filterId}" x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur in="SourceAlpha" stdDeviation="3"></feGaussianBlur>
-                    <feOffset dx="0" dy="2" result="offsetblur"></feOffset>
-                    <feComponentTransfer><feFuncA type="linear" slope="0.3"></feFuncA></feComponentTransfer>
-                    <feMerge><feMergeNode></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge>
-                </filter>
-            </defs>
-            <circle cx="40" cy="40" r="40" fill="rgba(255, 255, 255, 0.95)" filter="url(#${filterId})" class="vidply-play-overlay-bg"></circle>
-            <polygon points="32,28 32,52 54,40" fill="#0a406e" class="vidply-play-overlay-icon"></polygon>
-        </svg>
-    `;
+    if (playIconInlineSvg) {
+        playButton.innerHTML = playIconInlineSvg;
+    } else if (playIconUrl) {
+        const img = document.createElement('img');
+        img.className = 'vidply-play-overlay-image';
+        img.src = playIconUrl;
+        img.alt = '';
+        img.setAttribute('aria-hidden', 'true');
+        playButton.appendChild(img);
+    } else {
+        const filterId = `vidply-play-shadow-privacy-${Date.now()}`;
+        playButton.innerHTML = `
+            <svg class="mpc-vidply-privacy-play-overlay" viewBox="0 0 80 80" width="80" height="80" aria-hidden="true">
+                <defs>
+                    <filter id="${filterId}" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur in="SourceAlpha" stdDeviation="3"></feGaussianBlur>
+                        <feOffset dx="0" dy="2" result="offsetblur"></feOffset>
+                        <feComponentTransfer><feFuncA type="linear" slope="0.3"></feFuncA></feComponentTransfer>
+                        <feMerge><feMergeNode></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge>
+                    </filter>
+                </defs>
+                <circle cx="40" cy="40" r="40" fill="rgba(255, 255, 255, 0.95)" filter="url(#${filterId})" class="vidply-play-overlay-bg"></circle>
+                <polygon points="32,28 32,52 54,40" fill="#0a406e" class="vidply-play-overlay-icon"></polygon>
+            </svg>
+        `;
+    }
 
     innerContainer.appendChild(playButton);
 
@@ -640,11 +706,14 @@ function showConsentOverlay(playlist, element, wrapperElement, serviceType, trac
     playlist.updateTrackInfo?.(track);
 
     // Create and insert overlay
+    const playIconUrl = wrapperElement?.dataset?.vidplyPrivacyPlayIcon || element?.dataset?.vidplyPrivacyPlayIcon || null;
+    const playButtonPosition = wrapperElement?.dataset?.vidplyPrivacyPlayPosition || element?.dataset?.vidplyPrivacyPlayPosition || 'center';
+    const playIconInlineSvg = getInlinePlaySvgMarkup(wrapperElement);
     const overlay = createPrivacyOverlay(serviceType, track, () => {
         restorePlayerVisibility(playlist, element, wrapperElement);
         proceedFn();
         ensureAutoplay(playlist);
-    }, privacySettings);
+    }, privacySettings, playIconUrl, playButtonPosition, playIconInlineSvg);
 
     insertPrivacyOverlay(overlay, element);
 }
@@ -715,4 +784,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize playlist elements
     document.querySelectorAll('[data-playlist]:not([data-vidply])').forEach(initializePlaylistElement);
+
+    // Observe and replace main VidPly play overlays (big play icon) when inline SVG is available
+    document.querySelectorAll('.vidply-wrapper[data-vidply-play-inline-svg]').forEach(observeVidplyOverlays);
 });

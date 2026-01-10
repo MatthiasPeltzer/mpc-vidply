@@ -1,0 +1,104 @@
+/* VidPly UI overrides (extension-level)
+   This file is intentionally small and loaded after `vidply.min.css`. */
+
+/* Allow swapping the main VidPly "big play" overlay icon via CSS variable.
+   We keep the original SVG in place so clicks still start playback. */
+.vidply-wrapper {
+    /* expects: url("...") */
+    --mpc-vidply-play-overlay-icon: none;
+}
+
+/* Only apply the background-image override when an icon was configured AND we do not inline SVG */
+[data-vidply-privacy-play-icon]:not([data-vidply-play-inline-svg]) .vidply-play-overlay {
+    /* Works on the SVG element as a background image layer */
+    background-image: var(--mpc-vidply-play-overlay-icon);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+
+    /* Reset default VidPly "circle button" styling so the custom icon can define the look */
+    border: none !important;
+    border-radius: 0;
+    filter: none;
+}
+
+/* When we inline+swap SVG contents for the main overlay, also remove the default circle styling */
+[data-vidply-play-inline-svg] .vidply-play-overlay {
+    border: none !important;
+    border-radius: 0;
+    filter: none;
+}
+
+.icon-play-color {
+    fill: #900;
+}
+
+/* Only hide default shapes when a background-image icon is used */
+[data-vidply-privacy-play-icon]:not([data-vidply-play-inline-svg]) .vidply-play-overlay .vidply-play-overlay-bg,
+[data-vidply-privacy-play-icon]:not([data-vidply-play-inline-svg]) .vidply-play-overlay .vidply-play-overlay-icon {
+    /* Hide default shapes when a custom background icon is used */
+    opacity: 0;
+}
+
+/* Position the main overlay based on the same selector as the privacy button */
+[data-vidply-privacy-play-position="left-top"] .vidply-play-overlay {
+    left: 1rem;
+    top: 1rem;
+    transform: none;
+}
+
+[data-vidply-privacy-play-position="left-top"] .vidply-play-overlay:hover {
+    transform: scale(1.1) !important;
+}
+
+[data-vidply-privacy-play-position="left-top"] .vidply-play-overlay:active {
+    transform: scale(.95) !important;
+}
+
+[data-vidply-privacy-play-position="right-top"] .vidply-play-overlay {
+    left: auto;
+    right: 1rem;
+    top: 1rem;
+    transform: none;
+}
+
+[data-vidply-privacy-play-position="right-top"] .vidply-play-overlay:hover {
+    transform: scale(1.1) !important;
+}
+
+[data-vidply-privacy-play-position="right-top"] .vidply-play-overlay:active {
+    transform: scale(.95) !important;
+}
+
+[data-vidply-privacy-play-position="left-bottom"] .vidply-play-overlay {
+    bottom: 1rem;
+    left: 1rem;
+    top: auto;
+    transform: none;
+}
+
+[data-vidply-privacy-play-position="left-bottom"] .vidply-play-overlay:hover {
+    transform: scale(1.1) !important;
+}
+
+[data-vidply-privacy-play-position="left-bottom"] .vidply-play-overlay:active {
+    transform: scale(.95) !important;
+}
+
+[data-vidply-privacy-play-position="right-bottom"] .vidply-play-overlay {
+    bottom: 1rem;
+    left: auto;
+    right: 1rem;
+    top: auto;
+    transform: none;
+}
+
+[data-vidply-privacy-play-position="right-bottom"] .vidply-play-overlay:hover {
+    transform: scale(1.1) !important;
+}
+
+[data-vidply-privacy-play-position="right-bottom"] .vidply-play-overlay:active {
+    transform: scale(.95) !important;
+}
+
+

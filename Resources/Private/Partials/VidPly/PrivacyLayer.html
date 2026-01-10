@@ -7,6 +7,7 @@
 <f:variable name="policyLink" value="{settings.policy_link}" />
 <f:variable name="linkText" value="{settings.link_text -> f:format.trim()}" />
 <f:variable name="buttonLabel" value="{settings.button_label}" />
+<f:variable name="finalPlayButtonPosition" value="{f:if(condition: playButtonPosition, then: playButtonPosition, else: 'center')}" />
 
 <div class="vidply-privacy-layer vidply-privacy-{service}" 
      data-vidply-privacy="{service}"
@@ -20,21 +21,35 @@
             <f:else>{f:translate(key: 'privacy.load_content', arguments: {0: service}, extensionName: 'mpc_vidply')}</f:else>
         </f:if>
     </f:variable>
-    <button class="vidply-privacy-button" 
+    <button class="vidply-privacy-button vidply-privacy-button--pos-{finalPlayButtonPosition}" 
             type="button"
             aria-label="{finalButtonLabel}">
-        <svg class="vidply-play-overlay" viewBox="0 0 80 80" width="80" height="80" aria-hidden="true" role="presentation">
-            <defs>
-                <filter id="vidply-play-shadow-privacy-{uniqueId}" x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur in="SourceAlpha" stdDeviation="3"></feGaussianBlur>
-                    <feOffset dx="0" dy="2" result="offsetblur"></feOffset>
-                    <feComponentTransfer><feFuncA type="linear" slope="0.3"></feFuncA></feComponentTransfer>
-                    <feMerge><feMergeNode></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge>
-                </filter>
-            </defs>
-            <circle cx="40" cy="40" r="40" fill="rgba(255, 255, 255, 0.95)" filter="url(#vidply-play-shadow-privacy-{uniqueId})" class="vidply-play-overlay-bg"></circle>
-            <polygon points="32,28 32,52 54,40" fill="#0a406e" class="vidply-play-overlay-icon"></polygon>
-        </svg>
+        <f:if condition="{playIconInlineSvg}">
+            <f:then>
+                <f:format.raw>{playIconInlineSvg}</f:format.raw>
+            </f:then>
+            <f:else>
+                <f:if condition="{playIconUrl}">
+                    <f:then>
+                        <img class="vidply-play-overlay-image" src="{playIconUrl}" alt="" aria-hidden="true" />
+                    </f:then>
+                    <f:else>
+                        <svg class="mpc-vidply-privacy-play-overlay" viewBox="0 0 80 80" width="80" height="80" aria-hidden="true" role="presentation">
+                            <defs>
+                                <filter id="vidply-play-shadow-privacy-{uniqueId}" x="-50%" y="-50%" width="200%" height="200%">
+                                    <feGaussianBlur in="SourceAlpha" stdDeviation="3"></feGaussianBlur>
+                                    <feOffset dx="0" dy="2" result="offsetblur"></feOffset>
+                                    <feComponentTransfer><feFuncA type="linear" slope="0.3"></feFuncA></feComponentTransfer>
+                                    <feMerge><feMergeNode></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge>
+                                </filter>
+                            </defs>
+                            <circle cx="40" cy="40" r="40" fill="rgba(255, 255, 255, 0.95)" filter="url(#vidply-play-shadow-privacy-{uniqueId})" class="vidply-play-overlay-bg"></circle>
+                            <polygon points="32,28 32,52 54,40" fill="#0a406e" class="vidply-play-overlay-icon"></polygon>
+                        </svg>
+                    </f:else>
+                </f:if>
+            </f:else>
+        </f:if>
     </button>
     
     <div class="vidply-privacy-text">
