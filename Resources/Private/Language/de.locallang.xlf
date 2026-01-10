@@ -20,13 +20,13 @@
                 <target>Durch Komma oder Zeilenumbruch getrennte Liste zulässiger Domains für externe Audio-URLs (z.B. *.xyz.de, www.xyz.de, https://*.xyz.de)</target>
             </trans-unit>
 
-            <trans-unit id="config.privacyPlayIcon">
-                <source>Privacy overlay play icon (global)</source>
-                <target>Play-Overlay Icon (global)</target>
+            <trans-unit id="config.playIcon">
+                <source>Play button icon (EXT: path, URL, or public path)</source>
+                <target>Play-Button Icon (EXT: Pfad, URL oder öffentlicher Pfad)</target>
             </trans-unit>
-            <trans-unit id="config.privacyPlayPosition">
-                <source>Privacy overlay play position (global)</source>
-                <target>Position Play-Overlay (global)</target>
+            <trans-unit id="config.playPosition">
+                <source>Play button position</source>
+                <target>Position des Play-Buttons</target>
             </trans-unit>
 
             <trans-unit id="player.play">

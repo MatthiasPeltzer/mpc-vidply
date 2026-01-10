@@ -706,8 +706,8 @@ function showConsentOverlay(playlist, element, wrapperElement, serviceType, trac
     playlist.updateTrackInfo?.(track);
 
     // Create and insert overlay
-    const playIconUrl = wrapperElement?.dataset?.vidplyPrivacyPlayIcon || element?.dataset?.vidplyPrivacyPlayIcon || null;
-    const playButtonPosition = wrapperElement?.dataset?.vidplyPrivacyPlayPosition || element?.dataset?.vidplyPrivacyPlayPosition || 'center';
+    const playIconUrl = wrapperElement?.dataset?.vidplyPlayIcon || element?.dataset?.vidplyPlayIcon || null;
+    const playButtonPosition = wrapperElement?.dataset?.vidplyPlayPosition || element?.dataset?.vidplyPlayPosition || 'center';
     const playIconInlineSvg = getInlinePlaySvgMarkup(wrapperElement);
     const overlay = createPrivacyOverlay(serviceType, track, () => {
         restorePlayerVisibility(playlist, element, wrapperElement);

@@ -119,8 +119,8 @@
      * Setup button event listeners
      */
     function setupButtonEffects(button) {
-        button.addEventListener('mouseenter', () => button.style.transform = 'scale(1.1)');
-        button.addEventListener('mouseleave', () => button.style.transform = 'scale(1)');
+        // Hover effects are handled via CSS to avoid conflicts with transform positioning
+        // Only handle focus/blur for accessibility outline
         button.addEventListener('focus', () => {
             button.style.outline = '3px solid rgba(255, 255, 255, 0.6)';
             button.style.outlineOffset = '4px';

@@ -61,6 +61,12 @@
     z-index: 10;
 }
 
+@media (width <= 48rem), (width < 48rem) {
+    .vidply-privacy-button {
+        transform: translate(-50%,-50%) scale(.65);
+    }
+}
+
 .vidply-privacy-button:hover {
     outline: none !important;
     transform: translate(-50%, -50%);
@@ -101,8 +107,6 @@
 
 /* Inline SVGs in the privacy button should be sized and not absolutely positioned */
 .vidply-privacy-button svg {
-    border: none;
-    border-radius: 0;
     bottom: auto;
     display: block;
     filter: none;
