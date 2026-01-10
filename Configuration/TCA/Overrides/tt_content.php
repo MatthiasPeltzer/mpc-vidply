@@ -120,36 +120,8 @@ $vidplyFields = [
         ],
     ],
 
-    // Privacy Layer UI (play button)
-    'tx_mpcvidply_privacy_play_icon' => [
-        'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_privacy_play_icon',
-        'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_privacy_play_icon.description',
-        'config' => [
-            'type' => 'file',
-            'allowed' => 'svg,png,jpg,jpeg,webp,gif',
-            'appearance' => [
-                'fileByUrlAllowed' => true,
-                'fileUploadAllowed' => true,
-            ],
-            'maxitems' => 1,
-        ],
-    ],
-    'tx_mpcvidply_privacy_play_position' => [
-        'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_privacy_play_position',
-        'config' => [
-            'type' => 'select',
-            'renderType' => 'selectSingle',
-            'items' => [
-                ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_privacy_play_position.inherit', 'value' => ''],
-                ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_privacy_play_position.center', 'value' => 'center'],
-                ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_privacy_play_position.left_top', 'value' => 'left-top'],
-                ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_privacy_play_position.right_top', 'value' => 'right-top'],
-                ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_privacy_play_position.left_bottom', 'value' => 'left-bottom'],
-                ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_privacy_play_position.right_bottom', 'value' => 'right-bottom'],
-            ],
-            'default' => '',
-        ],
-    ],
+    // Note: Play button icon and position are configured site-wide via Extension Configuration only
+    // (Admin Tools → Settings → Extension Configuration → mpc_vidply)
 ];
 
 // Add fields to TCA
@@ -169,8 +141,6 @@ $GLOBALS['TCA']['tt_content']['types']['mpc_vidply'] = [
             tx_mpcvidply_volume,
             tx_mpcvidply_playback_speed,
             tx_mpcvidply_language,
-            tx_mpcvidply_privacy_play_icon,
-            tx_mpcvidply_privacy_play_position,
         --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:appearance,
             --palette--;;appearance,
             --palette--;;frames,

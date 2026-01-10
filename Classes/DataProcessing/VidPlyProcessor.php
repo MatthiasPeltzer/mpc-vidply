@@ -376,84 +376,62 @@ class VidPlyProcessor implements DataProcessorInterface
             }
         }
 
-        // Privacy play button UI overrides (per content element)
-        $privacyPlayIconUrl = null;
-        $privacyPlayIconInlineSvg = null;
-        $privacyPlayIconFileReference = null;
-        $privacyPlayIconRefs = $this->fileRepository->findByRelation(
-            'tt_content',
-            'tx_mpcvidply_privacy_play_icon',
-            (int)($data['uid'] ?? 0)
-        );
-        if (!empty($privacyPlayIconRefs)) {
-            $privacyPlayIconFileReference = $privacyPlayIconRefs[0];
-            $privacyPlayIconUrl = $this->getPublicUrlCached($privacyPlayIconFileReference);
-        }
-
-        $privacyPlayButtonPosition = (string)($data['tx_mpcvidply_privacy_play_position'] ?? '');
-
-        // Global defaults via extension configuration (Admin Tools -> Settings -> Extension Configuration)
-        $globalPrivacyPlayIcon = '';
-        $globalPrivacyPlayPosition = '';
+        // Play button UI settings from site-wide extension configuration
+        // (Admin Tools → Settings → Extension Configuration → mpc_vidply)
+        // These apply to both the privacy consent overlay AND the video player's big play button.
+        $playIconUrl = null;
+        $playIconInlineSvg = null;
+        $playButtonPosition = 'center';
+        
         try {
             $extConf = $this->extensionConfiguration->get('mpc_vidply');
         } catch (\Throwable) {
             $extConf = [];
         }
+        
         if (is_array($extConf)) {
-            $globalPrivacyPlayIcon = (string)($extConf['privacyPlayIcon'] ?? '');
-            $globalPrivacyPlayPosition = (string)($extConf['privacyPlayPosition'] ?? '');
-        }
-
-        // If configured icon is an SVG, inline it (sanitized) so it can be styled like VidPly's own SVGs
-        // Per-content-element icon wins over global config.
-        if ($privacyPlayIconFileReference instanceof FileReference) {
-            $privacyPlayIconInlineSvg = $this->getInlineSvgFromFileReference($privacyPlayIconFileReference);
-        }
-        if (($privacyPlayIconInlineSvg === null || $privacyPlayIconInlineSvg === '') && $globalPrivacyPlayIcon !== '') {
-            $privacyPlayIconInlineSvg = $this->getInlineSvgFromExtPath($globalPrivacyPlayIcon);
-        }
-
-        // If no per-element icon is set, use global one (supports EXT: paths)
-        if (($privacyPlayIconUrl === null || $privacyPlayIconUrl === '') && $globalPrivacyPlayIcon !== '') {
-            $globalIcon = trim($globalPrivacyPlayIcon);
-            if (str_starts_with($globalIcon, 'EXT:')) {
-                // Resolve to a public web path (Composer mode compatible)
-                $webPath = PathUtility::getPublicResourceWebPath($globalIcon);
-                if ($webPath === '') {
-                    // Common pitfall: using "-" instead of "_" in the extension key
-                    $fallbackIcon = preg_replace_callback(
-                        '/^EXT:([a-z0-9-]+)\\//i',
+            // Play icon (supports EXT: paths, absolute URLs, or relative public paths)
+            $configuredIcon = trim((string)($extConf['playIcon'] ?? ''));
+            if ($configuredIcon !== '') {
+                if (str_starts_with($configuredIcon, 'EXT:')) {
+                    // Normalize extension key: convert dashes to underscores (common pitfall)
+                    $normalizedIcon = preg_replace_callback(
+                        '/^EXT:([a-z0-9_-]+)\\//i',
                         static function (array $m): string {
                             return 'EXT:' . str_replace('-', '_', $m[1]) . '/';
                         },
-                        $globalIcon
-                    ) ?: $globalIcon;
-                    $webPath = PathUtility::getPublicResourceWebPath($fallbackIcon);
-                }
-                if ($webPath !== '') {
-                    $privacyPlayIconUrl = $webPath;
+                        $configuredIcon
+                    ) ?: $configuredIcon;
+                    
+                    // Resolve EXT: path to a public web path (Composer mode compatible)
+                    $webPath = PathUtility::getPublicResourceWebPath($normalizedIcon);
+                    
+                    if ($webPath !== '' && $webPath !== '/') {
+                        $playIconUrl = $webPath;
+                    } else {
+                        // Fallback for legacy non-composer installs
+                        $abs = GeneralUtility::getFileAbsFileName($normalizedIcon);
+                        if ($abs !== '' && file_exists($abs)) {
+                            $playIconUrl = PathUtility::getAbsoluteWebPath($abs);
+                        }
+                    }
+                    
+                    // If it's an SVG, also inline it for styling
+                    if ($playIconUrl !== null) {
+                        $playIconInlineSvg = $this->getInlineSvgFromExtPath($normalizedIcon);
+                    }
                 } else {
-                    // Last resort fallback for legacy non-composer installs
-                    $abs = GeneralUtility::getFileAbsFileName($globalIcon);
-                    $privacyPlayIconUrl = $abs ? PathUtility::getAbsoluteWebPath($abs) : null;
+                    // Absolute URL or relative public path
+                    $playIconUrl = $configuredIcon;
                 }
-            } else {
-                // allow absolute URLs and relative public paths
-                $privacyPlayIconUrl = $globalIcon;
             }
-        }
-
-        // Position: prefer per-element setting; otherwise global; otherwise center
-        if ($privacyPlayButtonPosition === '' && $globalPrivacyPlayPosition !== '') {
-            $privacyPlayButtonPosition = $globalPrivacyPlayPosition;
-        }
-        if ($privacyPlayButtonPosition === '') {
-            $privacyPlayButtonPosition = 'center';
-        }
-        $allowedPositions = ['center', 'left-top', 'right-top', 'left-bottom', 'right-bottom'];
-        if (!in_array($privacyPlayButtonPosition, $allowedPositions, true)) {
-            $privacyPlayButtonPosition = 'center';
+            
+            // Play button position - normalize to handle both value format (left-bottom) and label format (Left bottom)
+            $configuredPosition = strtolower(str_replace(' ', '-', trim((string)($extConf['playPosition'] ?? ''))));
+            $allowedPositions = ['center', 'left-top', 'right-top', 'left-bottom', 'right-bottom'];
+            if (in_array($configuredPosition, $allowedPositions, true)) {
+                $playButtonPosition = $configuredPosition;
+            }
         }
         
         // Determine which assets are needed for conditional loading
@@ -542,9 +520,10 @@ class VidPlyProcessor implements DataProcessorInterface
             'playlistData' => $playlistData,
             'tracks' => $tracks,
             'privacySettings' => $privacySettings, // Privacy layer settings for external services
-            'privacyPlayIconUrl' => $privacyPlayIconUrl,
-            'privacyPlayIconInlineSvg' => $privacyPlayIconInlineSvg,
-            'privacyPlayButtonPosition' => $privacyPlayButtonPosition,
+            // Play button UI (applies to both privacy layer and video player overlay)
+            'privacyPlayIconUrl' => $playIconUrl,
+            'privacyPlayIconInlineSvg' => $playIconInlineSvg,
+            'privacyPlayButtonPosition' => $playButtonPosition,
         ];
         
         // Only set mediaFiles if we don't have sources (to avoid duplication)
