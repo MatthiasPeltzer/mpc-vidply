@@ -57,16 +57,75 @@
     position: absolute;
     top: 50%;
     transform: translate(-50%, -50%);
-    transition: transform 0.3s ease;
+    transition: none;
     z-index: 10;
 }
 
 .vidply-privacy-button:hover {
-    transform: translate(-50%, -50%) scale(1.05);
+    outline: none !important;
+    transform: translate(-50%, -50%);
 }
 
-.vidply-play-overlay {
+.vidply-privacy-button--pos-left-top {
+    left: 1rem;
+    top: 1rem;
+    transform: none !important;
+}
+
+.vidply-privacy-button--pos-right-top {
+    left: auto;
+    right: 1rem;
+    top: 1rem;
+    transform: none !important;
+}
+
+.vidply-privacy-button--pos-left-bottom {
+    bottom: 1rem;
+    left: 1rem;
+    top: auto;
+    transform: none !important;
+}
+
+.vidply-privacy-button--pos-right-bottom {
+    bottom: 1rem;
+    left: auto;
+    right: 1rem;
+    top: auto;
+    transform: none !important;
+}
+
+/* The privacy overlay play icon must NOT use VidPly's `.vidply-play-overlay` styles (those are for the player UI overlay). */
+.mpc-vidply-privacy-play-overlay {
     cursor: pointer;
+}
+
+/* Inline SVGs in the privacy button should be sized and not absolutely positioned */
+.vidply-privacy-button svg {
+    border: none;
+    border-radius: 0;
+    bottom: auto;
+    display: block;
+    filter: none;
+    height: 80px;
+    left: auto;
+    position: static;
+    right: auto;
+    top: auto;
+    transform: none;
+    transition: transform 0.3s ease;
+    width: 80px;
+}
+
+.vidply-play-overlay-image {
+    display: block;
+    height: 80px;
+    transition: transform 0.3s ease;
+    width: 80px;
+}
+
+.vidply-privacy-button:hover svg,
+.vidply-privacy-button:hover .vidply-play-overlay-image {
+    transform: scale(1.05);
 }
 
 .vidply-play-overlay-bg {

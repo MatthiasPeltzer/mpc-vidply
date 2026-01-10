@@ -3,4 +3,10 @@ allowedVideoDomains =
 # cat=config/cmedia/20; type=string; label=LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:config.allowedAudioDomains
 allowedAudioDomains =
 
+# cat=config/privacy/10; type=string; label=LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:config.privacyPlayIcon
+# Optional URL / public path / EXT: path to an image that will be used as the play icon in the privacy overlay.
+privacyPlayIcon =
+
+# cat=config/privacy/20; type=options[center=Center,left-top=Left top,right-top=Right top,left-bottom=Left bottom,right-bottom=Right bottom]; label=LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:config.privacyPlayPosition
+privacyPlayPosition = center
 

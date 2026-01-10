@@ -144,3 +144,11 @@ CREATE TABLE tx_mpcvidply_privacy_settings (
 	KEY language (l10n_parent,sys_language_uid)
 );
 
+#
+# Extend tt_content for VidPly content element configuration
+#
+CREATE TABLE tt_content (
+	tx_mpcvidply_privacy_play_icon int(11) unsigned DEFAULT '0' NOT NULL,
+	tx_mpcvidply_privacy_play_position varchar(20) DEFAULT '' NOT NULL
+);
+

@@ -16,6 +16,13 @@
                 <source>Comma or newline separated list of allowed domains for external audio URLs (e.g. *.xyz.de, www.xyz.de, https://*.xyz.de)</source>
             </trans-unit>
 
+            <trans-unit id="config.privacyPlayIcon">
+                <source>Play overlay icon (global)</source>
+            </trans-unit>
+            <trans-unit id="config.privacyPlayPosition">
+                <source>Play overlay position (global)</source>
+            </trans-unit>
+
             <trans-unit id="player.play">
                 <source>Play</source>
             </trans-unit>
