@@ -434,6 +434,9 @@ class VidPlyProcessor implements DataProcessorInterface
             }
         }
         
+        // CSS-based icon system (opt-in via extension configuration)
+        $useCssIcons = !empty($extConf['useCssIcons']);
+        
         // Determine which assets are needed for conditional loading
         // For mixed playlists: always use VidPly with playlist-integrated privacy consent
         $needsPrivacyLayer = $serviceType !== null || ($isPlaylist && $hasExternalMedia);
@@ -524,6 +527,8 @@ class VidPlyProcessor implements DataProcessorInterface
             'privacyPlayIconUrl' => $playIconUrl,
             'privacyPlayIconInlineSvg' => $playIconInlineSvg,
             'privacyPlayButtonPosition' => $playButtonPosition,
+            // CSS-based icon system (adds .vidply-use-css-icons class to wrapper)
+            'useCssIcons' => $useCssIcons,
         ];
         
         // Only set mediaFiles if we don't have sources (to avoid duplication)

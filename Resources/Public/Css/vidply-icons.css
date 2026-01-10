@@ -1,0 +1,439 @@
+/**
+ * VidPly CSS-based Icon Override System
+ * ======================================
+ * 
+ * This file provides a CSS custom property (CSS variable) system for overriding
+ * all player icons. It allows theming without modifying the core VidPly library.
+ * 
+ * HOW TO USE:
+ * -----------
+ * 1. Add the class `vidply-use-css-icons` to your player wrapper:
+ *    <div class="vidply-wrapper vidply-use-css-icons">
+ * 
+ * 2. Override any icon by redefining its CSS variable in your stylesheet:
+ *    :root {
+ *        --vidply-icon-play: url("/path/to/custom-play.svg");
+ *    }
+ * 
+ * ICON COLORS:
+ * ------------
+ * Icons use CSS `mask-image` so they inherit the current text color via `currentColor`.
+ * To change icon colors, adjust the `.vidply-button` color or use:
+ *    .vidply-button .vidply-icon { color: #ff0000; }
+ * 
+ * AVAILABLE ICON VARIABLES:
+ * -------------------------
+ * --vidply-icon-play           Play button
+ * --vidply-icon-pause          Pause button
+ * --vidply-icon-restart        Restart/replay button
+ * --vidply-icon-rewind         Rewind/seek backward
+ * --vidply-icon-forward        Fast forward/seek forward
+ * --vidply-icon-volume-high    Volume at high level
+ * --vidply-icon-volume-medium  Volume at medium level
+ * --vidply-icon-volume-low     Volume at low level
+ * --vidply-icon-volume-mute    Volume muted
+ * --vidply-icon-fullscreen     Enter fullscreen
+ * --vidply-icon-fullscreen-exit Exit fullscreen
+ * --vidply-icon-captions       Closed captions/subtitles
+ * --vidply-icon-chapters       Chapter list
+ * --vidply-icon-speed          Playback speed
+ * --vidply-icon-transcript     Transcript panel
+ * --vidply-icon-audio-desc     Audio description
+ * --vidply-icon-sign-language  Sign language video
+ * --vidply-icon-settings       Settings/options
+ * --vidply-icon-overflow       Overflow menu (more options)
+ * --vidply-icon-close          Close/dismiss
+ * --vidply-icon-check          Checkmark (active state)
+ * --vidply-icon-play-overlay   Big play button overlay
+ */
+
+/* ==========================================================================
+   ICON CSS VARIABLES
+   ========================================================================== */
+
+:root {
+    /* Play/Pause */
+    --vidply-icon-play: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8 5v14l11-7z'/%3E%3C/svg%3E");
+    --vidply-icon-pause: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 19h4V5H6v14zm8-14v14h4V5h-4z'/%3E%3C/svg%3E");
+
+    /* Navigation */
+    --vidply-icon-restart: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z'/%3E%3C/svg%3E");
+    --vidply-icon-rewind: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z'/%3E%3C/svg%3E");
+    --vidply-icon-forward: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z'/%3E%3C/svg%3E");
+    --vidply-icon-previous: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 6h2v12H6zm3.5 6l8.5 6V6z'/%3E%3C/svg%3E");
+    --vidply-icon-next: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z'/%3E%3C/svg%3E");
+    --vidply-icon-playlist: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15 6H3v2h12V6zm0 4H3v2h12v-2zM3 16h8v-2H3v2zM17 6v8.18c-.31-.11-.65-.18-1-.18-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V8h3V6h-5z'/%3E%3C/svg%3E");
+
+    /* Volume */
+    --vidply-icon-volume-high: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E");
+    --vidply-icon-volume-medium: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z'/%3E%3C/svg%3E");
+    --vidply-icon-volume-low: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 9v6h4l5 5V4l-5 5H7z'/%3E%3C/svg%3E");
+    --vidply-icon-volume-mute: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E");
+
+    /* Fullscreen */
+    --vidply-icon-fullscreen: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z'/%3E%3C/svg%3E");
+    --vidply-icon-fullscreen-exit: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z'/%3E%3C/svg%3E");
+
+    /* Captions & Chapters */
+    --vidply-icon-captions: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19 4H5c-1.11 0-2 .9-2 2v12c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 7H9.5v-.5h-2v3h2V13H11v1c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h3c.55 0 1 .45 1 1v1zm7 0h-1.5v-.5h-2v3h2V13H18v1c0 .55-.45 1-1 1h-3c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h3c.55 0 1 .45 1 1v1z'/%3E%3C/svg%3E");
+    --vidply-icon-chapters: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 5h2v2H3V5zm0 4h2v2H3V9zm0 4h2v2H3v-2zm0 4h2v2H3v-2zM7 5h14v2H7V5zm0 4h14v2H7V9zm0 4h14v2H7v-2zm0 4h14v2H7v-2z'/%3E%3C/svg%3E");
+
+    /* Speed */
+    --vidply-icon-speed: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M20.38 8.57l-1.23 1.85a8 8 0 0 1-.22 7.58H5.07A8 8 0 0 1 15.58 6.85l1.85-1.23A10 10 0 0 0 3.35 19a2 2 0 0 0 1.72 1h13.85a2 2 0 0 0 1.74-1 10 10 0 0 0-.27-10.44z'/%3E%3Cpath d='M10.59 15.41a2 2 0 0 0 2.83 0l5.66-8.49-8.49 5.66a2 2 0 0 0 0 2.83z'/%3E%3C/svg%3E");
+
+    /* Accessibility features */
+    --vidply-icon-transcript: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z'/%3E%3C/svg%3E");
+    --vidply-icon-audio-desc: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='2' y='5' width='20' height='14' rx='2' fill='none' stroke='currentColor' stroke-width='2'/%3E%3Ctext x='12' y='15' font-family='Arial,sans-serif' font-size='8' font-weight='bold' text-anchor='middle' fill='currentColor'%3EAD%3C/text%3E%3C/svg%3E");
+    --vidply-icon-sign-language: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg transform='scale(1.5)'%3E%3Cpath d='M16 11.3c-.1-.9-4.8 1.3-5.4 1.1-2.6-1 5.8-1.3 5.1-2.9s-5.1 1.5-6 1.4C6.5 9.4 16.5 9.1 13.5 8c-1.9-.6-8.8 2.9-6.8.4.7-.6.7-1.9-.7-1.7-9.7 7.2-.7 12.2 8.8 7 0-1.3-3.5.4-4.1.4-2.6 0 5.6-2 5.4-3ZM3.9 7.8c3.2-4.2 3.7 1.2 6 .1s.2-.2.2-.3c.7-2.7 2.5-7.5-1.5-1.3-1.6 0 1.1-4 1-4.6C8.9-1 7.3 4.4 7.2 4.9c-1.6.7-.9-1.4-.7-1.5 3-6-.6-3.1-.9.4-2.5 1.8 0-2.8 0-3.5C2.8-.9 4 9.4 1.1 4.9S.1 4.6 0 5c-.4 2.7 2.6 7.2 3.9 2.8Z'/%3E%3C/g%3E%3C/svg%3E");
+
+    /* UI elements */
+    --vidply-icon-settings: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z'/%3E%3C/svg%3E");
+    --vidply-icon-overflow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z'/%3E%3C/svg%3E");
+    --vidply-icon-close: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/%3E%3C/svg%3E");
+    --vidply-icon-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E");
+
+    /* Caption style button (Aa text) */
+    --vidply-icon-caption-style: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ctext x='12' y='17' font-family='Arial,sans-serif' font-size='12' font-weight='bold' text-anchor='middle' fill='currentColor'%3EAa%3C/text%3E%3C/svg%3E");
+
+    /* Big play button overlay (larger, more detailed) */
+    --vidply-icon-play-overlay: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='58' fill='rgba(255,255,255,0.95)' stroke='%230a406e' stroke-width='4'/%3E%3Cpolygon points='48,36 48,84 84,60' fill='%230a406e'/%3E%3C/svg%3E");
+}
+
+
+/* ==========================================================================
+   OPT-IN CSS ICON RENDERING
+   Add class .vidply-use-css-icons to .vidply-wrapper to activate
+   ========================================================================== */
+
+/* Hide the inline SVG when CSS icons are enabled */
+.vidply-use-css-icons .vidply-button .vidply-icon svg {
+    display: none !important;
+}
+
+/* Base icon rendering via ::before pseudo-element */
+.vidply-use-css-icons .vidply-button .vidply-icon::before {
+    background: currentcolor;
+    content: '';
+    display: block;
+    height: 100%;
+
+    /* Default fallback icon - prevents blank icons for unstyled buttons */
+    width: 100%;
+    mask-image: var(--vidply-icon-settings);
+    mask-position: center;
+    mask-repeat: no-repeat;
+    mask-size: contain;
+}
+
+/* ==========================================================================
+   CONTROL BAR BUTTON ICONS
+   ========================================================================== */
+
+/* Play/Pause button */
+.vidply-use-css-icons .vidply-play-pause .vidply-icon::before {
+    mask-image: var(--vidply-icon-play);
+}
+
+/* Pause icon when playing - multiple selector patterns for VidPly compatibility */
+
+/* Using :has() to detect overlay with inline opacity:0 or display:none */
+.vidply-use-css-icons:has(.vidply-play-overlay[style*="opacity: 0"]) .vidply-play-pause .vidply-icon::before,
+.vidply-use-css-icons:has(.vidply-play-overlay[style*="opacity:0"]) .vidply-play-pause .vidply-icon::before,
+.vidply-use-css-icons:has(.vidply-play-overlay[style*="display: none"]) .vidply-play-pause .vidply-icon::before,
+.vidply-use-css-icons:has(.vidply-play-overlay[style*="display:none"]) .vidply-play-pause .vidply-icon::before,
+.vidply-wrapper:has(.vidply-play-overlay[style*="opacity: 0"]) .vidply-play-pause .vidply-icon::before,
+.vidply-wrapper:has(.vidply-play-overlay[style*="opacity:0"]) .vidply-play-pause .vidply-icon::before,
+.vidply-wrapper:has(.vidply-play-overlay[style*="display: none"]) .vidply-play-pause .vidply-icon::before,
+.vidply-wrapper:has(.vidply-play-overlay[style*="display:none"]) .vidply-play-pause .vidply-icon::before {
+    mask-image: var(--vidply-icon-pause);
+}
+
+/* Restart button */
+.vidply-use-css-icons .vidply-restart .vidply-icon::before {
+    mask-image: var(--vidply-icon-restart);
+}
+
+/* Rewind button */
+.vidply-use-css-icons .vidply-rewind .vidply-icon::before {
+    mask-image: var(--vidply-icon-rewind);
+}
+
+/* Forward button */
+.vidply-use-css-icons .vidply-forward .vidply-icon::before {
+    mask-image: var(--vidply-icon-forward);
+}
+
+/* Previous track button (playlist) */
+.vidply-use-css-icons .vidply-previous .vidply-icon::before {
+    mask-image: var(--vidply-icon-previous);
+}
+
+/* Next track button (playlist) */
+.vidply-use-css-icons .vidply-next .vidply-icon::before {
+    mask-image: var(--vidply-icon-next);
+}
+
+/* Playlist toggle button */
+.vidply-use-css-icons .vidply-playlist-toggle .vidply-icon::before {
+    mask-image: var(--vidply-icon-playlist);
+}
+
+/* Mute/Volume button */
+.vidply-use-css-icons .vidply-mute .vidply-icon::before {
+    mask-image: var(--vidply-icon-volume-high);
+}
+
+.vidply-use-css-icons .vidply-mute.vidply-muted .vidply-icon::before,
+.vidply-use-css-icons .vidply-player.vidply-muted .vidply-mute .vidply-icon::before {
+    mask-image: var(--vidply-icon-volume-mute);
+}
+
+/* Chapters button */
+.vidply-use-css-icons .vidply-chapters .vidply-icon::before {
+    mask-image: var(--vidply-icon-chapters);
+}
+
+/* Captions button */
+.vidply-use-css-icons .vidply-captions-button .vidply-icon::before {
+    mask-image: var(--vidply-icon-captions);
+}
+
+/* Caption style button - uses text, so we need different handling */
+.vidply-use-css-icons .vidply-caption-style .vidply-icon::before {
+    mask-image: var(--vidply-icon-caption-style);
+}
+
+/* Speed button */
+.vidply-use-css-icons .vidply-speed .vidply-icon::before {
+    mask-image: var(--vidply-icon-speed);
+}
+
+/* Audio description button */
+.vidply-use-css-icons .vidply-audio-description .vidply-icon::before {
+    mask-image: var(--vidply-icon-audio-desc);
+}
+
+/* Transcript button */
+.vidply-use-css-icons .vidply-transcript .vidply-icon::before {
+    mask-image: var(--vidply-icon-transcript);
+}
+
+/* Sign language button */
+.vidply-use-css-icons .vidply-sign-language .vidply-icon::before {
+    mask-image: var(--vidply-icon-sign-language);
+}
+
+/* Fullscreen button */
+.vidply-use-css-icons .vidply-fullscreen .vidply-icon::before {
+    mask-image: var(--vidply-icon-fullscreen);
+}
+
+.vidply-use-css-icons .vidply-player.vidply-fullscreen .vidply-fullscreen .vidply-icon::before,
+.vidply-use-css-icons .vidply-player:fullscreen .vidply-fullscreen .vidply-icon::before {
+    mask-image: var(--vidply-icon-fullscreen-exit);
+}
+
+/* Overflow menu button */
+.vidply-use-css-icons .vidply-overflow-menu .vidply-icon::before {
+    mask-image: var(--vidply-icon-overflow);
+}
+
+
+/* ==========================================================================
+   PANEL ICONS (Transcript, Sign Language windows)
+   ========================================================================== */
+
+/* Close buttons in panels and settings */
+.vidply-use-css-icons .vidply-transcript-close .vidply-icon svg,
+.vidply-use-css-icons .vidply-sign-language-close .vidply-icon svg,
+.vidply-use-css-icons .vidply-settings-close .vidply-icon svg {
+    display: none !important;
+}
+
+.vidply-use-css-icons .vidply-transcript-close .vidply-icon::before,
+.vidply-use-css-icons .vidply-sign-language-close .vidply-icon::before,
+.vidply-use-css-icons .vidply-settings-close .vidply-icon::before {
+    background: currentcolor;
+    content: '';
+    display: block;
+    height: 100%;
+    width: 100%;
+    mask-image: var(--vidply-icon-close);
+    mask-position: center;
+    mask-repeat: no-repeat;
+    mask-size: contain;
+}
+
+/* Settings buttons in panels */
+.vidply-use-css-icons .vidply-transcript-settings .vidply-icon svg,
+.vidply-use-css-icons .vidply-sign-language-settings .vidply-icon svg {
+    display: none !important;
+}
+
+.vidply-use-css-icons .vidply-transcript-settings .vidply-icon::before,
+.vidply-use-css-icons .vidply-sign-language-settings .vidply-icon::before {
+    background: currentcolor;
+    content: '';
+    display: block;
+    height: 100%;
+    width: 100%;
+    mask-image: var(--vidply-icon-settings);
+    mask-position: center;
+    mask-repeat: no-repeat;
+    mask-size: contain;
+}
+
+
+/* ==========================================================================
+   MENU ICONS
+   ========================================================================== */
+
+/* Checkmark for active menu items */
+.vidply-use-css-icons .vidply-menu-item-active .vidply-icon::before {
+    mask-image: var(--vidply-icon-check);
+}
+
+.vidply-use-css-icons .vidply-menu-item-active .vidply-icon svg {
+    display: none !important;
+}
+
+.vidply-use-css-icons .vidply-menu-item-active .vidply-icon::before {
+    background: currentcolor;
+    content: '';
+    display: block;
+    height: 100%;
+    width: 100%;
+    mask-position: center;
+    mask-repeat: no-repeat;
+    mask-size: contain;
+}
+
+
+/* ==========================================================================
+   PLAYLIST ICONS
+   ========================================================================== */
+
+/* Playlist item play indicator icon */
+.vidply-use-css-icons .vidply-playlist-item-icon svg {
+    display: none !important;
+}
+
+.vidply-use-css-icons .vidply-playlist-item-icon::before {
+    background: currentcolor;
+    content: '';
+    display: block;
+    height: 100%;
+    width: 100%;
+    mask-image: var(--vidply-icon-play);
+    mask-position: center;
+    mask-repeat: no-repeat;
+    mask-size: contain;
+}
+
+/* Playlist thumbnail placeholder icon (when no poster) */
+.vidply-use-css-icons .vidply-playlist-thumbnail-icon {
+    background: currentcolor;
+    mask-image: var(--vidply-icon-play);
+    mask-position: center;
+    mask-repeat: no-repeat;
+    mask-size: 50%;
+}
+
+.vidply-use-css-icons .vidply-playlist-thumbnail-icon svg {
+    display: none !important;
+}
+
+
+/* ==========================================================================
+   OVERFLOW MENU ICONS
+   Icons shown in the overflow/more menu when buttons don't fit
+   ========================================================================== */
+
+/* Base styling for overflow menu item icons */
+.vidply-use-css-icons .vidply-overflow-menu-list .vidply-menu-item .vidply-icon svg {
+    display: none !important;
+}
+
+.vidply-use-css-icons .vidply-overflow-menu-list .vidply-menu-item .vidply-icon::before {
+    background: currentcolor;
+    content: '';
+    display: block;
+    height: 100%;
+    width: 100%;
+    mask-position: center;
+    mask-repeat: no-repeat;
+    mask-size: contain;
+}
+
+/* Specific overflow menu icons by data attribute or class */
+.vidply-use-css-icons .vidply-overflow-menu-list [data-overflow-button="chapters"] .vidply-icon::before {
+    mask-image: var(--vidply-icon-chapters);
+}
+
+.vidply-use-css-icons .vidply-overflow-menu-list [data-overflow-button="captions"] .vidply-icon::before {
+    mask-image: var(--vidply-icon-captions);
+}
+
+.vidply-use-css-icons .vidply-overflow-menu-list [data-overflow-button="caption-style"] .vidply-icon::before {
+    mask-image: var(--vidply-icon-caption-style);
+}
+
+.vidply-use-css-icons .vidply-overflow-menu-list [data-overflow-button="speed"] .vidply-icon::before {
+    mask-image: var(--vidply-icon-speed);
+}
+
+.vidply-use-css-icons .vidply-overflow-menu-list [data-overflow-button="audio-description"] .vidply-icon::before {
+    mask-image: var(--vidply-icon-audio-desc);
+}
+
+.vidply-use-css-icons .vidply-overflow-menu-list [data-overflow-button="transcript"] .vidply-icon::before {
+    mask-image: var(--vidply-icon-transcript);
+}
+
+.vidply-use-css-icons .vidply-overflow-menu-list [data-overflow-button="sign-language"] .vidply-icon::before {
+    mask-image: var(--vidply-icon-sign-language);
+}
+
+.vidply-use-css-icons .vidply-overflow-menu-list [data-overflow-button="fullscreen"] .vidply-icon::before {
+    mask-image: var(--vidply-icon-fullscreen);
+}
+
+
+/* ==========================================================================
+   BIG PLAY OVERLAY ICON
+   The large play button shown on video poster before playback
+   
+   NOTE: The play overlay uses background-image (not mask-image) to preserve
+   the multi-color design (white circle + colored play icon).
+   ========================================================================== */
+
+/* Replace the overlay with a CSS background image - preserves colors */
+.vidply-use-css-icons .vidply-play-overlay {
+    background-color: transparent !important;
+    background-image: var(--vidply-icon-play-overlay);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    border: none !important;
+    border-radius: 0 !important;
+}
+
+/* Hide internal SVG elements when using CSS icon */
+.vidply-use-css-icons .vidply-play-overlay > * {
+    visibility: hidden;
+}
+
+
+/* ==========================================================================
+   ALTERNATIVE: ALWAYS-ON MODE
+   If you want CSS icons without the opt-in class, copy the rules above
+   and remove the `.vidply-use-css-icons` prefix.
+   ========================================================================== */
+
+/* 
+ * Example - uncomment to always use CSS icons:
+ *
+ * .vidply-button .vidply-icon svg { display: none !important; }
+ * .vidply-button .vidply-icon::before { ... }
+ * etc.
+ */

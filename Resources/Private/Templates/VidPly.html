@@ -3,7 +3,7 @@
 <f:layout name="Default" />
 
 <f:section name="Main">
-    <f:variable name="wrapperClasses" value="vidply-wrapper" />
+    <f:variable name="wrapperClasses" value="{f:if(condition: vidply.useCssIcons, then: 'vidply-wrapper vidply-use-css-icons', else: 'vidply-wrapper')}" />
 
     <div class="{wrapperClasses}"
          id="{vidply.uniqueId}-wrapper"
