@@ -4,7 +4,14 @@
 
 <f:section name="Main">
     <f:variable name="wrapperClasses" value="{f:if(condition: vidply.useCssIcons, then: 'vidply-wrapper vidply-use-css-icons', else: 'vidply-wrapper')}" />
+    <f:if condition="{vidply.playIcon}">
+        <f:asset.css href="EXT:mpc_vidply/Resources/Public/Css/vidply-overrides.css" identifier="vidplyOverridesCSS"/>
+    </f:if>
 
+    <f:if condition="{vidply.useCssIcons}">
+        <f:asset.css href="EXT:mpc_vidply/Resources/Public/Css/vidply-icons.css" identifier="vidplyIconsCSS"/>
+    </f:if>
+    
     <div class="{wrapperClasses}"
          id="{vidply.uniqueId}-wrapper"
          <f:if condition="{vidply.privacyPlayIconUrl}">data-vidply-play-icon="{vidply.privacyPlayIconUrl}"</f:if>
