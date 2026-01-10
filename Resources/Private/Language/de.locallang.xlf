@@ -28,6 +28,10 @@
                 <source>Play button position</source>
                 <target>Position des Play-Buttons</target>
             </trans-unit>
+            <trans-unit id="config.useCssIcons">
+                <source>Use CSS-based icons (enables icon customization via CSS variables)</source>
+                <target>CSS-basierte Icons verwenden (ermöglicht Icon-Anpassung über CSS-Variablen)</target>
+            </trans-unit>
 
             <trans-unit id="player.play">
                 <source>Play</source>

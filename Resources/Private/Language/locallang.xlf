@@ -22,6 +22,9 @@
             <trans-unit id="config.playPosition">
                 <source>Play button position</source>
             </trans-unit>
+            <trans-unit id="config.useCssIcons">
+                <source>Use CSS-based icons (enables icon customization via CSS variables)</source>
+            </trans-unit>
 
             <trans-unit id="player.play">
                 <source>Play</source>

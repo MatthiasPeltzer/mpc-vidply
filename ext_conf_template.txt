@@ -9,3 +9,5 @@ playIcon =
 # cat=config/ui/20; type=options[center=Center,left-top=Left top,right-top=Right top,left-bottom=Left bottom,right-bottom=Right bottom]; label=LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:config.playPosition
 playPosition = center
 
+# cat=config/ui/30; type=boolean; label=LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:config.useCssIcons
+useCssIcons = 0
