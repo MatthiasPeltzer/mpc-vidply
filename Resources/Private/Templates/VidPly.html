@@ -4,7 +4,7 @@
 
 <f:section name="Main">
     <f:variable name="wrapperClasses" value="{f:if(condition: vidply.useCssIcons, then: 'vidply-wrapper vidply-use-css-icons', else: 'vidply-wrapper')}" />
-    <f:if condition="{vidply.playIcon}">
+    <f:if condition="{vidply.playIcon} || {vidply.privacyPlayButtonPosition} != 'center'">
         <f:asset.css href="EXT:mpc_vidply/Resources/Public/Css/vidply-overrides.css" identifier="vidplyOverridesCSS"/>
     </f:if>
 

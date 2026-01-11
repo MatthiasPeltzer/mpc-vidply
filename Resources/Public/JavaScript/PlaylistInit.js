@@ -285,7 +285,7 @@ function createPrivacyOverlay(service, track, onConsent, privacySettings = null,
     } else {
         const filterId = `vidply-play-shadow-privacy-${Date.now()}`;
         playButton.innerHTML = `
-            <svg class="mpc-vidply-privacy-play-overlay" viewBox="0 0 80 80" width="80" height="80" aria-hidden="true">
+            <svg class="vidply-play-overlay" viewBox="0 0 80 80" width="80" height="80" aria-hidden="true">
                 <defs>
                     <filter id="${filterId}" x="-50%" y="-50%" width="200%" height="200%">
                         <feGaussianBlur in="SourceAlpha" stdDeviation="3"></feGaussianBlur>

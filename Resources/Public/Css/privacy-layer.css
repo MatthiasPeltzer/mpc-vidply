@@ -100,11 +100,6 @@
     transform: none !important;
 }
 
-/* The privacy overlay play icon must NOT use VidPly's `.vidply-play-overlay` styles (those are for the player UI overlay). */
-.mpc-vidply-privacy-play-overlay {
-    cursor: pointer;
-}
-
 /* Inline SVGs in the privacy button should be sized and not absolutely positioned */
 .vidply-privacy-button svg {
     bottom: auto;
