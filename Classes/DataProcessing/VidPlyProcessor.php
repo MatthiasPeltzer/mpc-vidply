@@ -268,6 +268,16 @@ class VidPlyProcessor implements DataProcessorInterface
                         'externalServiceTypes' => $externalServiceTypes,
                     ],
                 ];
+                
+                // For playlists: set sign language display mode from first track that has sign language
+                foreach ($tracks as $track) {
+                    if (!empty($track['signLanguageSrc'])) {
+                        $playerOptions['signLanguageButton'] = true;
+                        $displayMode = $track['signLanguageDisplayMode'] ?? 'pip';
+                        $playerOptions['signLanguageDisplayMode'] = in_array($displayMode, ['pip', 'main', 'both'], true) ? $displayMode : 'pip';
+                        break; // Use first track with sign language
+                    }
+                }
             }
             
             // For single item: extract data for template compatibility
