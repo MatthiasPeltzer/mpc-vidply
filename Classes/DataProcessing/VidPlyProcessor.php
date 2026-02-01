@@ -347,6 +347,9 @@ class VidPlyProcessor implements DataProcessorInterface
                     $playerOptions['signLanguageSrc'] = $firstTrack['signLanguageSrc'];
                     $playerOptions['signLanguageButton'] = true;
                     $playerOptions['signLanguagePosition'] = 'bottom-right';
+                    // Set display mode from media record (pip, main, or both)
+                    $displayMode = $firstTrack['signLanguageDisplayMode'] ?? 'pip';
+                    $playerOptions['signLanguageDisplayMode'] = in_array($displayMode, ['pip', 'main', 'both'], true) ? $displayMode : 'pip';
                 }
 
             }
@@ -1046,6 +1049,8 @@ class VidPlyProcessor implements DataProcessorInterface
         $signLangFiles = $this->getFileReferencesForMedia($mediaUid, 'sign_language');
         if (!empty($signLangFiles)) {
             $track['signLanguageSrc'] = $signLangFiles[0]->getPublicUrl();
+            // Add display mode (pip, main, or both)
+            $track['signLanguageDisplayMode'] = $mediaRecord['sign_language_display_mode'] ?? 'pip';
         }
         
         // Add transcript flag if enabled

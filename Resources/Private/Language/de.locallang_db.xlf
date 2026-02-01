@@ -146,6 +146,27 @@
                 <target>Gebärdensprache-Video hinzufügen</target>
             </trans-unit>
             
+            <trans-unit id="tx_mpcvidply_media.sign_language_display_mode">
+                <source>Sign Language Display Mode</source>
+                <target>Gebärdensprache-Anzeigemodus</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.sign_language_display_mode.description">
+                <source>Choose how the sign language video is displayed in the player</source>
+                <target>Wählen Sie, wie das Gebärdensprach-Video im Player angezeigt wird</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.sign_language_display_mode.pip">
+                <source>Picture-in-Picture (overlay)</source>
+                <target>Bild-im-Bild (Overlay)</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.sign_language_display_mode.main">
+                <source>In main video (replaces main content)</source>
+                <target>Im Hauptvideo (ersetzt Hauptinhalt)</target>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.sign_language_display_mode.both">
+                <source>Both options (PiP and main video)</source>
+                <target>Beide Optionen (PiP und Hauptvideo)</target>
+            </trans-unit>
+            
             <trans-unit id="tx_mpcvidply_media.enable_transcript">
                 <source>Enable Transcript</source>
                 <target>Transkript aktivieren</target>

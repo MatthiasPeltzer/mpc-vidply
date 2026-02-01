@@ -51,6 +51,7 @@ CREATE TABLE tx_mpcvidply_media (
 	
 	# Accessibility features - Sign Language
 	sign_language int(11) unsigned DEFAULT '0' NOT NULL,
+	sign_language_display_mode varchar(20) DEFAULT 'pip' NOT NULL,
 	
 	# Transcript
 	enable_transcript tinyint(4) unsigned DEFAULT '0' NOT NULL,
