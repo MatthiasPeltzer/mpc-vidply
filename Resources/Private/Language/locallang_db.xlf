@@ -114,6 +114,22 @@
                 <source>Add sign language video</source>
             </trans-unit>
             
+            <trans-unit id="tx_mpcvidply_media.sign_language_display_mode">
+                <source>Sign Language Display Mode</source>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.sign_language_display_mode.description">
+                <source>Choose how the sign language video is displayed in the player</source>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.sign_language_display_mode.pip">
+                <source>Picture-in-Picture (overlay)</source>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.sign_language_display_mode.main">
+                <source>In main video (replaces main content)</source>
+            </trans-unit>
+            <trans-unit id="tx_mpcvidply_media.sign_language_display_mode.both">
+                <source>Both options (PiP and main video)</source>
+            </trans-unit>
+            
             <trans-unit id="tx_mpcvidply_media.enable_transcript">
                 <source>Enable Transcript</source>
             </trans-unit>
