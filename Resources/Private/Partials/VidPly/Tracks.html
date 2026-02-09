@@ -1,9 +1,15 @@
 <html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
 
+<f:variable name="defaultTrackSet" value="0" />
+
 <f:for each="{captions}" as="caption">
+    <f:variable name="isDefaultTrack" value="{f:if(condition: '{defaultTrackSet} == 0 && {languageSelection} && {caption.srclang} == {languageSelection}', then: '1', else: '0')}" />
     <track kind="{caption.kind}" src="{caption.src}" srclang="{caption.srclang}" label="{caption.label}"
         <f:if condition="{caption.describedSrc}">data-desc-src="{caption.describedSrc}"</f:if>
-        <f:if condition="{languageSelection} && {caption.srclang} == {languageSelection}"> default</f:if>>
+        <f:if condition="{isDefaultTrack} == 1"> default</f:if>>
+    <f:if condition="{isDefaultTrack} == 1">
+        <f:variable name="defaultTrackSet" value="1" />
+    </f:if>
 </f:for>
 
 <f:for each="{chapters}" as="chapter">
