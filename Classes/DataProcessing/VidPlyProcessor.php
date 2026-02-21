@@ -450,6 +450,14 @@ class VidPlyProcessor implements DataProcessorInterface
         // CSS-based icon system (opt-in via extension configuration)
         $useCssIcons = !empty($extConf['useCssIcons']);
         
+        // Theme configuration (dark or light mode)
+        $configuredTheme = strtolower(trim((string)($extConf['theme'] ?? '')));
+        $theme = in_array($configuredTheme, ['dark', 'light'], true) ? $configuredTheme : 'dark';
+        $playerOptions['theme'] = $theme;
+        
+        // Theme sync with page-level theme switch (opt-in)
+        $themeSyncEnabled = !empty($extConf['themeSyncEnabled']);
+        
         // Determine which assets are needed for conditional loading
         // For mixed playlists: always use VidPly with playlist-integrated privacy consent
         $needsPrivacyLayer = $serviceType !== null || ($isPlaylist && $hasExternalMedia);
@@ -542,6 +550,9 @@ class VidPlyProcessor implements DataProcessorInterface
             'privacyPlayButtonPosition' => $playButtonPosition,
             // CSS-based icon system (adds .vidply-use-css-icons class to wrapper)
             'useCssIcons' => $useCssIcons,
+            // Theme settings
+            'theme' => $theme,
+            'themeSyncEnabled' => $themeSyncEnabled,
         ];
         
         // Only set mediaFiles if we don't have sources (to avoid duplication)

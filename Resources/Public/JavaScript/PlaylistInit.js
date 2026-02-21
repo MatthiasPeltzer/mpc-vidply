@@ -22,6 +22,9 @@ const PRIVACY_POLICY_URLS = {
 // Track initialized players to prevent double-init
 const initializedPlayers = new WeakSet();
 
+// Track all initialized players for theme sync
+const allPlayers = new Set();
+
 // Suppress VidPly's internal console logs
 const originalConsoleLog = console.log;
 const suppressVidPlyLogs = (fn) => {
@@ -380,6 +383,7 @@ function initializeSingleElement(element) {
 
         initializedPlayers.add(element);
         element._vidplyPlayer = player;
+        allPlayers.add(player);
     } catch (error) {
         console.error('[VidPly Init] Error:', error);
     }
@@ -510,6 +514,7 @@ function initializePlaylistElement(element) {
 
         initializedPlayers.add(element);
         element._vidplyPlayer = player;
+        allPlayers.add(player);
     } catch (error) {
         console.error('[VidPly Init] Playlist error:', error);
     }
@@ -777,6 +782,179 @@ function setupPrivacyInterception(playlist, element, wrapperElement, tracks, aut
     });
 }
 
+/**
+ * Theme Synchronization System
+ * Allows VidPly players to sync with page-level theme switches (e.g., header dark/light mode toggle)
+ * Compatible with mp_core theme.js which uses data-bs-theme attribute
+ */
+
+// Detect current page theme from common conventions
+function detectPageTheme() {
+    const html = document.documentElement;
+    const body = document.body;
+    
+    // Priority 1: Check data-bs-theme attribute (Bootstrap / mp_core convention)
+    const bsTheme = html.getAttribute('data-bs-theme');
+    if (bsTheme === 'light') return 'light';
+    if (bsTheme === 'dark') return 'dark';
+    
+    // Priority 2: Check #themeSwitch checkbox (mp_core: checked = dark, unchecked = light)
+    const themeSwitch = document.getElementById('themeSwitch');
+    if (themeSwitch && themeSwitch.type === 'checkbox') {
+        // mp_core convention: checked = dark mode, unchecked = light mode
+        return themeSwitch.checked ? 'dark' : 'light';
+    }
+    
+    // Check for common light mode indicators
+    const lightModeIndicators = [
+        body.classList.contains('light-mode'),
+        body.classList.contains('light'),
+        body.classList.contains('theme-light'),
+        html.classList.contains('light-mode'),
+        html.classList.contains('light'),
+        html.classList.contains('theme-light'),
+        body.dataset.theme === 'light',
+        html.dataset.theme === 'light',
+    ];
+    
+    // Check for explicit dark mode
+    const darkModeIndicators = [
+        body.classList.contains('dark-mode'),
+        body.classList.contains('dark'),
+        body.classList.contains('theme-dark'),
+        html.classList.contains('dark-mode'),
+        html.classList.contains('dark'),
+        html.classList.contains('theme-dark'),
+        body.dataset.theme === 'dark',
+        html.dataset.theme === 'dark',
+    ];
+    
+    if (lightModeIndicators.some(Boolean)) return 'light';
+    if (darkModeIndicators.some(Boolean)) return 'dark';
+    
+    // Fallback: check prefers-color-scheme media query
+    if (window.matchMedia?.('(prefers-color-scheme: light)')?.matches) return 'light';
+    
+    return 'dark'; // Default to dark
+}
+
+// Alias for backward compatibility
+function setAllPlayersTheme(theme) {
+    applyThemeToAllPlayers(theme);
+}
+
+// Check if theme sync is enabled for any player on the page
+function isThemeSyncEnabled() {
+    // Always enable if data-bs-theme is set, #themeSwitch exists, or data attribute is set
+    return document.documentElement.hasAttribute('data-bs-theme') ||
+           document.getElementById('themeSwitch') !== null || 
+           document.querySelector('[data-vidply-theme-sync="1"]') !== null;
+}
+
+// Apply theme to ALL VidPly players on the page (including those not in allPlayers set)
+function applyThemeToAllPlayers(theme) {
+    const validTheme = theme === 'light' ? 'light' : 'dark';
+    
+    // Method 1: Use tracked players
+    allPlayers.forEach(player => {
+        if (player && typeof player.setTheme === 'function') {
+            try {
+                player.setTheme(validTheme);
+            } catch (e) {
+                // Ignore errors
+            }
+        }
+    });
+    
+    // Method 2: Find all player containers on the page and apply theme class directly
+    document.querySelectorAll('.vidply-player').forEach(container => {
+        // Remove existing theme classes
+        container.classList.remove('vidply-theme-dark', 'vidply-theme-light');
+        // Add new theme class
+        container.classList.add(`vidply-theme-${validTheme}`);
+    });
+    
+    // Method 3: Try to get player from element reference
+    document.querySelectorAll('[data-vidply-init], [data-playlist]').forEach(element => {
+        const player = element._vidplyPlayer;
+        if (player && typeof player.setTheme === 'function') {
+            try {
+                player.setTheme(validTheme);
+            } catch (e) {
+                // Ignore errors
+            }
+        }
+    });
+    
+    // Dispatch event for any custom integrations
+    document.dispatchEvent(new CustomEvent('vidply:themechange', { 
+        detail: { theme: validTheme } 
+    }));
+}
+
+// Setup theme sync observers and event listeners
+function setupThemeSync() {
+    const html = document.documentElement;
+    const themeSwitch = document.getElementById('themeSwitch');
+    
+    // Set initial theme based on current page state
+    const initialTheme = detectPageTheme();
+    setTimeout(() => applyThemeToAllPlayers(initialTheme), 200);
+    
+    // Primary method: Observe data-bs-theme attribute on <html> (mp_core sets this)
+    const observer = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+            if (mutation.attributeName === 'data-bs-theme') {
+                const newTheme = html.getAttribute('data-bs-theme');
+                if (newTheme === 'light' || newTheme === 'dark') {
+                    applyThemeToAllPlayers(newTheme);
+                }
+                return;
+            }
+        }
+        // Fallback: re-detect theme for other attribute changes
+        const newTheme = detectPageTheme();
+        applyThemeToAllPlayers(newTheme);
+    });
+    
+    // Observe html element for data-bs-theme changes (mp_core)
+    observer.observe(html, {
+        attributes: true,
+        attributeFilter: ['data-bs-theme', 'class', 'data-theme']
+    });
+    
+    // Also observe body for class-based theme switches
+    observer.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'data-theme', 'data-color-scheme']
+    });
+    
+    // Fallback: Listen for checkbox change events directly
+    // (mp_core's setTheme() changes checkbox programmatically, but we catch it via data-bs-theme observer)
+    if (themeSwitch && themeSwitch.type === 'checkbox') {
+        themeSwitch.addEventListener('change', () => {
+            // mp_core convention: checked = dark, unchecked = light
+            const theme = themeSwitch.checked ? 'dark' : 'light';
+            applyThemeToAllPlayers(theme);
+        });
+    }
+    
+    // Listen for custom theme change events
+    document.addEventListener('theme:change', (e) => {
+        const theme = e.detail?.theme;
+        if (theme === 'light' || theme === 'dark') {
+            applyThemeToAllPlayers(theme);
+        }
+    });
+}
+
+// Export theme functions for external use
+window.VidPlyTheme = {
+    setTheme: applyThemeToAllPlayers,
+    getPlayers: () => Array.from(allPlayers),
+    detectPageTheme
+};
+
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize single media elements
@@ -787,4 +965,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Observe and replace main VidPly play overlays (big play icon) when inline SVG is available
     document.querySelectorAll('.vidply-wrapper[data-vidply-play-inline-svg]').forEach(observeVidplyOverlays);
+    
+    // Setup theme synchronization (if enabled)
+    setupThemeSync();
 });

@@ -17,6 +17,7 @@
          <f:if condition="{vidply.privacyPlayIconUrl}">data-vidply-play-icon="{vidply.privacyPlayIconUrl}"</f:if>
          data-vidply-play-position="{vidply.privacyPlayButtonPosition}"
          <f:if condition="{vidply.privacyPlayIconInlineSvg}">data-vidply-play-inline-svg="1"</f:if>
+         <f:if condition="{vidply.themeSyncEnabled}">data-vidply-theme-sync="1"</f:if>
          <f:if condition="!{vidply.privacyPlayIconInlineSvg} && {vidply.privacyPlayIconUrl}">style="--mpc-vidply-play-overlay-icon: url('{vidply.privacyPlayIconUrl}');"</f:if>>
         <f:if condition="{vidply.privacyPlayIconInlineSvg}">
             <template class="mpc-vidply-play-inline-svg">
