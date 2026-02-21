@@ -11,3 +11,9 @@ playPosition = center
 
 # cat=config/ui/30; type=boolean; label=LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:config.useCssIcons
 useCssIcons = 0
+
+# cat=config/ui/40; type=options[dark=Dark,light=Light]; label=LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:config.theme
+theme = dark
+
+# cat=config/ui/50; type=boolean; label=LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:config.themeSyncEnabled
+themeSyncEnabled = 0

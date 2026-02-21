@@ -25,6 +25,12 @@
             <trans-unit id="config.useCssIcons">
                 <source>Use CSS-based icons (enables icon customization via CSS variables)</source>
             </trans-unit>
+            <trans-unit id="config.theme">
+                <source>Player theme (dark or light mode)</source>
+            </trans-unit>
+            <trans-unit id="config.themeSyncEnabled">
+                <source>Sync player theme with page theme switch (listens to body class and custom events)</source>
+            </trans-unit>
 
             <trans-unit id="player.play">
                 <source>Play</source>
