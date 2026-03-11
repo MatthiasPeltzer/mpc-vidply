@@ -1,87 +1,83 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <xliff version="1.0">
-    <file source-language="en" datatype="plaintext" original="messages" date="2025-11-21T00:00:00Z" product-name="mpc_vidply">
-        <header/>
-        <body>
-            <trans-unit id="config.allowedVideoDomains">
-                <source>Allowed domains for external videos</source>
-            </trans-unit>
-            <trans-unit id="config.allowedVideoDomains.list">
-                <source>Comma or newline separated list of allowed domains for external video URLs (e.g. *.xyz.de, www.xyz.de, https://*.xyz.de)</source>
-            </trans-unit>
-            <trans-unit id="config.allowedAudioDomains">
-                <source>Allowed domains for external audio files</source>
-            </trans-unit>
-            <trans-unit id="config.allowedAudioDomains.list">
-                <source>Comma or newline separated list of allowed domains for external audio URLs (e.g. *.xyz.de, www.xyz.de, https://*.xyz.de)</source>
-            </trans-unit>
-
-            <trans-unit id="config.playIcon">
-                <source>Play button icon (EXT: path, URL, or public path)</source>
-            </trans-unit>
-            <trans-unit id="config.playPosition">
-                <source>Play button position</source>
-            </trans-unit>
-            <trans-unit id="config.useCssIcons">
-                <source>Use CSS-based icons (enables icon customization via CSS variables)</source>
-            </trans-unit>
-            <trans-unit id="config.theme">
-                <source>Player theme (dark or light mode)</source>
-            </trans-unit>
-            <trans-unit id="config.themeSyncEnabled">
-                <source>Sync player theme with page theme switch (listens to body class and custom events)</source>
-            </trans-unit>
-
-            <trans-unit id="player.play">
-                <source>Play</source>
-            </trans-unit>
-            <trans-unit id="player.pause">
-                <source>Pause</source>
-            </trans-unit>
-            <trans-unit id="player.stop">
-                <source>Stop</source>
-            </trans-unit>
-            <trans-unit id="player.mute">
-                <source>Mute</source>
-            </trans-unit>
-            <trans-unit id="player.unmute">
-                <source>Unmute</source>
-            </trans-unit>
-            <trans-unit id="player.fullscreen">
-                <source>Fullscreen</source>
-            </trans-unit>
-            <trans-unit id="player.captions">
-                <source>Captions</source>
-            </trans-unit>
-            <trans-unit id="player.previous">
-                <source>Previous</source>
-            </trans-unit>
-            <trans-unit id="player.next">
-                <source>Next</source>
-            </trans-unit>
-            
-            <trans-unit id="privacy.activate_intro">
-                <source>To activate the video, you must click on the button. After activating the button,</source>
-            </trans-unit>
-            <trans-unit id="privacy.activate_intro_widget">
-                <source>To activate the widget, you must click on the button. After activating the button,</source>
-            </trans-unit>
-            <trans-unit id="privacy.activate_outro">
-                <source>applies.</source>
-            </trans-unit>
-            <trans-unit id="privacy.youtube.policy_link">
-                <source>Google's privacy policy</source>
-            </trans-unit>
-            <trans-unit id="privacy.vimeo.policy_link">
-                <source>Vimeo's privacy policy</source>
-            </trans-unit>
-            <trans-unit id="privacy.soundcloud.policy_link">
-                <source>SoundCloud's privacy policy</source>
-            </trans-unit>
-            <trans-unit id="privacy.load_content">
-                <source>Load {0} content</source>
-            </trans-unit>
-        </body>
-    </file>
+  <file source-language="en" datatype="plaintext" original="messages" date="2025-11-21T00:00:00Z" product-name="mpc_vidply">
+    <header/>
+    <body>
+      <trans-unit id="config.allowedAudioDomains">
+        <source>Allowed domains for external audio files</source>
+      </trans-unit>
+      <trans-unit id="config.allowedAudioDomains.list">
+        <source>Comma or newline separated list of allowed domains for external audio URLs (e.g. *.xyz.de, www.xyz.de, https://*.xyz.de)</source>
+      </trans-unit>
+      <trans-unit id="config.allowedVideoDomains">
+        <source>Allowed domains for external videos</source>
+      </trans-unit>
+      <trans-unit id="config.allowedVideoDomains.list">
+        <source>Comma or newline separated list of allowed domains for external video URLs (e.g. *.xyz.de, www.xyz.de, https://*.xyz.de)</source>
+      </trans-unit>
+      <trans-unit id="config.playIcon">
+        <source>Play button icon (EXT: path, URL, or public path)</source>
+      </trans-unit>
+      <trans-unit id="config.playPosition">
+        <source>Play button position</source>
+      </trans-unit>
+      <trans-unit id="config.theme">
+        <source>Player theme (dark or light mode)</source>
+      </trans-unit>
+      <trans-unit id="config.themeSyncEnabled">
+        <source>Sync player theme with page theme switch (listens to body class and custom events)</source>
+      </trans-unit>
+      <trans-unit id="config.useCssIcons">
+        <source>Use CSS-based icons (enables icon customization via CSS variables)</source>
+      </trans-unit>
+      <trans-unit id="player.captions">
+        <source>Captions</source>
+      </trans-unit>
+      <trans-unit id="player.fullscreen">
+        <source>Fullscreen</source>
+      </trans-unit>
+      <trans-unit id="player.mute">
+        <source>Mute</source>
+      </trans-unit>
+      <trans-unit id="player.next">
+        <source>Next</source>
+      </trans-unit>
+      <trans-unit id="player.pause">
+        <source>Pause</source>
+      </trans-unit>
+      <trans-unit id="player.play">
+        <source>Play</source>
+      </trans-unit>
+      <trans-unit id="player.previous">
+        <source>Previous</source>
+      </trans-unit>
+      <trans-unit id="player.stop">
+        <source>Stop</source>
+      </trans-unit>
+      <trans-unit id="player.unmute">
+        <source>Unmute</source>
+      </trans-unit>
+      <trans-unit id="privacy.activate_intro">
+        <source>To activate the video, you must click on the button. After activating the button,</source>
+      </trans-unit>
+      <trans-unit id="privacy.activate_intro_widget">
+        <source>To activate the widget, you must click on the button. After activating the button,</source>
+      </trans-unit>
+      <trans-unit id="privacy.activate_outro">
+        <source>applies.</source>
+      </trans-unit>
+      <trans-unit id="privacy.load_content">
+        <source>Load {0} content</source>
+      </trans-unit>
+      <trans-unit id="privacy.soundcloud.policy_link">
+        <source>SoundCloud's privacy policy</source>
+      </trans-unit>
+      <trans-unit id="privacy.vimeo.policy_link">
+        <source>Vimeo's privacy policy</source>
+      </trans-unit>
+      <trans-unit id="privacy.youtube.policy_link">
+        <source>Google's privacy policy</source>
+      </trans-unit>
+    </body>
+  </file>
 </xliff>
-
