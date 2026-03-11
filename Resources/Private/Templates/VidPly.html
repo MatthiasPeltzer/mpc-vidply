@@ -24,10 +24,8 @@
                 <f:format.raw>{vidply.privacyPlayIconInlineSvg}</f:format.raw>
             </template>
         </f:if>
-        <f:variable name="isSingleExternalService" value="{f:if(condition: '{vidply.serviceType}', then: '1', else: '0')}" />
-        
-        <f:if condition="{isSingleExternalService} && !{vidply.playlistData}">
-            <f:then>
+        <f:switch expression="{vidply.renderMode}">
+            <f:case value="privacy">
                 <f:render partial="VidPly/PrivacyLayer" arguments="{
                     service: vidply.serviceType,
                     videoUrl: vidply.videoUrl,
@@ -39,25 +37,17 @@
                     playIconInlineSvg: vidply.privacyPlayIconInlineSvg,
                     playButtonPosition: vidply.privacyPlayButtonPosition
                 }" />
-            </f:then>
-            <f:else>
-                <f:if condition="{vidply.playlistData} && {vidply.hasExternalMedia}">
-                    <f:then>
-                        <f:render section="MixedPlaylistPlayer" arguments="{_all}" />
-                    </f:then>
-                    <f:else>
-                        <f:if condition="{vidply.mediaType} == 'audio'">
-                            <f:then>
-                                <f:render section="AudioPlayer" arguments="{_all}" />
-                            </f:then>
-                            <f:else>
-                                <f:render section="VideoPlayer" arguments="{_all}" />
-                            </f:else>
-                        </f:if>
-                    </f:else>
-                </f:if>
-            </f:else>
-        </f:if>
+            </f:case>
+            <f:case value="mixedPlaylist">
+                <f:render section="MixedPlaylistPlayer" arguments="{_all}" />
+            </f:case>
+            <f:case value="audio">
+                <f:render section="AudioPlayer" arguments="{_all}" />
+            </f:case>
+            <f:case value="video">
+                <f:render section="VideoPlayer" arguments="{_all}" />
+            </f:case>
+        </f:switch>
         
         <f:render partial="VidPly/Assets" arguments="{
             needsPrivacyLayer: vidply.needsPrivacyLayer,

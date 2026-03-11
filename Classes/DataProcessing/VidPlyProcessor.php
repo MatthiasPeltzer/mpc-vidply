@@ -4,32 +4,30 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\DataProcessing;
 
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
+use Mpc\MpcVidply\Enums\MediaType;
 use Mpc\MpcVidply\Service\PrivacySettingsService;
-use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
+use TYPO3\CMS\Core\Database\Connection;
+use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
+use TYPO3\CMS\Core\Resource\Exception\ResourceDoesNotExistException;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Resource\FileRepository;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
-use TYPO3\CMS\Core\Resource\Exception\ResourceDoesNotExistException;
-use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
-use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Database\Connection;
 
 /**
  * DataProcessor for VidPly Player
- * 
+ *
  * Processes content element data and prepares it for the Fluid template.
  * Works with standalone media records from tx_mpcvidply_media table.
- * 
+ *
  * Uses constructor injection with fallback for TYPO3 13/14 compatibility.
  * DataProcessors are instantiated via GeneralUtility::makeInstance() from TypoScript,
  * so we need optional parameters with service locator fallback.
- * 
- * @package Mpc\MpcVidply\DataProcessing
  */
 class VidPlyProcessor implements DataProcessorInterface
 {
@@ -39,51 +37,38 @@ class VidPlyProcessor implements DataProcessorInterface
         'hide_speed_button', 'enable_transcript', 'sign_language_display_mode',
     ];
 
+    private const OPT_AUTOPLAY = 1;
+    private const OPT_LOOP = 2;
+    private const OPT_MUTED = 4;
+    private const OPT_CONTROLS = 8;
+    private const OPT_CAPTIONS_DEFAULT = 16;
+    private const OPT_KEYBOARD = 64;
+    private const OPT_AUTO_ADVANCE = 256;
+
     private readonly FileRepository $fileRepository;
     private readonly ResourceFactory $resourceFactory;
     private readonly ConnectionPool $connectionPool;
     private readonly PrivacySettingsService $privacySettingsService;
     private readonly ExtensionConfiguration $extensionConfiguration;
 
-    /**
-     * Micro-caches for this request to avoid repeated work in playlists.
-     *
-     * @var array<string, string>
-     */
+    /** @var array<string, string> */
     private array $inferredMimeTypeByUrl = [];
 
-    /**
-     * @var array<int, string>
-     */
+    /** @var array<int, string> */
     private array $publicUrlByFileReferenceUid = [];
 
-    /**
-     * @var array<int, string>
-     */
+    /** @var array<int, string> */
     private array $mimeTypeByFileReferenceUid = [];
 
-    /**
-     * Prefetched file references by media uid and fieldname.
-     *
-     * @var array<int, array<string, FileReference[]>>
-     */
+    /** @var array<int, array<string, FileReference[]>> */
     private array $fileReferencesByMediaUid = [];
 
-    /**
-     * Prefetched described-source file reference by original sys_file_reference uid.
-     *
-     * @var array<int, FileReference>
-     */
+    /** @var array<int, FileReference> */
     private array $describedSourceByFileReferenceUid = [];
 
     /**
-     * Constructor with dependency injection support
-     * 
      * Parameters are optional to support GeneralUtility::makeInstance() calls.
-     * When called without parameters, uses GeneralUtility as service locator.
-     * When autowired (e.g., in tests), dependencies are injected.
-     * 
-     * This is the recommended pattern for DataProcessors in TYPO3 13/14.
+     * When autowired (e.g., in tests or TYPO3 14), dependencies are injected.
      */
     public function __construct(
         ?FileRepository $fileRepository = null,
@@ -99,9 +84,6 @@ class VidPlyProcessor implements DataProcessorInterface
         $this->extensionConfiguration = $extensionConfiguration ?? GeneralUtility::makeInstance(ExtensionConfiguration::class);
     }
 
-    /**
-     * Process content element data
-     */
     public function process(
         ContentObjectRenderer $cObj,
         array $contentObjectConfiguration,
@@ -109,311 +91,373 @@ class VidPlyProcessor implements DataProcessorInterface
         array $processedData
     ): array {
         $data = $processedData['data'];
+        $this->resetCaches();
 
-        // Reset per-request micro-caches (DataProcessors can be reused in long-lived contexts)
+        $playerOptions = $this->buildPlayerOptions($data);
+        $languageId = $this->resolveLanguageId($cObj, $data);
+        $mediaRecords = $this->getMediaRecords((int)$data['uid'], $languageId);
+        $this->prefetchRelatedFiles($mediaRecords);
+
+        $trackResult = $this->buildTracksResult($mediaRecords);
+        $this->applyTrackDependentOptions($playerOptions, $trackResult, $mediaRecords);
+
+        $playlistData = $this->buildPlaylistData($trackResult, $playerOptions);
+        $singleTrackData = $this->extractSingleTrackData($trackResult, $playerOptions);
+
+        $serviceType = $this->resolveServiceType($trackResult);
+        $privacySettings = $this->loadPrivacySettings($serviceType, $trackResult, $languageId);
+        $uiConfig = $this->resolveExtensionConfig();
+        $playerOptions['theme'] = $uiConfig['theme'];
+
+        $resolvedMediaType = $this->resolveEffectiveMediaType($trackResult);
+        $renderMode = $this->determineRenderMode($serviceType, $trackResult, $resolvedMediaType);
+        $assetFlags = $this->resolveAssetFlags($serviceType, $trackResult);
+
+        $processedData['vidply'] = $this->assembleTemplateData(
+            $data, $playerOptions, $trackResult, $singleTrackData,
+            $playlistData, $serviceType, $privacySettings, $uiConfig,
+            $resolvedMediaType, $renderMode, $assetFlags
+        );
+
+        return $processedData;
+    }
+
+    // -----------------------------------------------------------------------
+    // Decomposed phases of process()
+    // -----------------------------------------------------------------------
+
+    private function resetCaches(): void
+    {
         $this->inferredMimeTypeByUrl = [];
         $this->publicUrlByFileReferenceUid = [];
         $this->mimeTypeByFileReferenceUid = [];
-        
-        // Process options from checkbox field (bitmask)
-        $options = (int)($data['tx_mpcvidply_options'] ?? 0);
+        $this->fileReferencesByMediaUid = [];
+        $this->describedSourceByFileReferenceUid = [];
+    }
+
+    private function buildPlayerOptions(array $data): array
+    {
+        $bits = (int)($data['tx_mpcvidply_options'] ?? 0);
         $playerOptions = [
-            'autoplay' => (bool)($options & 1),
-            'loop' => (bool)($options & 2),
-            'muted' => (bool)($options & 4),
-            'controls' => (bool)($options & 8),
-            'captionsDefault' => (bool)($options & 16),
-            'keyboard' => (bool)($options & 64),
-            'autoAdvance' => (bool)($options & 256),
+            'autoplay' => (bool)($bits & self::OPT_AUTOPLAY),
+            'loop' => (bool)($bits & self::OPT_LOOP),
+            'muted' => (bool)($bits & self::OPT_MUTED),
+            'controls' => (bool)($bits & self::OPT_CONTROLS),
+            'captionsDefault' => (bool)($bits & self::OPT_CAPTIONS_DEFAULT),
+            'keyboard' => (bool)($bits & self::OPT_KEYBOARD),
+            'autoAdvance' => (bool)($bits & self::OPT_AUTO_ADVANCE),
         ];
 
-        // Opinionated defaults (not configurable via CE fields):
-        // - Always responsive, never fixed px sizing.
         $playerOptions['responsive'] = true;
-        // - Transcript is controlled per media record (tx_mpcvidply_media.enable_transcript).
-        //   We'll set $playerOptions['transcript'] after building tracks.
-        
-        // Add other settings
         $playerOptions['volume'] = (float)($data['tx_mpcvidply_volume'] ?? 0.8);
         $playerOptions['playbackSpeed'] = (float)($data['tx_mpcvidply_playback_speed'] ?? 1.0);
         $playerOptions['language'] = $data['tx_mpcvidply_language'] ?? '';
         $playerOptions['defaultTranscriptLanguage'] = $playerOptions['language'];
-        // UX defaults for VidPly library (applied per-player):
-        // Hide speed control for HLS streams (audio + video).
         $playerOptions['hideSpeedForHls'] = true;
-        // Performance defaults:
-        // - Do not start fetching MP4/MP3/HLS until the user actually hits play.
-        // - Keep autoplay behavior intact (autoplay must initialize and load immediately).
         $playerOptions['deferLoad'] = !$playerOptions['autoplay'];
-        // If you want duration/timebar available before play, use 'metadata' here.
-        // This will still perform a small network request, but much less than full media.
         $playerOptions['preload'] = 'metadata';
-        // UX: if media is not started yet (deferLoad), show a short notice instead of
-        // toggling audio-description/sign-language before playback.
         $playerOptions['requirePlaybackForAccessibilityToggles'] = $playerOptions['deferLoad'];
-        
-        // Audio description and sign language will be added after processing tracks
-        
-        // Get current language ID from request attribute (TYPO3 13/14 compatible)
-        // Using toArray() to avoid extension scanner false positive on getLanguageId()
+
+        return $playerOptions;
+    }
+
+    /**
+     * Resolve the frontend language ID from the request or content element.
+     * Uses toArray() to avoid extension scanner false positive on getLanguageId().
+     */
+    private function resolveLanguageId(ContentObjectRenderer $cObj, array $data): int
+    {
         $languageId = 0;
         $language = $cObj->getRequest()->getAttribute('language');
         if ($language !== null) {
             $languageId = (int)$language->toArray()['languageId'];
         }
-        
-        // Additional fallback: check if content element itself is translated
-        // If the content element has sys_language_uid > 0, use that as language hint
+
         if ($languageId === 0 && isset($data['sys_language_uid']) && (int)$data['sys_language_uid'] > 0) {
             $languageId = (int)$data['sys_language_uid'];
         }
-        
-        // Get media items from MM table with language support
-        $mediaRecords = $this->getMediaRecords((int)$data['uid'], $languageId);
 
-        // Prefetch all file references used by VidPly media records to avoid N+1 queries
+        return $languageId;
+    }
+
+    private function prefetchRelatedFiles(array $mediaRecords): void
+    {
         $mediaUids = array_values(array_unique(array_map(
             static fn(array $row): int => (int)($row['uid'] ?? 0),
             $mediaRecords
         )));
         $mediaUids = array_values(array_filter($mediaUids, static fn(int $uid): bool => $uid > 0));
-        if ($mediaUids !== []) {
-            $this->fileReferencesByMediaUid = $this->prefetchFileReferencesForMediaUids(
-                $mediaUids,
-                ['media_file', 'poster', 'captions', 'chapters', 'audio_description', 'sign_language']
-            );
-            $this->describedSourceByFileReferenceUid = $this->prefetchDescribedSourceFiles(
-                $this->collectFileReferenceUidsForDescribedSource($mediaUids)
-            );
-        } else {
+
+        if ($mediaUids === []) {
             $this->fileReferencesByMediaUid = [];
             $this->describedSourceByFileReferenceUid = [];
+            return;
         }
-        
-        // Process media records into tracks
+
+        $this->fileReferencesByMediaUid = $this->prefetchFileReferencesForMediaUids(
+            $mediaUids,
+            ['media_file', 'poster', 'captions', 'chapters', 'audio_description', 'sign_language']
+        );
+        $this->describedSourceByFileReferenceUid = $this->prefetchDescribedSourceFiles(
+            $this->collectFileReferenceUidsForDescribedSource($mediaUids)
+        );
+    }
+
+    /**
+     * @return array{
+     *     tracks: list<array>,
+     *     mediaType: ?string,
+     *     hasExternalMedia: bool,
+     *     hasLocalMedia: bool,
+     *     externalServiceTypes: list<string>,
+     *     isPlaylist: bool,
+     *     isMixedPlaylist: bool
+     * }
+     */
+    private function buildTracksResult(array $mediaRecords): array
+    {
         $tracks = [];
         $mediaType = null;
-        $externalServiceTypes = []; // Track which external services are used
+        $externalServiceTypes = [];
         $hasLocalMedia = false;
         $hasExternalMedia = false;
-        
+
         foreach ($mediaRecords as $mediaRecord) {
             $track = $this->processMediaRecord($mediaRecord);
-            if ($track) {
-                $tracks[] = $track;
-                // Set media type from first item (simplified: video or audio)
-                if ($mediaType === null) {
-                    $recordType = $mediaRecord['media_type'];
-                    $mediaType = ($recordType === 'audio') ? 'audio' : 'video';
-                }
-                
-                // Track external vs local media for mixed playlist detection
-                $trackType = $mediaRecord['media_type'];
-                if (in_array($trackType, ['youtube', 'vimeo', 'soundcloud'])) {
-                    $hasExternalMedia = true;
-                    if (!in_array($trackType, $externalServiceTypes)) {
-                        $externalServiceTypes[] = $trackType;
+            if ($track === null) {
+                continue;
             }
-                } else {
-                    $hasLocalMedia = true;
+            $tracks[] = $track;
+
+            if ($mediaType === null) {
+                $mediaType = ($mediaRecord['media_type'] === MediaType::Audio->value) ? 'audio' : 'video';
+            }
+
+            $recordType = MediaType::tryFrom((string)($mediaRecord['media_type'] ?? ''));
+            if ($recordType !== null && $recordType->isExternal()) {
+                $hasExternalMedia = true;
+                if (!in_array($recordType->value, $externalServiceTypes, true)) {
+                    $externalServiceTypes[] = $recordType->value;
                 }
+            } else {
+                $hasLocalMedia = true;
             }
         }
 
-        // Transcript should be per-track only:
-        // enable transcript UI if at least one selected track opts into it.
+        $isPlaylist = count($tracks) > 1;
+        $isMixedPlaylist = $isPlaylist && ($hasExternalMedia || $hasLocalMedia);
+
+        return [
+            'tracks' => $tracks,
+            'mediaType' => $mediaType,
+            'hasExternalMedia' => $hasExternalMedia,
+            'hasLocalMedia' => $hasLocalMedia,
+            'externalServiceTypes' => $externalServiceTypes,
+            'isPlaylist' => $isPlaylist,
+            'isMixedPlaylist' => $isMixedPlaylist,
+        ];
+    }
+
+    /**
+     * Apply options that depend on the built tracks (transcript, per-media UI overrides).
+     */
+    private function applyTrackDependentOptions(array &$playerOptions, array $trackResult, array $mediaRecords): void
+    {
         $playerOptions['transcript'] = false;
-        foreach ($tracks as $t) {
+        foreach ($trackResult['tracks'] as $t) {
             if (!empty($t['enableTranscript'])) {
                 $playerOptions['transcript'] = true;
                 break;
             }
         }
-        // VidPly core shows the transcript control based on `options.transcriptButton`
-        // (and whether captions/subtitles exist). To enforce "transcript per-track only",
-        // we explicitly gate the transcript button via the per-media enable flag.
         $playerOptions['transcriptButton'] = $playerOptions['transcript'];
-        
-        // Determine if this is a mixed media playlist (contains both local and external OR external-only)
-        $isMixedPlaylist = count($tracks) > 1 && ($hasExternalMedia || $hasLocalMedia);
-        
-        // Prepare playlist data and extract template variables
-        $playlistData = null;
-        $mediaFiles = [];
-        $videoUrl = '';
-        $poster = null;
-        $captions = [];
-        $chapters = [];
-        $audioDescriptionTracks = [];
-        $signLanguage = [];
-        
-        if (!empty($tracks)) {
-            // Auto-detect playlist behavior:
-            // 1 item = single media (no playlist controls)
-            // 2+ items = playlist (show controls and panel)
-            $isPlaylist = count($tracks) > 1;
 
-            // Per-media UI overrides (single item only)
-            // Note: In playlists, controls belong to the player, not to individual tracks.
-            if (!$isPlaylist && isset($mediaRecords[0]) && !empty($mediaRecords[0]['hide_speed_button'])) {
-                $playerOptions['speedButton'] = false;
+        if (!$trackResult['isPlaylist'] && isset($mediaRecords[0]) && !empty($mediaRecords[0]['hide_speed_button'])) {
+            $playerOptions['speedButton'] = false;
+        }
+    }
+
+    private function buildPlaylistData(array $trackResult, array &$playerOptions): ?array
+    {
+        if (!$trackResult['isPlaylist']) {
+            return null;
+        }
+
+        $tracks = $trackResult['tracks'];
+        $playlistData = [
+            'tracks' => $tracks,
+            'options' => [
+                'autoplay' => $playerOptions['autoplay'],
+                'autoAdvance' => $playerOptions['autoAdvance'],
+                'loop' => $playerOptions['loop'],
+                'showPanel' => true,
+                'isMixedPlaylist' => $trackResult['isMixedPlaylist'],
+                'hasExternalMedia' => $trackResult['hasExternalMedia'],
+                'externalServiceTypes' => $trackResult['externalServiceTypes'],
+            ],
+        ];
+
+        foreach ($tracks as $track) {
+            if (!empty($track['signLanguageSrc'])) {
+                $playerOptions['signLanguageButton'] = true;
+                $displayMode = $track['signLanguageDisplayMode'] ?? 'pip';
+                $playerOptions['signLanguageDisplayMode'] = in_array($displayMode, ['pip', 'main', 'both'], true) ? $displayMode : 'pip';
+                break;
             }
-            
-            // Only create playlist data if there are 2+ items
-            if ($isPlaylist) {
-                $playlistData = [
-                    'tracks' => $tracks,
-                    'options' => [
-                        'autoplay' => $playerOptions['autoplay'], // Pass autoplay to playlist
-                        'autoAdvance' => $playerOptions['autoAdvance'],
-                        'loop' => $playerOptions['loop'],
-                        'showPanel' => true, // Show panel for playlists
-                        // Mixed playlist options for dynamic renderer switching
-                        'isMixedPlaylist' => $isMixedPlaylist,
-                        'hasExternalMedia' => $hasExternalMedia,
-                        'externalServiceTypes' => $externalServiceTypes,
-                    ],
-                ];
-                
-                // For playlists: set sign language display mode from first track that has sign language
-                foreach ($tracks as $track) {
-                    if (!empty($track['signLanguageSrc'])) {
-                        $playerOptions['signLanguageButton'] = true;
-                        $displayMode = $track['signLanguageDisplayMode'] ?? 'pip';
-                        $playerOptions['signLanguageDisplayMode'] = in_array($displayMode, ['pip', 'main', 'both'], true) ? $displayMode : 'pip';
-                        break; // Use first track with sign language
-                    }
-                }
-            }
-            
-            // For single item: extract data for template compatibility
-            if (!$isPlaylist && isset($tracks[0])) {
-                $firstTrack = $tracks[0];
-                
-                // Handle media source
-                if (in_array($firstTrack['type'], ['youtube', 'vimeo', 'soundcloud', 'hls'], true)) {
-                    $videoUrl = $firstTrack['src'];
+        }
+
+        return $playlistData;
+    }
+
+    /**
+     * For single-item mode, extract template-level variables from the first track.
+     *
+     * @return array{
+     *     videoUrl: string,
+     *     poster: ?string,
+     *     mediaFiles: list<array>,
+     *     sources: ?list<array>,
+     *     captions: list<array>,
+     *     chapters: list<array>,
+     *     audioDescriptionTracks: list<array>,
+     *     signLanguage: list<array>
+     * }
+     */
+    private function extractSingleTrackData(array $trackResult, array &$playerOptions): array
+    {
+        $empty = [
+            'videoUrl' => '',
+            'poster' => null,
+            'mediaFiles' => [],
+            'sources' => null,
+            'captions' => [],
+            'chapters' => [],
+            'audioDescriptionTracks' => [],
+            'signLanguage' => [],
+        ];
+
+        if ($trackResult['isPlaylist'] || $trackResult['tracks'] === []) {
+            return $empty;
+        }
+
+        $firstTrack = $trackResult['tracks'][0];
+        $result = $empty;
+
+        $firstType = MediaType::tryFrom($firstTrack['type'] ?? '');
+        if ($firstType !== null && in_array($firstType, [MediaType::YouTube, MediaType::Vimeo, MediaType::SoundCloud, MediaType::Hls], true)) {
+            $result['videoUrl'] = $firstTrack['src'];
+        } elseif (!empty($firstTrack['sources']) && count($firstTrack['sources']) > 1) {
+            $result['sources'] = $firstTrack['sources'];
+        } else {
+            $result['mediaFiles'][] = [
+                'publicUrl' => $firstTrack['src'],
+                'mimeType' => $firstTrack['type'],
+                'label' => 'Default',
+                'properties' => [],
+            ];
+        }
+
+        if (!empty($firstTrack['poster'])) {
+            $result['poster'] = $firstTrack['poster'];
+            $playerOptions['poster'] = $firstTrack['poster'];
+        }
+
+        if (!empty($firstTrack['duration'])) {
+            $playerOptions['initialDuration'] = (int)$firstTrack['duration'];
+        }
+
+        if (!empty($firstTrack['tracks'])) {
+            foreach ($firstTrack['tracks'] as $textTrack) {
+                if ($textTrack['kind'] === 'chapters') {
+                    $result['chapters'][] = $textTrack;
                 } else {
-                    // Local file(s) - handle multiple sources if available
-                    if (!empty($firstTrack['sources']) && count($firstTrack['sources']) > 1) {
-                        // Multiple sources (e.g., MP4 and WebM) - keep sources array for template
-                        $processedData['vidply']['sources'] = $firstTrack['sources'];
-                        // Don't populate mediaFiles when we have sources to avoid duplication
-                        $mediaFiles = []; // Ensure mediaFiles is empty
-                    } else {
-                        // Single source - use mediaFiles only (no sources array)
-                        // Ensure sources is not set
-                        unset($processedData['vidply']['sources']);
-                        $mediaFiles[] = [
-                            'publicUrl' => $firstTrack['src'],
-                            'mimeType' => $firstTrack['type'],
-                            'label' => 'Default',
-                            'properties' => [],
-                        ];
-                    }
+                    $result['captions'][] = $textTrack;
                 }
-                
-                // Extract poster
-                if (!empty($firstTrack['poster'])) {
-                    $poster = $firstTrack['poster'];
-                    // Add poster to player options for single audio files (used for track artwork)
-                    $playerOptions['poster'] = $poster;
-                }
-
-                // Provide initial duration so UI can show it without loading media metadata
-                if (!empty($firstTrack['duration'])) {
-                    $playerOptions['initialDuration'] = (int)$firstTrack['duration'];
-                }
-                
-                // Extract captions/chapters/descriptions
-                if (!empty($firstTrack['tracks'])) {
-                    foreach ($firstTrack['tracks'] as $track) {
-                        if ($track['kind'] === 'chapters') {
-                            $chapters[] = $track;
-                        } elseif ($track['kind'] === 'descriptions') {
-                            // Description tracks (VTT files) - separate from audio description video
-                            $captions[] = $track; // Add to captions array for template rendering
-                        } else {
-                            $captions[] = $track;
-                        }
-                    }
-                }
-                
-                // Extract audio description
-                if (!empty($firstTrack['audioDescriptionSrc'])) {
-                    $audioDescriptionTracks[] = [
-                        'src' => $firstTrack['audioDescriptionSrc'],
-                        'lang' => '',
-                        'label' => 'Audio Description',
-                        'mimeType' => '',
-                    ];
-                    // Add to player options for VidPly
-                    $playerOptions['audioDescriptionSrc'] = $firstTrack['audioDescriptionSrc'];
-                    $playerOptions['audioDescriptionButton'] = true;
-                }
-                
-                // Extract sign language
-                if (!empty($firstTrack['signLanguageSrc'])) {
-                    $signLanguage[] = [
-                        'src' => $firstTrack['signLanguageSrc'],
-                        'lang' => '',
-                        'label' => 'Sign Language',
-                    ];
-                    // Add to player options for VidPly
-                    $playerOptions['signLanguageSrc'] = $firstTrack['signLanguageSrc'];
-                    $playerOptions['signLanguageButton'] = true;
-                    $playerOptions['signLanguagePosition'] = 'bottom-right';
-                    // Set display mode from media record (pip, main, or both)
-                    $displayMode = $firstTrack['signLanguageDisplayMode'] ?? 'pip';
-                    $playerOptions['signLanguageDisplayMode'] = in_array($displayMode, ['pip', 'main', 'both'], true) ? $displayMode : 'pip';
-                }
-
             }
         }
-        
-        // Determine service type for external services (YouTube, Vimeo, SoundCloud)
-        // For single items, use the first track's type
-        // For mixed playlists, we need VidPly player (not privacy layer as primary)
-        $serviceType = null;
-        if (!empty($tracks) && !$isPlaylist) {
-            // Single item mode - check if it's an external service
-            $firstTrackType = $tracks[0]['type'] ?? null;
-            if (in_array($firstTrackType, ['youtube', 'vimeo', 'soundcloud'])) {
-                $serviceType = $firstTrackType;
-            }
+
+        if (!empty($firstTrack['audioDescriptionSrc'])) {
+            $result['audioDescriptionTracks'][] = [
+                'src' => $firstTrack['audioDescriptionSrc'],
+                'lang' => '',
+                'label' => 'Audio Description',
+                'mimeType' => '',
+            ];
+            $playerOptions['audioDescriptionSrc'] = $firstTrack['audioDescriptionSrc'];
+            $playerOptions['audioDescriptionButton'] = true;
         }
-        
-        // Load privacy settings for external services from database
-        // Use language ID for multilingual support
+
+        if (!empty($firstTrack['signLanguageSrc'])) {
+            $result['signLanguage'][] = [
+                'src' => $firstTrack['signLanguageSrc'],
+                'lang' => '',
+                'label' => 'Sign Language',
+            ];
+            $playerOptions['signLanguageSrc'] = $firstTrack['signLanguageSrc'];
+            $playerOptions['signLanguageButton'] = true;
+            $playerOptions['signLanguagePosition'] = 'bottom-right';
+            $displayMode = $firstTrack['signLanguageDisplayMode'] ?? 'pip';
+            $playerOptions['signLanguageDisplayMode'] = in_array($displayMode, ['pip', 'main', 'both'], true) ? $displayMode : 'pip';
+        }
+
+        return $result;
+    }
+
+    private function resolveServiceType(array $trackResult): ?string
+    {
+        if ($trackResult['isPlaylist'] || $trackResult['tracks'] === []) {
+            return null;
+        }
+
+        $firstTrackType = $trackResult['tracks'][0]['type'] ?? null;
+        $mediaType = $firstTrackType !== null ? MediaType::tryFrom($firstTrackType) : null;
+
+        return ($mediaType !== null && $mediaType->isExternal()) ? $mediaType->value : null;
+    }
+
+    private function loadPrivacySettings(?string $serviceType, array $trackResult, int $languageId): array
+    {
         $privacySettings = [];
+
         if ($serviceType !== null) {
             $privacySettings[$serviceType] = $this->privacySettingsService->getSettingsForService($serviceType, $languageId);
-        } elseif ($isPlaylist && $hasExternalMedia) {
-            // For playlists with external media, load settings for all used services
-            foreach ($externalServiceTypes as $extService) {
+        } elseif ($trackResult['isPlaylist'] && $trackResult['hasExternalMedia']) {
+            foreach ($trackResult['externalServiceTypes'] as $extService) {
                 $privacySettings[$extService] = $this->privacySettingsService->getSettingsForService($extService, $languageId);
             }
         }
 
-        // Play button UI settings from site-wide extension configuration
-        // (Admin Tools → Settings → Extension Configuration → mpc_vidply)
-        // These apply to both the privacy consent overlay AND the video player's big play button.
+        return $privacySettings;
+    }
+
+    /**
+     * Resolve site-wide play button UI and theme from extension configuration.
+     *
+     * @return array{
+     *     playIconUrl: ?string,
+     *     playIconInlineSvg: ?string,
+     *     playButtonPosition: string,
+     *     useCssIcons: bool,
+     *     theme: string,
+     *     themeSyncEnabled: bool
+     * }
+     */
+    private function resolveExtensionConfig(): array
+    {
         $playIconUrl = null;
         $playIconInlineSvg = null;
         $playButtonPosition = 'center';
-        
+
         try {
             $extConf = $this->extensionConfiguration->get('mpc_vidply');
         } catch (\Throwable) {
             $extConf = [];
         }
-        
+
         if (is_array($extConf)) {
-            // Play icon (supports EXT: paths, absolute URLs, or relative public paths)
             $configuredIcon = trim((string)($extConf['playIcon'] ?? ''));
             if ($configuredIcon !== '') {
                 if (str_starts_with($configuredIcon, 'EXT:')) {
-                    // Normalize extension key: convert dashes to underscores (common pitfall)
                     $normalizedIcon = preg_replace_callback(
                         '/^EXT:([a-z0-9_-]+)\\//i',
                         static function (array $m): string {
@@ -421,121 +465,181 @@ class VidPlyProcessor implements DataProcessorInterface
                         },
                         $configuredIcon
                     ) ?: $configuredIcon;
-                    
-                    // Resolve EXT: path to a public web path (Composer mode compatible)
+
                     $webPath = PathUtility::getPublicResourceWebPath($normalizedIcon);
-                    
+
                     if ($webPath !== '' && $webPath !== '/') {
                         $playIconUrl = $webPath;
                     } else {
-                        // Fallback for legacy non-composer installs
                         $abs = GeneralUtility::getFileAbsFileName($normalizedIcon);
                         if ($abs !== '' && file_exists($abs)) {
                             $playIconUrl = PathUtility::getAbsoluteWebPath($abs);
                         }
                     }
-                    
-                    // If it's an SVG, also inline it for styling
+
                     if ($playIconUrl !== null) {
                         $playIconInlineSvg = $this->getInlineSvgFromExtPath($normalizedIcon);
                     }
                 } else {
-                    // Absolute URL or relative public path
                     $playIconUrl = $configuredIcon;
                 }
             }
-            
-            // Play button position - normalize to handle both value format (left-bottom) and label format (Left bottom)
+
             $configuredPosition = strtolower(str_replace(' ', '-', trim((string)($extConf['playPosition'] ?? ''))));
             $allowedPositions = ['center', 'left-top', 'right-top', 'left-bottom', 'right-bottom'];
             if (in_array($configuredPosition, $allowedPositions, true)) {
                 $playButtonPosition = $configuredPosition;
             }
         }
-        
-        // CSS-based icon system (opt-in via extension configuration)
+
         $useCssIcons = !empty($extConf['useCssIcons']);
-        
-        // Theme configuration (dark or light mode)
         $configuredTheme = strtolower(trim((string)($extConf['theme'] ?? '')));
         $theme = in_array($configuredTheme, ['dark', 'light'], true) ? $configuredTheme : 'dark';
-        $playerOptions['theme'] = $theme;
-        
-        // Theme sync with page-level theme switch (opt-in)
         $themeSyncEnabled = !empty($extConf['themeSyncEnabled']);
-        
-        // Determine which assets are needed for conditional loading
-        // For mixed playlists: always use VidPly with playlist-integrated privacy consent
-        $needsPrivacyLayer = $serviceType !== null || ($isPlaylist && $hasExternalMedia);
-        $needsVidPlay = $isPlaylist || $serviceType === null; // VidPly for playlists and local media
-        $needsPlaylist = $isPlaylist || $needsVidPlay; // Playlist OR native player
-        
-        // Check if HLS is needed
+
+        return [
+            'playIconUrl' => $playIconUrl,
+            'playIconInlineSvg' => $playIconInlineSvg,
+            'playButtonPosition' => $playButtonPosition,
+            'useCssIcons' => $useCssIcons,
+            'theme' => $theme,
+            'themeSyncEnabled' => $themeSyncEnabled,
+        ];
+    }
+
+    /**
+     * @return array{needsPrivacyLayer: bool, needsVidPlay: bool, needsPlaylist: bool, needsHLS: bool}
+     */
+    private function resolveAssetFlags(?string $serviceType, array $trackResult): array
+    {
+        $isPlaylist = $trackResult['isPlaylist'];
+        $needsPrivacyLayer = $serviceType !== null || ($isPlaylist && $trackResult['hasExternalMedia']);
+        $needsVidPlay = $isPlaylist || $serviceType === null;
+        $needsPlaylist = $isPlaylist || $needsVidPlay;
+
         $needsHLS = false;
-        foreach ($tracks as $track) {
+        foreach ($trackResult['tracks'] as $track) {
             if (in_array($track['type'] ?? '', ['hls', 'application/x-mpegurl', 'application/vnd.apple.mpegurl'], true)) {
                 $needsHLS = true;
                 break;
             }
         }
 
-        // Derive effective media type for template rendering (<audio> vs <video>).
-        // This is important for stream types (e.g. audio HLS) which should not render a <video> element.
-        $resolvedMediaType = $mediaType ?? 'video';
-        if (!empty($tracks)) {
-            $hasVideoTrack = false;
-            $hasAudioTrack = false;
-            foreach ($tracks as $track) {
-                $type = (string)($track['type'] ?? '');
-                if ($type === '') {
-                    continue;
-                }
-
-                // Explicit hint from processing (preferred)
-                $kind = (string)($track['kind'] ?? '');
-                if ($kind === 'video') {
-                    $hasVideoTrack = true;
-                    continue;
-                }
-                if ($kind === 'audio') {
-                    $hasAudioTrack = true;
-                    continue;
-                }
-
-                // MIME-based detection (local files and inferred external media)
-                if (str_starts_with($type, 'video/')) {
-                    $hasVideoTrack = true;
-                } elseif (str_starts_with($type, 'audio/')) {
-                    $hasAudioTrack = true;
-                } elseif (in_array($type, ['youtube', 'vimeo', 'hls'], true)) {
-                    $hasVideoTrack = true;
-                } elseif ($type === 'soundcloud') {
-                    $hasAudioTrack = true;
-                }
-            }
-
-            if ($hasAudioTrack && !$hasVideoTrack) {
-                $resolvedMediaType = 'audio';
-            }
-        }
-        
-        // Build processed data with template compatibility
-        $vidplyData = [
-            'mediaType' => $resolvedMediaType,
-            'serviceType' => $serviceType, // For privacy layer detection (single item only)
-            // Mixed playlist flags
-            'isMixedPlaylist' => $isMixedPlaylist ?? false,
-            'hasExternalMedia' => $hasExternalMedia ?? false,
-            'externalServiceTypes' => $externalServiceTypes ?? [],
-            // Asset loading flags
+        return [
             'needsPrivacyLayer' => $needsPrivacyLayer,
             'needsVidPlay' => $needsVidPlay,
             'needsPlaylist' => $needsPlaylist,
             'needsHLS' => $needsHLS,
-            'videoUrl' => $videoUrl,
-            'poster' => $poster,
-            'captions' => $captions,
-            'chapters' => $chapters,
+        ];
+    }
+
+    /**
+     * Derive effective media type for template rendering (<audio> vs <video>).
+     * Handles stream types (e.g. audio HLS) that should not render a <video> element.
+     */
+    private function resolveEffectiveMediaType(array $trackResult): string
+    {
+        $resolvedMediaType = $trackResult['mediaType'] ?? 'video';
+        $tracks = $trackResult['tracks'];
+
+        if ($tracks === []) {
+            return $resolvedMediaType;
+        }
+
+        $hasVideoTrack = false;
+        $hasAudioTrack = false;
+
+        foreach ($tracks as $track) {
+            $type = (string)($track['type'] ?? '');
+            if ($type === '') {
+                continue;
+            }
+
+            $kind = (string)($track['kind'] ?? '');
+            if ($kind === 'video') {
+                $hasVideoTrack = true;
+                continue;
+            }
+            if ($kind === 'audio') {
+                $hasAudioTrack = true;
+                continue;
+            }
+
+            if (str_starts_with($type, 'video/')) {
+                $hasVideoTrack = true;
+            } elseif (str_starts_with($type, 'audio/')) {
+                $hasAudioTrack = true;
+            } elseif (in_array($type, [MediaType::YouTube->value, MediaType::Vimeo->value, MediaType::Hls->value], true)) {
+                $hasVideoTrack = true;
+            } elseif ($type === MediaType::SoundCloud->value) {
+                $hasAudioTrack = true;
+            }
+        }
+
+        if ($hasAudioTrack && !$hasVideoTrack) {
+            $resolvedMediaType = 'audio';
+        }
+
+        return $resolvedMediaType;
+    }
+
+    /**
+     * Compute the Fluid template render mode from the track/service analysis.
+     *
+     * Possible values:
+     *  - 'privacy'       : single external service → show privacy consent layer
+     *  - 'mixedPlaylist'  : playlist containing external media → mixed playlist player
+     *  - 'audio'          : local/HLS audio player
+     *  - 'video'          : local/HLS video player (also default for empty CE)
+     */
+    private function determineRenderMode(?string $serviceType, array $trackResult, string $resolvedMediaType): string
+    {
+        if ($trackResult['tracks'] === []) {
+            return 'video';
+        }
+
+        if ($serviceType !== null && !$trackResult['isPlaylist']) {
+            return 'privacy';
+        }
+
+        if ($trackResult['isPlaylist'] && $trackResult['hasExternalMedia']) {
+            return 'mixedPlaylist';
+        }
+
+        return $resolvedMediaType === 'audio' ? 'audio' : 'video';
+    }
+
+    private function assembleTemplateData(
+        array $data,
+        array $playerOptions,
+        array $trackResult,
+        array $singleTrackData,
+        ?array $playlistData,
+        ?string $serviceType,
+        array $privacySettings,
+        array $uiConfig,
+        string $resolvedMediaType,
+        string $renderMode,
+        array $assetFlags
+    ): array {
+        $audioDescriptionTracks = $singleTrackData['audioDescriptionTracks'];
+        $signLanguage = $singleTrackData['signLanguage'];
+
+        $vidplyData = [
+            'renderMode' => $renderMode,
+            'mediaType' => $resolvedMediaType,
+            'serviceType' => $serviceType,
+            'isMixedPlaylist' => $trackResult['isMixedPlaylist'],
+            'hasExternalMedia' => $trackResult['hasExternalMedia'],
+            'externalServiceTypes' => $trackResult['externalServiceTypes'],
+            'needsPrivacyLayer' => $assetFlags['needsPrivacyLayer'],
+            'needsVidPlay' => $assetFlags['needsVidPlay'],
+            'needsPlaylist' => $assetFlags['needsPlaylist'],
+            'needsHLS' => $assetFlags['needsHLS'],
+            'videoUrl' => $singleTrackData['videoUrl'],
+            'poster' => $singleTrackData['poster'],
+            'captions' => $singleTrackData['captions'],
+            'chapters' => $singleTrackData['chapters'],
             'audioDescriptionTracks' => $audioDescriptionTracks,
             'audioDescriptionTracksJson' => $audioDescriptionTracks !== [] ? $this->safeJsonEncode($audioDescriptionTracks) : null,
             'audioDescription' => $audioDescriptionTracks[0]['src'] ?? null,
@@ -551,31 +655,29 @@ class VidPlyProcessor implements DataProcessorInterface
             'languageSelection' => $playerOptions['language'] ?? '',
             'uniqueId' => 'vidply-' . $data['uid'],
             'playlistData' => $playlistData,
-            'tracks' => $tracks,
-            'privacySettings' => $privacySettings, // Privacy layer settings for external services
-            // Play button UI (applies to both privacy layer and video player overlay)
-            'privacyPlayIconUrl' => $playIconUrl,
-            'privacyPlayIconInlineSvg' => $playIconInlineSvg,
-            'privacyPlayButtonPosition' => $playButtonPosition,
-            // CSS-based icon system (adds .vidply-use-css-icons class to wrapper)
-            'useCssIcons' => $useCssIcons,
-            // Theme settings
-            'theme' => $theme,
-            'themeSyncEnabled' => $themeSyncEnabled,
+            'tracks' => $trackResult['tracks'],
+            'privacySettings' => $privacySettings,
+            'privacyPlayIconUrl' => $uiConfig['playIconUrl'],
+            'privacyPlayIconInlineSvg' => $uiConfig['playIconInlineSvg'],
+            'privacyPlayButtonPosition' => $uiConfig['playButtonPosition'],
+            'useCssIcons' => $uiConfig['useCssIcons'],
+            'theme' => $uiConfig['theme'],
+            'themeSyncEnabled' => $uiConfig['themeSyncEnabled'],
         ];
-        
-        // Only set mediaFiles if we don't have sources (to avoid duplication)
-        if (empty($processedData['vidply']['sources'])) {
-            $vidplyData['mediaFiles'] = $mediaFiles;
+
+        if ($singleTrackData['sources'] !== null) {
+            $vidplyData['sources'] = $singleTrackData['sources'];
+            $vidplyData['mediaFiles'] = [];
         } else {
-            $vidplyData['mediaFiles'] = []; // Empty array when we have sources
+            $vidplyData['mediaFiles'] = $singleTrackData['mediaFiles'];
         }
-        
-        // Merge with any existing vidply data (like sources)
-        $processedData['vidply'] = array_merge($vidplyData, $processedData['vidply'] ?? []);
-        
-        return $processedData;
+
+        return $vidplyData;
     }
+
+    // -----------------------------------------------------------------------
+    // SVG handling
+    // -----------------------------------------------------------------------
 
     private function getInlineSvgFromFileReference(FileReference $fileReference): ?string
     {
@@ -608,7 +710,6 @@ class VidPlyProcessor implements DataProcessorInterface
             return null;
         }
 
-        // Handle common pitfall: "-" instead of "_" in extension key
         $normalized = preg_replace_callback(
             '/^EXT:([a-z0-9-]+)\\//i',
             static function (array $m): string {
@@ -619,7 +720,6 @@ class VidPlyProcessor implements DataProcessorInterface
 
         $abs = GeneralUtility::getFileAbsFileName($normalized);
         if (!$abs) {
-            // try raw as a fallback
             $abs = GeneralUtility::getFileAbsFileName($value);
         }
 
@@ -633,7 +733,6 @@ class VidPlyProcessor implements DataProcessorInterface
             return null;
         }
 
-        // Avoid huge inline payloads
         $maxBytes = 256 * 1024;
         $size = @filesize($absolutePath);
         if (is_int($size) && $size > $maxBytes) {
@@ -649,7 +748,6 @@ class VidPlyProcessor implements DataProcessorInterface
         $dom->preserveWhiteSpace = false;
         $dom->formatOutput = false;
 
-        // Prevent network access and ignore external entities
         $loaded = @$dom->loadXML($raw, \LIBXML_NONET | \LIBXML_NOERROR | \LIBXML_NOWARNING);
         if (!$loaded) {
             return null;
@@ -660,10 +758,8 @@ class VidPlyProcessor implements DataProcessorInterface
             return null;
         }
 
-        // Remove potentially dangerous elements
         foreach (['script', 'foreignObject'] as $tag) {
             $nodes = $dom->getElementsByTagName($tag);
-            // NodeList is live; remove from end
             for ($i = $nodes->length - 1; $i >= 0; $i--) {
                 $node = $nodes->item($i);
                 if ($node && $node->parentNode) {
@@ -674,9 +770,6 @@ class VidPlyProcessor implements DataProcessorInterface
 
         $xpath = new \DOMXPath($dom);
 
-        // Remove inline event handlers (onclick, onload, ...) and sanitize href-like attributes.
-        // We intentionally avoid XPath namespace prefixes (e.g. xlink:href) to prevent warnings
-        // when SVGs declare no xlink namespace.
         $attrs = $xpath->query('//@*');
         if ($attrs instanceof \DOMNodeList) {
             for ($i = $attrs->length - 1; $i >= 0; $i--) {
@@ -690,7 +783,6 @@ class VidPlyProcessor implements DataProcessorInterface
                     continue;
                 }
 
-                // Sanitize javascript: URLs in href-like attributes (href, xlink:href, ...)
                 if ($attr->localName === 'href') {
                     $val = trim((string)$attr->value);
                     if (stripos($val, 'javascript:') === 0) {
@@ -700,8 +792,6 @@ class VidPlyProcessor implements DataProcessorInterface
             }
         }
 
-        // Add our marker class, but avoid colliding with VidPly's own `.vidply-play-overlay`
-        // (that class has absolute positioning etc. for the main player overlay).
         $existingClass = trim((string)$svg->getAttribute('class'));
         $parts = preg_split('/\s+/', $existingClass) ?: [];
         $parts = array_values(array_filter($parts, static fn(string $c): bool => $c !== '' && $c !== 'vidply-play-overlay'));
@@ -715,13 +805,12 @@ class VidPlyProcessor implements DataProcessorInterface
         return $dom->saveXML($svg) ?: null;
     }
 
-    /**
-     * Get media records associated with content element via MM table
-     * Respects language translations and falls back to default language if needed
-     */
+    // -----------------------------------------------------------------------
+    // Media record loading (MM + language overlay)
+    // -----------------------------------------------------------------------
+
     protected function getMediaRecords(int $contentUid, int $languageId = 0): array
     {
-        // Step 1: Get MM relations for this content element
         $mmQueryBuilder = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_content_media_mm');
         $mmRelations = $mmQueryBuilder
             ->select('uid_foreign', 'sorting')
@@ -749,7 +838,6 @@ class VidPlyProcessor implements DataProcessorInterface
             return [];
         }
 
-        // Step 2: Load all referenced records in one query
         $mediaQueryBuilder = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_media');
         $referencedRecords = $mediaQueryBuilder
             ->select(...self::MEDIA_COLUMNS)
@@ -777,7 +865,6 @@ class VidPlyProcessor implements DataProcessorInterface
             }
         }
 
-        // Resolve default-language uid for each referenced uid
         $defaultUids = [];
         foreach ($referencedUids as $uid) {
             if (!isset($referencedByUid[$uid])) {
@@ -795,7 +882,6 @@ class VidPlyProcessor implements DataProcessorInterface
             return [];
         }
 
-        // Step 3: Load default-language records for all default uids (single query)
         $defaultQueryBuilder = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_media');
         $defaultRecords = $defaultQueryBuilder
             ->select(...self::MEDIA_COLUMNS)
@@ -820,7 +906,6 @@ class VidPlyProcessor implements DataProcessorInterface
             }
         }
 
-        // Step 4 (optional): Load translated records for all default uids (single query)
         $translatedByParent = [];
         if ($languageId > 0) {
             $translatedQueryBuilder = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_media');
@@ -850,7 +935,6 @@ class VidPlyProcessor implements DataProcessorInterface
             }
         }
 
-        // Step 5: Build ordered list with correct language fallback, preserving MM sorting
         $resultRecords = [];
         foreach ($mmRelations as $mmRelation) {
             $mediaUid = (int)($mmRelation['uid_foreign'] ?? 0);
@@ -891,116 +975,97 @@ class VidPlyProcessor implements DataProcessorInterface
         return $resultRecords;
     }
 
-    /**
-     * Process a single media record into a track array
-     */
+    // -----------------------------------------------------------------------
+    // Single media record → track array
+    // -----------------------------------------------------------------------
+
     protected function processMediaRecord(array $mediaRecord): ?array
     {
-        $mediaType = $mediaRecord['media_type'];
+        $mediaType = MediaType::tryFrom((string)($mediaRecord['media_type'] ?? ''));
+        if ($mediaType === null) {
+            return null;
+        }
+
         $mediaUid = (int)$mediaRecord['uid'];
-        
+
         $track = [
             'title' => $mediaRecord['title'] ?: 'Untitled',
         ];
 
-        // Per-track UI overrides (consumed by PlaylistInit.js / templates)
         if (!empty($mediaRecord['hide_speed_button'])) {
             $track['hideSpeedButton'] = true;
         }
-        
-        // Add artist if available
         if (!empty($mediaRecord['artist'])) {
             $track['artist'] = $mediaRecord['artist'];
         }
-        
-        // Add duration if available (in seconds)
         if (!empty($mediaRecord['duration'])) {
             $track['duration'] = (int)$mediaRecord['duration'];
         }
-        
-        // Add audio description duration if available (in seconds)
-        // This is the duration of the audio-described version, which is typically longer
         if (!empty($mediaRecord['audio_description_duration'])) {
             $track['audioDescriptionDuration'] = (int)$mediaRecord['audio_description_duration'];
         }
-        
-        // Add description if available
         if (!empty($mediaRecord['description'])) {
             $track['description'] = $mediaRecord['description'];
         }
-        
-        // Handle different media types
+
         switch ($mediaType) {
-            case 'youtube':
-            case 'vimeo':
-                // File-based media using TYPO3 13 online media helpers
+            case MediaType::YouTube:
+            case MediaType::Vimeo:
                 $mediaFiles = $this->getFileReferencesForMedia($mediaUid, 'media_file');
                 if (empty($mediaFiles)) {
-                    return null; // Skip if no file
+                    return null;
                 }
-                $mediaFile = $mediaFiles[0];
-                // For YouTube/Vimeo, the file extension is 'youtube' or 'vimeo'
-                // TYPO3's online media helpers store the URL in the file's properties
-                $track['src'] = $mediaFile->getPublicUrl();
-                $track['type'] = $mediaType;
+                $track['src'] = $mediaFiles[0]->getPublicUrl();
+                $track['type'] = $mediaType->value;
                 $track['kind'] = 'video';
                 break;
-                
-            case 'soundcloud':
-                // SoundCloud: file-based online media container file (.soundcloud)
+
+            case MediaType::SoundCloud:
                 $mediaFiles = $this->getFileReferencesForMedia($mediaUid, 'media_file');
                 if (empty($mediaFiles)) {
-                    return null; // Skip if no file
+                    return null;
                 }
-                $mediaFile = $mediaFiles[0];
-                $track['src'] = $this->getPublicUrlCached($mediaFile);
-                $track['type'] = 'soundcloud';
+                $track['src'] = $this->getPublicUrlCached($mediaFiles[0]);
+                $track['type'] = MediaType::SoundCloud->value;
                 $track['kind'] = 'audio';
                 break;
-                
-            case 'hls':
-                // File-based online media container file (.hls) or playlist file (.m3u8)
+
+            case MediaType::Hls:
                 $mediaFiles = $this->getFileReferencesForMedia($mediaUid, 'media_file');
                 if (empty($mediaFiles)) {
-                    return null; // Skip if no file
+                    return null;
                 }
-                $mediaFile = $mediaFiles[0];
-                $track['src'] = $this->getPublicUrlCached($mediaFile);
-                $track['type'] = $mediaType;
+                $track['src'] = $this->getPublicUrlCached($mediaFiles[0]);
+                $track['type'] = MediaType::Hls->value;
                 $hlsKind = strtolower((string)($mediaRecord['hls_kind'] ?? 'video'));
                 $track['kind'] = in_array($hlsKind, ['audio', 'video'], true) ? $hlsKind : 'video';
                 break;
-                
-            case 'video':
-            case 'audio':
-                // File-based media - can have multiple files (e.g., MP4 and WebM)
+
+            case MediaType::Video:
+            case MediaType::Audio:
                 $mediaFiles = $this->getFileReferencesForMedia($mediaUid, 'media_file');
                 if (empty($mediaFiles)) {
-                    return null; // Skip if no file
+                    return null;
                 }
-                $track['kind'] = $mediaType;
-                // If multiple files, create sources array for HTML5 video/audio element
+                $track['kind'] = $mediaType->value;
+
                 if (count($mediaFiles) > 1) {
                     $track['sources'] = [];
                     foreach ($mediaFiles as $mediaFile) {
                         $publicUrl = $this->getPublicUrlCached($mediaFile);
                         $mimeType = $this->getMimeTypeCached($mediaFile);
-                        // Online media container files (externalaudio/externalvideo) are stored as text/plain in FAL
-                        // but the HTML5 <source type="..."> must match the actual remote media type.
                         if (in_array($mediaFile->getExtension(), ['externalaudio', 'externalvideo', 'hls', 'm3u8'], true)) {
                             $mimeType = $this->inferMimeTypeFromUrlCached($publicUrl, $mimeType);
                         }
                         $track['sources'][] = [
                             'src' => $publicUrl,
                             'type' => $mimeType,
-                            'label' => 'Default', // Label for quality/format selection
+                            'label' => 'Default',
                         ];
                     }
-                    // Use first file as primary src for backward compatibility
                     $track['src'] = $track['sources'][0]['src'];
                     $track['type'] = $track['sources'][0]['type'];
                 } else {
-                    // Single file - use simple src
                     $mediaFile = $mediaFiles[0];
                     $track['src'] = $this->getPublicUrlCached($mediaFile);
                     $track['type'] = $this->getMimeTypeCached($mediaFile);
@@ -1009,43 +1074,34 @@ class VidPlyProcessor implements DataProcessorInterface
                     }
                 }
                 break;
-                
-            default:
-                return null; // Unknown media type
         }
-        
-        // Get poster/thumbnail
+
         $posterFiles = $this->getFileReferencesForMedia($mediaUid, 'poster');
         if (!empty($posterFiles)) {
             $track['poster'] = $posterFiles[0]->getPublicUrl();
         }
-        
-        // Get captions and chapters (text tracks)
+
         $textTracks = [];
-        
-        // Captions - can be captions or descriptions
+
         $captionFiles = $this->getFileReferencesForMedia($mediaUid, 'captions');
         foreach ($captionFiles as $captionFile) {
             $properties = $captionFile->getProperties();
             $trackKind = $properties['tx_track_kind'] ?: 'captions';
-            // Support both 'captions' and 'descriptions' track kinds
             $trackData = [
                 'src' => $captionFile->getPublicUrl(),
                 'kind' => $trackKind,
                 'srclang' => $properties['tx_lang_code'] ?: 'en',
                 'label' => $properties['title'] ?: ($trackKind === 'descriptions' ? 'Descriptions' : 'Captions'),
             ];
-            
-            // Check for described source file (audio description version of this track)
+
             $descSrcUrl = $this->getDescribedSourceUrl($captionFile);
             if ($descSrcUrl !== null) {
                 $trackData['describedSrc'] = $descSrcUrl;
             }
-            
+
             $textTracks[] = $trackData;
         }
-        
-        // Chapters
+
         $chapterFiles = $this->getFileReferencesForMedia($mediaUid, 'chapters');
         foreach ($chapterFiles as $chapterFile) {
             $properties = $chapterFile->getProperties();
@@ -1055,41 +1111,40 @@ class VidPlyProcessor implements DataProcessorInterface
                 'srclang' => $properties['tx_lang_code'] ?: 'en',
                 'label' => $properties['title'] ?: 'Chapters',
             ];
-            
-            // Check for described source file (audio description version of this track)
+
             $descSrcUrl = $this->getDescribedSourceUrl($chapterFile);
             if ($descSrcUrl !== null) {
                 $trackData['describedSrc'] = $descSrcUrl;
             }
-            
+
             $textTracks[] = $trackData;
         }
-        
+
         if (!empty($textTracks)) {
             $track['tracks'] = $textTracks;
         }
-        
-        // Get audio description
+
         $audioDescFiles = $this->getFileReferencesForMedia($mediaUid, 'audio_description');
         if (!empty($audioDescFiles)) {
             $track['audioDescriptionSrc'] = $audioDescFiles[0]->getPublicUrl();
         }
-        
-        // Get sign language
+
         $signLangFiles = $this->getFileReferencesForMedia($mediaUid, 'sign_language');
         if (!empty($signLangFiles)) {
             $track['signLanguageSrc'] = $signLangFiles[0]->getPublicUrl();
-            // Add display mode (pip, main, or both)
             $track['signLanguageDisplayMode'] = $mediaRecord['sign_language_display_mode'] ?? 'pip';
         }
-        
-        // Add transcript flag if enabled
+
         if (!empty($mediaRecord['enable_transcript'])) {
             $track['enableTranscript'] = true;
         }
-        
+
         return $track;
     }
+
+    // -----------------------------------------------------------------------
+    // Utility helpers
+    // -----------------------------------------------------------------------
 
     private function safeJsonEncode(mixed $value): string
     {
@@ -1107,16 +1162,13 @@ class VidPlyProcessor implements DataProcessorInterface
         $ext = strtolower((string)pathinfo($path, PATHINFO_EXTENSION));
 
         $mimeType = match ($ext) {
-            // audio
             'mp3' => 'audio/mpeg',
             'ogg', 'oga' => 'audio/ogg',
             'wav' => 'audio/wav',
             'm4a' => 'audio/mp4',
             'aac' => 'audio/aac',
             'flac' => 'audio/flac',
-            // streaming playlists
             'm3u8' => 'application/vnd.apple.mpegurl',
-            // video
             'mp4' => 'video/mp4',
             'm4v' => 'video/x-m4v',
             'webm' => 'video/webm',
@@ -1155,25 +1207,21 @@ class VidPlyProcessor implements DataProcessorInterface
     }
 
     /**
-     * Get the public URL for the described source file of a track
-     * 
+     * Get the public URL for the described source file of a track.
+     *
      * The described source is an alternative VTT file to use when audio description mode is enabled.
-     * This is stored as a file reference in the tx_desc_src_file field of the track's file reference.
      */
     protected function getDescribedSourceUrl(FileReference $trackFileReference): ?string
     {
-        // Get the UID of the file reference record
         $fileReferenceUid = $trackFileReference->getUid();
         if ($fileReferenceUid > 0 && isset($this->describedSourceByFileReferenceUid[$fileReferenceUid])) {
             return $this->describedSourceByFileReferenceUid[$fileReferenceUid]->getPublicUrl();
         }
-        
+
         return null;
     }
 
-    /**
-     * @return FileReference[]
-     */
+    /** @return FileReference[] */
     protected function getFileReferencesForMedia(int $mediaUid, string $fieldName): array
     {
         if ($mediaUid <= 0) {
@@ -1182,13 +1230,14 @@ class VidPlyProcessor implements DataProcessorInterface
         if (isset($this->fileReferencesByMediaUid[$mediaUid][$fieldName])) {
             return $this->fileReferencesByMediaUid[$mediaUid][$fieldName];
         }
-        // Fallback (should not happen in FE, but keeps behavior safe)
         return $this->fileRepository->findByRelation('tx_mpcvidply_media', $fieldName, $mediaUid);
     }
 
+    // -----------------------------------------------------------------------
+    // Bulk prefetch helpers
+    // -----------------------------------------------------------------------
+
     /**
-     * Bulk prefetch of file references for VidPly media records.
-     *
      * @param int[] $mediaUids
      * @param string[] $fieldNames
      * @return array<int, array<string, FileReference[]>>
@@ -1201,7 +1250,6 @@ class VidPlyProcessor implements DataProcessorInterface
         }
 
         $queryBuilder = $this->connectionPool->getQueryBuilderForTable('sys_file_reference');
-        // DataProcessor runs in FE; apply FE restrictions (deleted/hidden/start/end etc.)
         $queryBuilder->setRestrictions(GeneralUtility::makeInstance(FrontendRestrictionContainer::class));
 
         $rows = $queryBuilder
@@ -1236,7 +1284,6 @@ class VidPlyProcessor implements DataProcessorInterface
             $result[$uidForeign][$fieldName][] = $fileReference;
         }
 
-        // Ensure all requested fields exist as arrays to simplify access
         foreach ($mediaUids as $mediaUid) {
             $result[$mediaUid] ??= [];
             foreach ($fieldNames as $fieldName) {
@@ -1248,8 +1295,6 @@ class VidPlyProcessor implements DataProcessorInterface
     }
 
     /**
-     * Collect sys_file_reference uids for captions/chapters to allow bulk lookup of described-source relations.
-     *
      * @param int[] $mediaUids
      * @return int[]
      */
@@ -1270,10 +1315,8 @@ class VidPlyProcessor implements DataProcessorInterface
     }
 
     /**
-     * Prefetch "described source" file references (sys_file_reference.tx_desc_src_file) for a set of source file reference uids.
-     *
      * @param int[] $sourceFileReferenceUids
-     * @return array<int, FileReference> map: source sys_file_reference uid -> first described-source FileReference
+     * @return array<int, FileReference>
      */
     protected function prefetchDescribedSourceFiles(array $sourceFileReferenceUids): array
     {
@@ -1307,7 +1350,6 @@ class VidPlyProcessor implements DataProcessorInterface
             if ($uid <= 0 || $uidForeign <= 0) {
                 continue;
             }
-            // Keep first (lowest sorting_foreign)
             if (isset($result[$uidForeign])) {
                 continue;
             }
@@ -1321,4 +1363,3 @@ class VidPlyProcessor implements DataProcessorInterface
         return $result;
     }
 }
-
