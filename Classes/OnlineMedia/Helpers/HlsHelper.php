@@ -20,7 +20,7 @@ final class HlsHelper extends AbstractOnlineMediaHelper
 {
     use ExternalMediaDomainValidationTrait;
 
-    private ExtensionConfiguration $extensionConfiguration;
+    private readonly ExtensionConfiguration $extensionConfiguration;
 
     public function __construct($extension, ?ExtensionConfiguration $extensionConfiguration = null)
     {
@@ -28,6 +28,12 @@ final class HlsHelper extends AbstractOnlineMediaHelper
         $this->extensionConfiguration = $extensionConfiguration ?? GeneralUtility::makeInstance(ExtensionConfiguration::class);
     }
 
+    private function getExtensionConfiguration(): ExtensionConfiguration
+    {
+        return $this->extensionConfiguration;
+    }
+
+    /** @return File|null */
     public function transformUrlToFile($url, Folder $targetFolder)
     {
         $url = trim((string)$url);
@@ -67,18 +73,21 @@ final class HlsHelper extends AbstractOnlineMediaHelper
         return $this->createNewFile($targetFolder, $fileName, $onlineMediaId);
     }
 
+    /** @return string|null */
     public function getPublicUrl(File $file)
     {
         $url = $this->getOnlineMediaId($file);
         return $url !== '' ? $url : null;
     }
 
+    /** @return string */
     public function getPreviewImage(File $file)
     {
         // Used by TYPO3 Filelist thumbnail rendering for online media files
         return (string)GeneralUtility::getFileAbsFileName('EXT:mpc_vidply/Resources/Public/Images/video.png');
     }
 
+    /** @return array<string, mixed> */
     public function getMetaData(File $file)
     {
         $url = $this->getOnlineMediaId($file);

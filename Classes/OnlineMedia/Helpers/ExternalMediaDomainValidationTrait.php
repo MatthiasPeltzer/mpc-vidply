@@ -4,21 +4,22 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\OnlineMedia\Helpers;
 
+use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
+
 /**
  * Shared domain validation and file naming logic for external media OnlineMedia helpers.
- *
- * Requires the using class to declare:
- *   private ExtensionConfiguration $extensionConfiguration;
  */
 trait ExternalMediaDomainValidationTrait
 {
+    abstract private function getExtensionConfiguration(): ExtensionConfiguration;
+
     /**
      * @return string[]
      */
     private function getAllowedDomains(string $key): array
     {
         try {
-            $config = $this->extensionConfiguration->get('mpc_vidply');
+            $config = $this->getExtensionConfiguration()->get('mpc_vidply');
         } catch (\Throwable) {
             $config = [];
         }
