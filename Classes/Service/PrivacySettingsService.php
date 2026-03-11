@@ -4,22 +4,25 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\Service;
 
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
- * Service to fetch privacy layer settings from database
+ * Service to fetch privacy layer settings from database.
  *
  * Provides site-wide configuration for privacy layer texts, links, and button labels
  * for YouTube, Vimeo, and SoundCloud.
  * Supports multilingual content via sys_language_uid.
+ *
+ * Uses constructor injection with fallback for TYPO3 13/14 compatibility.
  */
-class PrivacySettingsService
+final readonly class PrivacySettingsService
 {
-    private readonly ConnectionPool $connectionPool;
-    private readonly LanguageServiceFactory $languageServiceFactory;
+    private ConnectionPool $connectionPool;
+    private LanguageServiceFactory $languageServiceFactory;
 
     public function __construct(
         ?ConnectionPool $connectionPool = null,
@@ -30,24 +33,24 @@ class PrivacySettingsService
     }
 
     /**
-     * Get privacy settings for a specific service
-     * 
+     * Get privacy settings for a specific service.
+     *
      * @param string $service Service name: 'youtube', 'vimeo', or 'soundcloud'
      * @param int $languageId Language ID (0 for default language)
+     * @param ServerRequestInterface|null $request Current request for language resolution (avoids $GLOBALS access)
      * @return array Array with keys: headline, intro_text, outro_text, policy_link, link_text, button_label
      */
-    public function getSettingsForService(string $service, int $languageId = 0): array
+    public function getSettingsForService(string $service, int $languageId = 0, ?ServerRequestInterface $request = null): array
     {
         $settings = $this->getAllSettings($languageId);
-        
+
         if ($settings === null) {
-            // No record exists at all - use language file fallbacks
-            return $this->getFallbackSettings($service, $languageId);
+            return $this->getFallbackSettings($service, $languageId, $request);
         }
-        
+
         $serviceKey = $service . '_';
         $recordLanguageId = (int)($settings['sys_language_uid'] ?? 0);
-        
+
         $result = [
             'headline' => (string)($settings[$serviceKey . 'headline'] ?? ''),
             'intro_text' => (string)($settings[$serviceKey . 'intro_text'] ?? ''),
@@ -59,20 +62,20 @@ class PrivacySettingsService
 
         $useDbValues = $languageId === 0 || $recordLanguageId === $languageId;
         if (!$useDbValues) {
-            return $this->getFallbackSettings($service, $languageId);
+            return $this->getFallbackSettings($service, $languageId, $request);
         }
 
         if ($result['intro_text'] === '') {
-            $result['intro_text'] = $this->getDefaultIntroText($service, $languageId);
+            $result['intro_text'] = $this->getDefaultIntroText($service, $languageId, $request);
         }
         if ($result['outro_text'] === '') {
-            $result['outro_text'] = $this->getDefaultOutroText($languageId);
+            $result['outro_text'] = $this->getDefaultOutroText($languageId, $request);
         }
         if ($result['policy_link'] === '' || !$this->isHttpUrl($result['policy_link'])) {
             $result['policy_link'] = $this->getDefaultPolicyLink($service);
         }
         if ($result['link_text'] === '') {
-            $result['link_text'] = $this->getDefaultLinkText($service, $languageId);
+            $result['link_text'] = $this->getDefaultLinkText($service, $languageId, $request);
         }
 
         return $result;
@@ -89,8 +92,6 @@ class PrivacySettingsService
     ];
 
     /**
-     * Get all privacy settings
-     *
      * @param int $languageId Language ID (0 for default language)
      * @return array|null Settings array or null if not found
      */
@@ -131,43 +132,34 @@ class PrivacySettingsService
         return $settings !== false ? $settings : null;
     }
 
-    /**
-     * Get fallback settings when no database record exists
-     */
-    private function getFallbackSettings(string $service, int $languageId = 0): array
+    private function getFallbackSettings(string $service, int $languageId = 0, ?ServerRequestInterface $request = null): array
     {
         return [
             'headline' => '',
-            'intro_text' => $this->getDefaultIntroText($service, $languageId),
-            'outro_text' => $this->getDefaultOutroText($languageId),
+            'intro_text' => $this->getDefaultIntroText($service, $languageId, $request),
+            'outro_text' => $this->getDefaultOutroText($languageId, $request),
             'policy_link' => $this->getDefaultPolicyLink($service),
-            'link_text' => $this->getDefaultLinkText($service, $languageId),
+            'link_text' => $this->getDefaultLinkText($service, $languageId, $request),
             'button_label' => '',
         ];
     }
 
-    /**
-     * Get default intro text from language file
-     */
-    private function getDefaultIntroText(string $service, int $languageId = 0): string
+    private function getDefaultIntroText(string $service, int $languageId = 0, ?ServerRequestInterface $request = null): string
     {
-        $languageService = $this->getLanguageService($languageId);
+        $languageService = $this->getLanguageService($languageId, $request);
         $key = $service === 'soundcloud' ? 'privacy.activate_intro_widget' : 'privacy.activate_intro';
         return $languageService->sL('LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:' . $key) ?: '';
     }
 
-    /**
-     * Get default outro text from language file
-     */
-    private function getDefaultOutroText(int $languageId = 0): string
+    private function getDefaultOutroText(int $languageId = 0, ?ServerRequestInterface $request = null): string
     {
-        $languageService = $this->getLanguageService($languageId);
+        $languageService = $this->getLanguageService($languageId, $request);
         return $languageService->sL('LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:privacy.activate_outro') ?: '';
     }
 
-    private function getDefaultLinkText(string $service, int $languageId = 0): string
+    private function getDefaultLinkText(string $service, int $languageId = 0, ?ServerRequestInterface $request = null): string
     {
-        $languageService = $this->getLanguageService($languageId);
+        $languageService = $this->getLanguageService($languageId, $request);
         $key = match ($service) {
             'youtube' => 'privacy.youtube.policy_link',
             'vimeo' => 'privacy.vimeo.policy_link',
@@ -186,9 +178,9 @@ class PrivacySettingsService
         return is_string($scheme) && in_array(strtolower($scheme), ['http', 'https'], true);
     }
 
-    private function getLanguageService(int $languageId = 0): \TYPO3\CMS\Core\Localization\LanguageService
+    private function getLanguageService(int $languageId = 0, ?ServerRequestInterface $request = null): \TYPO3\CMS\Core\Localization\LanguageService
     {
-        $request = $GLOBALS['TYPO3_REQUEST'] ?? null;
+        $request ??= $GLOBALS['TYPO3_REQUEST'] ?? null;
         $siteLanguage = $request?->getAttribute('language');
 
         if ($siteLanguage !== null) {
@@ -213,9 +205,6 @@ class PrivacySettingsService
         return $this->languageServiceFactory->create('default');
     }
 
-    /**
-     * Get default policy link for service
-     */
     private function getDefaultPolicyLink(string $service): string
     {
         return match ($service) {

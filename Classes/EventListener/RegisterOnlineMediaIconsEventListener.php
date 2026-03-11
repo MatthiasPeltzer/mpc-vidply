@@ -7,10 +7,10 @@ namespace Mpc\MpcVidply\EventListener;
 use TYPO3\CMS\Core\Core\Event\BootCompletedEvent;
 use TYPO3\CMS\Core\Imaging\IconRegistry;
 
-final class RegisterOnlineMediaIconsEventListener
+final readonly class RegisterOnlineMediaIconsEventListener
 {
     public function __construct(
-        private readonly IconRegistry $iconRegistry
+        private IconRegistry $iconRegistry
     ) {
     }
 

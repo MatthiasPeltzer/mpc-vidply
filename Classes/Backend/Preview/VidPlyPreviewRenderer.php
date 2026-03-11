@@ -9,27 +9,31 @@ use TYPO3\CMS\Backend\View\BackendLayout\Grid\GridColumnItem;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Localization\LanguageService;
+use TYPO3\CMS\Core\Resource\Exception\ResourceDoesNotExistException;
 use TYPO3\CMS\Core\Resource\FileReference;
-use TYPO3\CMS\Core\Resource\FileRepository;
+use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
 
-class VidPlyPreviewRenderer extends StandardContentPreviewRenderer
+final class VidPlyPreviewRenderer extends StandardContentPreviewRenderer
 {
     private const LLL = 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:';
 
-    /** @var array<int, string|null> */
-    protected array $externalTypeLabelCache = [];
-
     private readonly ConnectionPool $connectionPool;
-    private readonly FileRepository $fileRepository;
+    private readonly ResourceFactory $resourceFactory;
+
+    /** @var array<int, FileReference[]> */
+    private array $posterRefsByMediaUid = [];
+
+    /** @var array<int, FileReference[]> */
+    private array $mediaFileRefsByMediaUid = [];
 
     public function __construct(
         ?ConnectionPool $connectionPool = null,
-        ?FileRepository $fileRepository = null
+        ?ResourceFactory $resourceFactory = null
     ) {
         $this->connectionPool = $connectionPool ?? GeneralUtility::makeInstance(ConnectionPool::class);
-        $this->fileRepository = $fileRepository ?? GeneralUtility::makeInstance(FileRepository::class);
+        $this->resourceFactory = $resourceFactory ?? GeneralUtility::makeInstance(ResourceFactory::class);
     }
 
     public function renderPageModulePreviewContent(GridColumnItem $item): string
@@ -58,6 +62,12 @@ class VidPlyPreviewRenderer extends StandardContentPreviewRenderer
             return $html;
         }
 
+        $mediaUids = array_values(array_filter(
+            array_map(static fn(array $row): int => (int)($row['uid'] ?? 0), $mediaItems),
+            static fn(int $uid): bool => $uid > 0
+        ));
+        $this->prefetchFileReferences($mediaUids);
+
         $untitledLabel = $lang->sL(self::LLL . 'preview.untitled') ?: 'Untitled';
 
         $html .= '<div class="mpc-vidply-preview-items" style="margin-top: 10px;">';
@@ -71,7 +81,8 @@ class VidPlyPreviewRenderer extends StandardContentPreviewRenderer
         }
 
         foreach ($mediaItems as $mediaItem) {
-            $posterUrl = $this->getPosterImageUrl((int)$mediaItem['uid']);
+            $mediaUid = (int)$mediaItem['uid'];
+            $posterUrl = $this->getPosterImageUrl($mediaUid);
 
             $html .= '<div class="callout callout-default" style="margin: 5px 0; padding: 8px; display: flex; align-items: center; gap: 10px;">';
 
@@ -103,7 +114,7 @@ class VidPlyPreviewRenderer extends StandardContentPreviewRenderer
             }
 
             $html .= ' <span class="badge badge-info" style="margin-left: 5px;">';
-            $badgeLabel = $this->getExternalTypeLabel((int)$mediaItem['uid'], $lang)
+            $badgeLabel = $this->getExternalTypeLabel($mediaUid, $lang)
                 ?? strtoupper((string)($mediaItem['media_type'] ?? 'video'));
             $html .= htmlspecialchars($badgeLabel);
             $html .= '</span>';
@@ -117,7 +128,62 @@ class VidPlyPreviewRenderer extends StandardContentPreviewRenderer
         return $html;
     }
 
-    protected function getMediaItems(int $contentUid): array
+    /**
+     * Batch-fetch poster and media_file references for all media UIDs in a single query
+     * to avoid N+1 queries when rendering playlist previews.
+     *
+     * @param int[] $mediaUids
+     */
+    private function prefetchFileReferences(array $mediaUids): void
+    {
+        $this->posterRefsByMediaUid = [];
+        $this->mediaFileRefsByMediaUid = [];
+
+        if ($mediaUids === []) {
+            return;
+        }
+
+        $qb = $this->connectionPool->getQueryBuilderForTable('sys_file_reference');
+        $rows = $qb
+            ->select('uid', 'uid_foreign', 'fieldname')
+            ->from('sys_file_reference')
+            ->where(
+                $qb->expr()->eq('tablenames', $qb->createNamedParameter('tx_mpcvidply_media')),
+                $qb->expr()->in('fieldname', $qb->createNamedParameter(['poster', 'media_file'], Connection::PARAM_STR_ARRAY)),
+                $qb->expr()->in('uid_foreign', $qb->createNamedParameter($mediaUids, Connection::PARAM_INT_ARRAY)),
+                $qb->expr()->eq('deleted', $qb->createNamedParameter(0, Connection::PARAM_INT)),
+                $qb->expr()->eq('hidden', $qb->createNamedParameter(0, Connection::PARAM_INT))
+            )
+            ->orderBy('uid_foreign', 'ASC')
+            ->addOrderBy('sorting_foreign', 'ASC')
+            ->executeQuery()
+            ->fetchAllAssociative();
+
+        foreach ($rows as $row) {
+            $uid = (int)($row['uid'] ?? 0);
+            $uidForeign = (int)($row['uid_foreign'] ?? 0);
+            $fieldName = (string)($row['fieldname'] ?? '');
+            if ($uid <= 0 || $uidForeign <= 0 || $fieldName === '') {
+                continue;
+            }
+
+            try {
+                $fileReference = $this->resourceFactory->getFileReferenceObject($uid);
+            } catch (ResourceDoesNotExistException) {
+                continue;
+            }
+
+            if ($fieldName === 'poster') {
+                $this->posterRefsByMediaUid[$uidForeign] ??= [];
+                $this->posterRefsByMediaUid[$uidForeign][] = $fileReference;
+            } else {
+                $this->mediaFileRefsByMediaUid[$uidForeign] ??= [];
+                $this->mediaFileRefsByMediaUid[$uidForeign][] = $fileReference;
+            }
+        }
+    }
+
+    private function getMediaItems(int $contentUid): array
     {
         if ($contentUid === 0) {
             return [];
@@ -146,14 +212,14 @@ class VidPlyPreviewRenderer extends StandardContentPreviewRenderer
         return $records ?: [];
     }
 
-    protected function getPosterImageUrl(int $mediaUid): ?string
+    private function getPosterImageUrl(int $mediaUid): ?string
     {
         if ($mediaUid === 0) {
             return null;
         }
 
         try {
-            $fileReferences = $this->fileRepository->findByRelation('tx_mpcvidply_media', 'poster', $mediaUid);
+            $fileReferences = $this->posterRefsByMediaUid[$mediaUid] ?? [];
 
             if ($fileReferences !== [] && isset($fileReferences[0])) {
                 $fileReference = $fileReferences[0];
@@ -181,37 +247,34 @@ class VidPlyPreviewRenderer extends StandardContentPreviewRenderer
         return null;
     }
 
-    protected function getExternalTypeLabel(int $mediaUid, LanguageService $lang): ?string
+    private function getExternalTypeLabel(int $mediaUid, LanguageService $lang): ?string
     {
         if ($mediaUid === 0) {
             return null;
         }
-        if (array_key_exists($mediaUid, $this->externalTypeLabelCache)) {
-            return $this->externalTypeLabelCache[$mediaUid];
-        }
 
-        try {
-            $fileReferences = $this->fileRepository->findByRelation('tx_mpcvidply_media', 'media_file', $mediaUid);
-            foreach ($fileReferences as $fileReference) {
-                if (!$fileReference instanceof FileReference) {
-                    continue;
-                }
-                $file = $fileReference->getOriginalFile();
-                $ext = strtolower((string)$file->getExtension());
-                if ($ext === 'externalaudio') {
-                    return $this->externalTypeLabelCache[$mediaUid] = $lang->sL(self::LLL . 'preview.external_audio') ?: 'External Audio';
-                }
-                if ($ext === 'externalvideo') {
-                    return $this->externalTypeLabelCache[$mediaUid] = $lang->sL(self::LLL . 'preview.external_video') ?: 'External Video';
-                }
+        $fileReferences = $this->mediaFileRefsByMediaUid[$mediaUid] ?? [];
+        foreach ($fileReferences as $fileReference) {
+            if (!$fileReference instanceof FileReference) {
+                continue;
             }
-        } catch (\Throwable) {
+            try {
+                $ext = strtolower((string)$fileReference->getOriginalFile()->getExtension());
+            } catch (\Throwable) {
+                continue;
+            }
+            if ($ext === 'externalaudio') {
+                return $lang->sL(self::LLL . 'preview.external_audio') ?: 'External Audio';
+            }
+            if ($ext === 'externalvideo') {
+                return $lang->sL(self::LLL . 'preview.external_video') ?: 'External Video';
+            }
         }
 
-        return $this->externalTypeLabelCache[$mediaUid] = null;
+        return null;
     }
 
-    private function getLanguageService(): LanguageService
+    protected function getLanguageService(): LanguageService
     {
         return $GLOBALS['LANG'];
     }

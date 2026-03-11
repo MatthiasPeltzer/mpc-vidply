@@ -53,37 +53,13 @@
     </button>
     
     <div class="vidply-privacy-text">
-
         <p>
             <f:if condition="{headline}">
                 <span class="h6">{headline}</span>
             </f:if>
-            <f:if condition="{introText}">
-                <f:then>{introText}</f:then>
-                <f:else>
-                    <f:if condition="{service} == 'soundcloud'">
-                        <f:then><f:translate key="privacy.activate_intro_widget" extensionName="mpc_vidply" /></f:then>
-                        <f:else><f:translate key="privacy.activate_intro" extensionName="mpc_vidply" /></f:else>
-                    </f:if>
-                </f:else>
-            </f:if>
-            <f:variable name="finalPolicyLink">
-                <f:if condition="{policyLink}">
-                    <f:then>{policyLink}</f:then>
-                    <f:else>
-                        <f:switch expression="{service}">
-                            <f:case value="youtube">https://policies.google.com/privacy</f:case>
-                            <f:case value="vimeo">https://vimeo.com/privacy</f:case>
-                            <f:case value="soundcloud">https://soundcloud.com/pages/privacy</f:case>
-                        </f:switch>
-                    </f:else>
-                </f:if>
-            </f:variable>
-            <a href="{finalPolicyLink}" class="external-link" target="_blank" rel="noopener noreferrer"><f:if condition="{linkText}"><f:then>{linkText}</f:then><f:else><f:switch expression="{service}"><f:case value="youtube"><f:translate key="privacy.youtube.policy_link" extensionName="mpc_vidply" /></f:case><f:case value="vimeo"><f:translate key="privacy.vimeo.policy_link" extensionName="mpc_vidply" /></f:case><f:case value="soundcloud"><f:translate key="privacy.soundcloud.policy_link" extensionName="mpc_vidply" /></f:case></f:switch></f:else></f:if></a>
-            <f:if condition="{outroText}">
-                <f:then>{outroText}</f:then>
-                <f:else><f:translate key="privacy.activate_outro" extensionName="mpc_vidply" /></f:else>
-            </f:if>
+            {introText}
+            <a href="{policyLink}" class="external-link" target="_blank" rel="noopener noreferrer">{linkText}</a>
+            {outroText}
         </p>
     </div>
 </div>

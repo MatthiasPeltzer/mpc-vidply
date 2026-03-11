@@ -8,10 +8,10 @@ use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-final class PrivacySettingsLabel
+final readonly class PrivacySettingsLabel
 {
-    private readonly LanguageServiceFactory $languageServiceFactory;
-    private readonly SiteFinder $siteFinder;
+    private LanguageServiceFactory $languageServiceFactory;
+    private SiteFinder $siteFinder;
 
     public function __construct(
         ?LanguageServiceFactory $languageServiceFactory = null,

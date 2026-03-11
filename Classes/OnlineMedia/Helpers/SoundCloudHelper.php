@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\OnlineMedia\Helpers;
 
-use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Resource\Exception\OnlineMediaAlreadyExistsException;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\Folder;
@@ -19,17 +18,18 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 final class SoundCloudHelper extends AbstractOnlineMediaHelper
 {
+    /** @return string|null */
     public function getPublicUrl(File $file)
     {
         $url = $this->getOnlineMediaId($file);
         return $url !== '' ? $url : null;
     }
 
+    /** @return string */
     public function getPreviewImage(File $file)
     {
         $url = $this->getOnlineMediaId($file);
         if ($url === '') {
-            // fallback icon
             return (string)GeneralUtility::getFileAbsFileName('EXT:mpc_vidply/Resources/Public/Images/audio.png');
         }
 
@@ -37,7 +37,7 @@ final class SoundCloudHelper extends AbstractOnlineMediaHelper
         if (!file_exists($cacheFile)) {
             $oEmbed = $this->getOEmbedData($url);
             $thumbUrl = is_array($oEmbed) ? (string)($oEmbed['thumbnail_url'] ?? '') : '';
-            if ($thumbUrl !== '') {
+            if ($thumbUrl !== '' && $this->isSafeThumbnailUrl($thumbUrl)) {
                 $image = GeneralUtility::getUrl($thumbUrl);
                 if ($image !== false && $image !== '') {
                     GeneralUtility::writeFile($cacheFile, $image, true);
@@ -50,6 +50,7 @@ final class SoundCloudHelper extends AbstractOnlineMediaHelper
             : (string)GeneralUtility::getFileAbsFileName('EXT:mpc_vidply/Resources/Public/Images/audio.png');
     }
 
+    /** @return array<string, mixed> */
     public function getMetaData(File $file)
     {
         $url = $this->getOnlineMediaId($file);
@@ -72,6 +73,24 @@ final class SoundCloudHelper extends AbstractOnlineMediaHelper
         return $metadata;
     }
 
+    private function isSafeThumbnailUrl(string $url): bool
+    {
+        $parts = parse_url($url);
+        if (!is_array($parts) || empty($parts['scheme']) || empty($parts['host'])) {
+            return false;
+        }
+        $scheme = strtolower((string)$parts['scheme']);
+        if ($scheme !== 'https') {
+            return false;
+        }
+        $host = strtolower((string)$parts['host']);
+        return $host === 'sndcdn.com'
+            || str_ends_with($host, '.sndcdn.com')
+            || $host === 'soundcloud.com'
+            || str_ends_with($host, '.soundcloud.com');
+    }
+
+    /** @return File|null */
     public function transformUrlToFile($url, Folder $targetFolder)
     {
         $url = trim((string)$url);
