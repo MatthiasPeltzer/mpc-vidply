@@ -262,6 +262,36 @@
                 <source>Privacy Layer Settings</source>
                 <target>Datenschutz-Einstellungen</target>
             </trans-unit>
+
+            <!-- Backend Preview -->
+            <trans-unit id="preview.no_media">
+                <source>No media items selected</source>
+                <target>Keine Medien-Elemente ausgewählt</target>
+            </trans-unit>
+            <trans-unit id="preview.no_media.hint">
+                <source>Please add media items to this VidPly element</source>
+                <target>Bitte fügen Sie diesem VidPly-Element Medien-Elemente hinzu</target>
+            </trans-unit>
+            <trans-unit id="preview.playlist_count">
+                <source>Playlist with %d items</source>
+                <target>Wiedergabeliste mit %d Elementen</target>
+            </trans-unit>
+            <trans-unit id="preview.untitled">
+                <source>Untitled</source>
+                <target>Ohne Titel</target>
+            </trans-unit>
+            <trans-unit id="preview.external_audio">
+                <source>External Audio</source>
+                <target>Externes Audio</target>
+            </trans-unit>
+            <trans-unit id="preview.external_video">
+                <source>External Video</source>
+                <target>Externes Video</target>
+            </trans-unit>
+            <trans-unit id="preview.language_fallback">
+                <source>Language %d</source>
+                <target>Sprache %d</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

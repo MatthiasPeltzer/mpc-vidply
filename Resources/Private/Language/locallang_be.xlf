@@ -200,6 +200,29 @@
             <trans-unit id="tx_mpcvidply_privacy_settings">
                 <source>Privacy Layer Settings</source>
             </trans-unit>
+
+            <!-- Backend Preview -->
+            <trans-unit id="preview.no_media">
+                <source>No media items selected</source>
+            </trans-unit>
+            <trans-unit id="preview.no_media.hint">
+                <source>Please add media items to this VidPly element</source>
+            </trans-unit>
+            <trans-unit id="preview.playlist_count">
+                <source>Playlist with %d items</source>
+            </trans-unit>
+            <trans-unit id="preview.untitled">
+                <source>Untitled</source>
+            </trans-unit>
+            <trans-unit id="preview.external_audio">
+                <source>External Audio</source>
+            </trans-unit>
+            <trans-unit id="preview.external_video">
+                <source>External Video</source>
+            </trans-unit>
+            <trans-unit id="preview.language_fallback">
+                <source>Language %d</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

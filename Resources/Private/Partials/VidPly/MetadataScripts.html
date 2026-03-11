@@ -2,19 +2,19 @@
 
 <f:if condition="{audioDescriptionTracks}">
     <script data-vidply-audio-description-tracks="{uniqueId}" type="application/json">
-        <f:format.raw>{f:format.json(value: audioDescriptionTracks)}</f:format.raw>
+        <f:format.raw>{audioDescriptionTracksJson}</f:format.raw>
     </script>
 </f:if>
 
 <f:if condition="{audioDescription}">
     <script data-vidply-audio-description="{uniqueId}" type="application/json">
-        <f:format.raw>{f:format.json(value: {src: audioDescription})}</f:format.raw>
+        <f:format.raw>{audioDescriptionJson}</f:format.raw>
     </script>
 </f:if>
 
 <f:if condition="{signLanguage}">
     <script data-vidply-sign-language="{uniqueId}" type="application/json">
-        <f:format.raw>{f:format.json(value: signLanguage)}</f:format.raw>
+        <f:format.raw>{signLanguageJson}</f:format.raw>
     </script>
 </f:if>
 

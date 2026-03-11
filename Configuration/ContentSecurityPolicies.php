@@ -14,21 +14,14 @@ use TYPO3\CMS\Core\Type\Map;
 
 /**
  * Content Security Policy configuration for VidPly
- * 
- * This allows blob: URLs which are required for HLS streaming via hls.js
+ *
+ * Allows blob: URLs required for HLS streaming via hls.js and
+ * external embed origins for YouTube, Vimeo, and SoundCloud.
  */
 return Map::fromEntries([
-    // Frontend scope
     Scope::frontend(),
     new MutationCollection(
-        // Add blob: to default-src as a base
-        new Mutation(
-            MutationMode::Extend,
-            Directive::DefaultSrc,
-            SourceScheme::blob
-        ),
-        
-        // Allow blob: for media sources (required for HLS streaming)
+        // blob: for media sources (HLS streaming segments)
         new Mutation(
             MutationMode::Extend,
             Directive::MediaSrc,
@@ -36,53 +29,48 @@ return Map::fromEntries([
             SourceScheme::data,
             SourceScheme::https
         ),
-        
-        // Allow blob: for worker sources (required for hls.js web workers)
+
+        // blob: for worker sources (hls.js web workers)
         new Mutation(
             MutationMode::Extend,
             Directive::WorkerSrc,
             SourceScheme::blob
         ),
-        
-        // Allow blob: for connect/fetch (required for HLS blob URL loading)
+
+        // blob: + https for fetch/XHR (HLS segment loading)
         new Mutation(
-            MutationMode::Set,
+            MutationMode::Extend,
             Directive::ConnectSrc,
-            SourceKeyword::self,
             SourceScheme::blob,
-            SourceScheme::data,
             SourceScheme::https
         ),
-        
-        // Allow blob: for object-src (required for Firefox blob URL handling)
+
+        // blob: for object-src (Firefox blob URL handling)
         new Mutation(
-            MutationMode::Set,
+            MutationMode::Extend,
             Directive::ObjectSrc,
-            SourceKeyword::self,
             SourceScheme::blob
         ),
-        
-        // Allow blob: for child-src (Firefox security requirement)
+
+        // blob: for child-src (Firefox security requirement)
         new Mutation(
-            MutationMode::Set,
+            MutationMode::Extend,
             Directive::ChildSrc,
-            SourceKeyword::self,
             SourceScheme::blob
         ),
-        
-        // Allow unsafe-inline for scripts (if needed)
+
+        // Script origins for CDN and embed providers (no unsafe-inline)
         new Mutation(
             MutationMode::Extend,
             Directive::ScriptSrc,
-            SourceKeyword::unsafeInline,
             new UriValue('https://cdn.jsdelivr.net'),
             new UriValue('https://*.youtube.com'),
             new UriValue('https://*.youtube-nocookie.com'),
             new UriValue('https://*.vimeo.com'),
             new UriValue('https://*.soundcloud.com')
         ),
-        
-        // Allow script elements from CDN (for hls.js dynamic loading)
+
+        // Script element sources for hls.js CDN loading
         new Mutation(
             MutationMode::Extend,
             Directive::ScriptSrcElem,
@@ -92,8 +80,8 @@ return Map::fromEntries([
             new UriValue('https://*.vimeo.com'),
             new UriValue('https://*.soundcloud.com')
         ),
-        
-        // Allow unsafe-inline for styles
+
+        // Inline styles required by third-party embed iframes
         new Mutation(
             MutationMode::Extend,
             Directive::StyleSrc,
@@ -103,8 +91,7 @@ return Map::fromEntries([
             new UriValue('https://*.vimeo.com'),
             new UriValue('https://*.soundcloud.com')
         ),
-        
-        // Allow unsafe-inline for style elements
+
         new Mutation(
             MutationMode::Extend,
             Directive::StyleSrcElem,
@@ -114,8 +101,8 @@ return Map::fromEntries([
             new UriValue('https://*.vimeo.com'),
             new UriValue('https://*.soundcloud.com')
         ),
-        
-        // Allow external video/audio player iframes (YouTube, Vimeo, SoundCloud)
+
+        // External embed iframes (YouTube, Vimeo, SoundCloud)
         new Mutation(
             MutationMode::Extend,
             Directive::FrameSrc,
@@ -127,4 +114,3 @@ return Map::fromEntries([
         ),
     ),
 ]);
-

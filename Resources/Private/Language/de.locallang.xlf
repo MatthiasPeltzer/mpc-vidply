@@ -32,6 +32,14 @@
                 <source>Use CSS-based icons (enables icon customization via CSS variables)</source>
                 <target>CSS-basierte Icons verwenden (ermöglicht Icon-Anpassung über CSS-Variablen)</target>
             </trans-unit>
+            <trans-unit id="config.theme">
+                <source>Player theme (dark or light mode)</source>
+                <target>Player-Design (Dunkel- oder Hellmodus)</target>
+            </trans-unit>
+            <trans-unit id="config.themeSyncEnabled">
+                <source>Sync player theme with page theme switch (listens to body class and custom events)</source>
+                <target>Player-Design mit dem Seiten-Design synchronisieren (reagiert auf Body-Klasse und Custom Events)</target>
+            </trans-unit>
 
             <trans-unit id="player.play">
                 <source>Play</source>

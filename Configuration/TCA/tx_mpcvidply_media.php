@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'ctrl' => [
         'title' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media',
@@ -264,7 +266,7 @@ return [
                     ['label' => '', 'value' => 0],
                 ],
                 'foreign_table' => 'tx_mpcvidply_media',
-                'foreign_table_where' => 'AND tx_mpcvidply_media.pid=###CURRENT_PID### AND tx_mpcvidply_media.sys_language_uid IN (-1,0)',
+                'foreign_table_where' => 'AND {#tx_mpcvidply_media}.{#pid}=###CURRENT_PID### AND {#tx_mpcvidply_media}.{#sys_language_uid} IN (-1,0)',
                 'default' => 0,
             ],
         ],
@@ -533,11 +535,11 @@ return [
                                 'type' => 'select',
                                 'renderType' => 'selectSingle',
                                 'items' => [
-                                    ['label' => 'Captions', 'value' => 'captions'],
-                                    ['label' => 'Subtitles', 'value' => 'subtitles'],
-                                    ['label' => 'Descriptions', 'value' => 'descriptions'],
-                                    ['label' => 'Chapters', 'value' => 'chapters'],
-                                    ['label' => 'Metadata', 'value' => 'metadata'],
+                                    ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:sys_file_reference.tx_track_kind.captions', 'value' => 'captions'],
+                                    ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:sys_file_reference.tx_track_kind.subtitles', 'value' => 'subtitles'],
+                                    ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:sys_file_reference.tx_track_kind.descriptions', 'value' => 'descriptions'],
+                                    ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:sys_file_reference.tx_track_kind.chapters', 'value' => 'chapters'],
+                                    ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:sys_file_reference.tx_track_kind.metadata', 'value' => 'metadata'],
                                 ],
                                 'default' => 'captions',
                             ],
@@ -623,11 +625,11 @@ return [
                                 'type' => 'select',
                                 'renderType' => 'selectSingle',
                                 'items' => [
-                                    ['label' => 'Captions', 'value' => 'captions'],
-                                    ['label' => 'Subtitles', 'value' => 'subtitles'],
-                                    ['label' => 'Descriptions', 'value' => 'descriptions'],
-                                    ['label' => 'Chapters', 'value' => 'chapters'],
-                                    ['label' => 'Metadata', 'value' => 'metadata'],
+                                    ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:sys_file_reference.tx_track_kind.captions', 'value' => 'captions'],
+                                    ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:sys_file_reference.tx_track_kind.subtitles', 'value' => 'subtitles'],
+                                    ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:sys_file_reference.tx_track_kind.descriptions', 'value' => 'descriptions'],
+                                    ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:sys_file_reference.tx_track_kind.chapters', 'value' => 'chapters'],
+                                    ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:sys_file_reference.tx_track_kind.metadata', 'value' => 'metadata'],
                                 ],
                                 'default' => 'chapters',
                             ],
