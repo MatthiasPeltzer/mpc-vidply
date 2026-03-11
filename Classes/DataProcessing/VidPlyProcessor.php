@@ -33,6 +33,12 @@ use TYPO3\CMS\Core\Database\Connection;
  */
 class VidPlyProcessor implements DataProcessorInterface
 {
+    private const MEDIA_COLUMNS = [
+        'uid', 'sys_language_uid', 'l10n_parent', 'media_type', 'hls_kind',
+        'title', 'artist', 'description', 'duration', 'audio_description_duration',
+        'hide_speed_button', 'enable_transcript', 'sign_language_display_mode',
+    ];
+
     private readonly FileRepository $fileRepository;
     private readonly ResourceFactory $resourceFactory;
     private readonly ConnectionPool $connectionPool;
@@ -531,9 +537,12 @@ class VidPlyProcessor implements DataProcessorInterface
             'captions' => $captions,
             'chapters' => $chapters,
             'audioDescriptionTracks' => $audioDescriptionTracks,
+            'audioDescriptionTracksJson' => $audioDescriptionTracks !== [] ? $this->safeJsonEncode($audioDescriptionTracks) : null,
             'audioDescription' => $audioDescriptionTracks[0]['src'] ?? null,
+            'audioDescriptionJson' => isset($audioDescriptionTracks[0]['src']) ? $this->safeJsonEncode(['src' => $audioDescriptionTracks[0]['src']]) : null,
             'audioDescriptionDefaultSrc' => $audioDescriptionTracks[0]['src'] ?? null,
             'signLanguage' => $signLanguage,
+            'signLanguageJson' => $signLanguage !== [] ? $this->safeJsonEncode($signLanguage) : null,
             'signLanguageDefaultSrc' => $signLanguage[0]['src'] ?? null,
             'signLanguageHasMultiple' => count($signLanguage) > 1,
             'signLanguageAttributes' => [],
@@ -740,10 +749,10 @@ class VidPlyProcessor implements DataProcessorInterface
             return [];
         }
 
-        // Step 2: Load all referenced records (full rows) in one query
+        // Step 2: Load all referenced records in one query
         $mediaQueryBuilder = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_media');
         $referencedRecords = $mediaQueryBuilder
-            ->select('*')
+            ->select(...self::MEDIA_COLUMNS)
             ->from('tx_mpcvidply_media')
             ->where(
                 $mediaQueryBuilder->expr()->in(
@@ -789,7 +798,7 @@ class VidPlyProcessor implements DataProcessorInterface
         // Step 3: Load default-language records for all default uids (single query)
         $defaultQueryBuilder = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_media');
         $defaultRecords = $defaultQueryBuilder
-            ->select('*')
+            ->select(...self::MEDIA_COLUMNS)
             ->from('tx_mpcvidply_media')
             ->where(
                 $defaultQueryBuilder->expr()->in(
@@ -816,7 +825,7 @@ class VidPlyProcessor implements DataProcessorInterface
         if ($languageId > 0) {
             $translatedQueryBuilder = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_media');
             $translatedRecords = $translatedQueryBuilder
-                ->select('*')
+                ->select(...self::MEDIA_COLUMNS)
                 ->from('tx_mpcvidply_media')
                 ->where(
                     $translatedQueryBuilder->expr()->in(
@@ -1080,6 +1089,11 @@ class VidPlyProcessor implements DataProcessorInterface
         }
         
         return $track;
+    }
+
+    private function safeJsonEncode(mixed $value): string
+    {
+        return json_encode($value, JSON_HEX_TAG | JSON_HEX_AMP | JSON_THROW_ON_ERROR);
     }
 
     protected function inferMimeTypeFromUrlCached(string $url, string $fallbackMimeType = ''): string

@@ -79,7 +79,7 @@
                     </f:else>
                 </f:if>
             </f:variable>
-            <a href="{finalPolicyLink}" class="external-link" target="_blank" rel="noreferrer"><f:if condition="{linkText}"><f:then>{linkText}</f:then><f:else><f:switch expression="{service}"><f:case value="youtube"><f:translate key="privacy.youtube.policy_link" extensionName="mpc_vidply" /></f:case><f:case value="vimeo"><f:translate key="privacy.vimeo.policy_link" extensionName="mpc_vidply" /></f:case><f:case value="soundcloud"><f:translate key="privacy.soundcloud.policy_link" extensionName="mpc_vidply" /></f:case></f:switch></f:else></f:if></a>
+            <a href="{finalPolicyLink}" class="external-link" target="_blank" rel="noopener noreferrer"><f:if condition="{linkText}"><f:then>{linkText}</f:then><f:else><f:switch expression="{service}"><f:case value="youtube"><f:translate key="privacy.youtube.policy_link" extensionName="mpc_vidply" /></f:case><f:case value="vimeo"><f:translate key="privacy.vimeo.policy_link" extensionName="mpc_vidply" /></f:case><f:case value="soundcloud"><f:translate key="privacy.soundcloud.policy_link" extensionName="mpc_vidply" /></f:case></f:switch></f:else></f:if></a>
             <f:if condition="{outroText}">
                 <f:then>{outroText}</f:then>
                 <f:else><f:translate key="privacy.activate_outro" extensionName="mpc_vidply" /></f:else>

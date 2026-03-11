@@ -18,6 +18,8 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 final class HlsHelper extends AbstractOnlineMediaHelper
 {
+    use ExternalMediaDomainValidationTrait;
+
     private ExtensionConfiguration $extensionConfiguration;
 
     public function __construct($extension, ?ExtensionConfiguration $extensionConfiguration = null)
@@ -61,7 +63,7 @@ final class HlsHelper extends AbstractOnlineMediaHelper
         }
 
         $baseName = basename($path);
-        $fileName = $this->buildFileName($baseName !== '' ? $baseName : 'stream.m3u8', $this->extension);
+        $fileName = $this->buildFileName($baseName !== '' ? $baseName : 'stream.m3u8', $this->extension, 'hls');
         return $this->createNewFile($targetFolder, $fileName, $onlineMediaId);
     }
 
@@ -91,83 +93,6 @@ final class HlsHelper extends AbstractOnlineMediaHelper
         return $name !== '' ? ['title' => $name] : [];
     }
 
-    /**
-     * @return string[]
-     */
-    private function getAllowedDomains(string $key): array
-    {
-        try {
-            $config = $this->extensionConfiguration->get('mpc_vidply');
-        } catch (\Throwable) {
-            $config = [];
-        }
-
-        $raw = (string)($config[$key] ?? '');
-        $items = preg_split('/[,\r\n]+/', $raw) ?: [];
-        $items = array_map(static fn(string $v): string => trim($v), $items);
-        return array_values(array_filter($items, static fn(string $v): bool => $v !== ''));
-    }
-
-    /**
-     * @param string[] $allowedDomainPatterns
-     */
-    private function isHostAllowed(string $scheme, string $host, array $allowedDomainPatterns): bool
-    {
-        if ($allowedDomainPatterns === []) {
-            return false;
-        }
-
-        foreach ($allowedDomainPatterns as $pattern) {
-            $pattern = trim($pattern);
-            if ($pattern === '') {
-                continue;
-            }
-
-            $patternScheme = null;
-            $patternHost = $pattern;
-            if (str_contains($pattern, '://')) {
-                // parse_url() is not reliable with wildcard hosts, so parse manually
-                [$patternScheme, $patternHost] = explode('://', $pattern, 2);
-                $patternScheme = strtolower(trim($patternScheme));
-                $patternHost = trim($patternHost);
-                $patternHost = explode('/', $patternHost, 2)[0];
-                $patternHost = strtolower($patternHost);
-            } else {
-                $patternHost = strtolower($patternHost);
-            }
-
-            if ($patternScheme !== null && $patternScheme !== '' && $patternScheme !== $scheme) {
-                continue;
-            }
-
-            if ($patternHost === $host) {
-                return true;
-            }
-
-            if (str_starts_with($patternHost, '*.')) {
-                $base = substr($patternHost, 2);
-                if ($base !== '' && ($host === $base || str_ends_with($host, '.' . $base))) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    private function buildFileName(string $baseName, string $containerExtension): string
-    {
-        $baseName = trim($baseName);
-        if ($baseName === '') {
-            $baseName = 'hls';
-        }
-        $baseName = preg_replace('/[^a-zA-Z0-9._-]+/', '_', $baseName) ?? 'hls';
-        $nameWithoutExtension = pathinfo($baseName, PATHINFO_FILENAME);
-        if ($nameWithoutExtension === '') {
-            $nameWithoutExtension = 'hls';
-        }
-        return $nameWithoutExtension . '.' . $containerExtension;
-    }
 }
 
 
