@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "devDependencies": {
-    "terser": "^5.46.0"
+    "terser": "^5.46.1"
   },
   "scripts": {
     "minify:playlist": "terser Resources/Public/JavaScript/PlaylistInit.js --compress --mangle --module --output Resources/Public/JavaScript/PlaylistInit.min.js",
