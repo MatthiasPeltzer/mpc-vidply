@@ -41,7 +41,7 @@ Or use the "Create new record" button in the VidPly Player element.
 
 ### Media Types Explained
 
-#### 🎬 HTML5 Video
+#### HTML5 Video
 
 **Use for:** Self-hosted video files
 
@@ -60,7 +60,7 @@ Or use the "Create new record" button in the VidPly Player element.
 
 ---
 
-#### 🎵 HTML5 Audio
+#### HTML5 Audio
 
 **Use for:** Podcasts, music, audio content
 
@@ -74,7 +74,7 @@ Or use the "Create new record" button in the VidPly Player element.
 
 ---
 
-#### ▶️ YouTube
+#### YouTube
 
 **Use for:** YouTube videos with GDPR-compliant privacy layer
 
@@ -93,7 +93,7 @@ Or use the "Create new record" button in the VidPly Player element.
 
 ---
 
-#### 🎬 Vimeo
+#### Vimeo
 
 **Use for:** Vimeo videos with privacy layer
 
@@ -106,7 +106,7 @@ Or use the "Create new record" button in the VidPly Player element.
 
 ---
 
-#### 🎧 SoundCloud
+#### SoundCloud
 
 **Use for:** SoundCloud tracks or playlists with privacy layer
 
@@ -118,7 +118,7 @@ Or use the "Create new record" button in the VidPly Player element.
 
 ---
 
-#### 📡 HLS Streaming
+#### HLS Streaming
 
 **Use for:** Live streams, adaptive bitrate video
 
@@ -138,7 +138,7 @@ Every media record has a **metadata palette**:
 
 | Field | Description | Required |
 |-------|-------------|----------|
-| **Title** | Display name in player/playlist | ✅ Yes |
+| **Title** | Display name in player/playlist | Yes |
 | **Artist** | Creator name (shown in playlist) | No |
 | **Description** | Text description | No |
 | **Duration** | Length in seconds (for display) | No |
@@ -156,11 +156,11 @@ Every media record has a **metadata palette**:
 
 VidPly provides full WCAG 2.1 AA accessibility support.
 
-### 📝 Captions & Subtitles
+### Captions & Subtitles
 
 **Tab: Captions**
 
-Add WebVTT (.vtt) files for hearing-impaired users:
+Add WebVTT (.vtt) files for viewers who need captions (including many deaf and hard-of-hearing users):
 
 1. Click "Add captions file"
 2. Upload your `.vtt` file
@@ -183,7 +183,7 @@ Today we'll learn about VidPly.
 
 ---
 
-### 📑 Chapters
+### Chapters
 
 **Tab: Captions → Chapters**
 
@@ -210,11 +210,11 @@ Conclusion
 
 ---
 
-### 🔊 Audio Description
+### Audio Description
 
 **Tab: Accessibility → Audio Description**
 
-For visually impaired users, add a video with narrated descriptions:
+For blind and low-vision users, add a video with narrated descriptions:
 
 1. Click "Add audio description"
 2. Upload an alternative video with audio description track
@@ -222,7 +222,7 @@ For visually impaired users, add a video with narrated descriptions:
 
 ---
 
-### 🤟 Sign Language
+### Sign Language
 
 **Tab: Accessibility → Sign Language**
 
@@ -234,7 +234,7 @@ Add sign language interpretation overlay:
 
 ---
 
-### 📜 Transcripts
+### Transcripts
 
 **Tab: Captions → Enable Transcript**
 
@@ -310,14 +310,14 @@ Select **2 or more media items** to automatically create a playlist:
 
 | Control | Function |
 |---------|----------|
-| ▶️ Play/Pause | Start or pause playback |
-| 🔊 Volume | Adjust volume + mute |
-| ⏩ Progress bar | Seek to position |
-| ⏮️⏭️ Skip | Previous/next in playlist |
+| Play/Pause | Start or pause playback |
+| Volume | Adjust volume + mute |
+| Progress bar | Seek to position |
+| Skip previous/next | Previous/next in playlist |
 | CC | Toggle captions |
-| ⚙️ Settings | Quality, speed, captions |
-| 🖼️ PiP | Picture-in-Picture |
-| ⛶ Fullscreen | Enter fullscreen |
+| Settings | Quality, speed, captions |
+| PiP | Picture-in-Picture |
+| Fullscreen | Enter fullscreen |
 
 ### Keyboard Shortcuts
 
@@ -372,7 +372,7 @@ Settings apply to both single items and playlists. Empty fields automatically us
 │                                 │
 │      [Poster Image]             │
 │                                 │
-│         ▶ Play                  │
+│         Play                    │
 │                                 │
 │  [Optional Headline]            │
 │  Privacy Notice: Clicking play  │
@@ -397,10 +397,10 @@ Settings apply to both single items and playlists. Empty fields automatically us
 - **Sample rate:** 44.1 or 48 kHz
 
 ### Accessibility
-- ✅ Always add captions for videos with speech
-- ✅ Provide audio descriptions for visual content
-- ✅ Use meaningful titles
-- ✅ Add alt text to poster images
+- Always add captions for videos with speech
+- Provide audio descriptions for visual content
+- Use meaningful titles
+- Add alt text to poster images
 
 ### Performance
 - Compress videos before upload
@@ -450,5 +450,5 @@ Ensure your VTT files:
 
 ---
 
-**Need help?** Contact your site administrator or check the [technical documentation](README.md).
+**Need help?** Contact your site administrator or check the [technical documentation](../README.md) (repository root).
 
