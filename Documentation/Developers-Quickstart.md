@@ -426,7 +426,7 @@ $GLOBALS['TYPO3_CONF_VARS']['FE']['debug'] = true;
 - [TYPO3 Documentation](https://docs.typo3.org/)
 - [HLS.js](https://github.com/video-dev/hls.js/)
 - [WebVTT Validator](https://quuz.org/webvtt/)
-- [WCAG 2.1 Media Guidelines](https://www.w3.org/WAI/media/av/)
+- [WCAG 2.2 Media Guidelines](https://www.w3.org/WAI/media/av/)
 
 ---
 

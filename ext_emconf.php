@@ -2,7 +2,7 @@
 
 $EM_CONF['mpc_vidply'] = [
     'title' => 'VidPly Player',
-    'description' => 'Universal, Accessible Video & Audio Player for TYPO3. Includes support for HTML5 video/audio, YouTube, Vimeo, SoundCloud, HLS streaming, playlists, captions, transcripts, sign language, and full WCAG 2.1 AA accessibility compliance.',
+    'description' => 'Universal, Accessible Video & Audio Player for TYPO3. Includes support for HTML5 video/audio, YouTube, Vimeo, SoundCloud, HLS streaming, playlists, captions, transcripts, sign language, and WCAG 2.2 AA accessibility compliance.',
     'category' => 'plugin',
     'author' => 'Matthias Peltzer',
     'author_email' => 'mail@mpeltzer.de',
