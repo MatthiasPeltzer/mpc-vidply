@@ -154,7 +154,7 @@ Every media record has a **metadata palette**:
 
 ## Accessibility Features
 
-VidPly provides full WCAG 2.1 AA accessibility support.
+VidPly provides WCAG 2.2 AA accessibility support.
 
 ### Captions & Subtitles
 
