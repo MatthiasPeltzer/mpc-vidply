@@ -8,8 +8,7 @@ import {Player, PlaylistManager} from './vidply/vidply.esm.min.js';
 
 // Constants
 const AUTOPLAY_TIMEOUTS = [100, 500, 1000, 2000];
-const HLS_QUALITY_CHECK_TIMEOUT = 500;
-const HLS_QUALITY_CHECK_MAX_ATTEMPTS = 10;
+const HLS_TRACK_REFRESH_DELAY = 500;
 const OVERLAY_INSERT_DELAY = 300;
 const ERROR_ADVANCE_DELAY = 1000;
 
@@ -19,11 +18,34 @@ const PRIVACY_POLICY_URLS = {
     soundcloud: 'https://soundcloud.com/pages/privacy'
 };
 
+// Known external services for consent validation
+const KNOWN_SERVICES = new Set(['youtube', 'vimeo', 'soundcloud']);
+
 // Track initialized players to prevent double-init
 const initializedPlayers = new WeakSet();
 
-// Track all initialized players for theme sync
-const allPlayers = new Set();
+// Track all initialized players for theme sync (WeakRef to avoid memory leaks)
+const allPlayerRefs = new Set();
+
+function getAlivePlayers() {
+    const alive = [];
+    for (const ref of allPlayerRefs) {
+        const player = ref.deref();
+        if (player) {
+            alive.push(player);
+        } else {
+            allPlayerRefs.delete(ref);
+        }
+    }
+    return alive;
+}
+
+function trackPlayer(player) {
+    allPlayerRefs.add(new WeakRef(player));
+}
+
+// Counter for unique SVG filter IDs
+let filterIdCounter = 0;
 
 // Suppress VidPly's internal console logs
 const originalConsoleLog = console.log;
@@ -41,14 +63,13 @@ const suppressVidPlyLogs = (fn) => {
 
 // Initialize shared privacy consent state (if not already initialized by PrivacyLayer.js)
 window.VidPlyPrivacyConsent = window.VidPlyPrivacyConsent || {
-    youtube: false,
-    vimeo: false,
-    soundcloud: false,
+    _consent: new Set(),
     hasConsent(service) {
-        return !!this[service];
+        return KNOWN_SERVICES.has(service) && this._consent.has(service);
     },
     setConsent(service) {
-        this[service] = true;
+        if (!KNOWN_SERVICES.has(service)) return;
+        this._consent.add(service);
         document.dispatchEvent(new CustomEvent('vidply:privacy:consent', {detail: {service}}));
     }
 };
@@ -73,6 +94,16 @@ const getServiceType = (src) => {
 };
 
 const getPrivacyPolicyUrl = (service) => PRIVACY_POLICY_URLS[service] || '#';
+
+const isSafeUrl = (url) => {
+    if (!url || typeof url !== 'string') return false;
+    try {
+        const parsed = new URL(url, window.location.origin);
+        return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+    } catch {
+        return false;
+    }
+};
 
 // Language utilities
 const getPageLanguage = () => (document.documentElement.lang || 'en').split('-')[0].toLowerCase();
@@ -229,8 +260,10 @@ function replaceVidplyPlayOverlaySvg(wrapperElement) {
         if (viewBox) {
             target.setAttribute('viewBox', viewBox);
         }
-        // Replace only contents; keep the original element instance for click handlers
-        target.innerHTML = sourceSvg.innerHTML;
+        while (target.firstChild) target.removeChild(target.firstChild);
+        for (const child of Array.from(sourceSvg.childNodes)) {
+            target.appendChild(child.cloneNode(true));
+        }
         target.dataset.mpcVidplyIconReplaced = '1';
     });
 }
@@ -243,6 +276,7 @@ function observeVidplyOverlays(wrapperElement) {
     // Initial attempt
     replaceVidplyPlayOverlaySvg(wrapper);
 
+    wrapper._mpcVidplyPlayIconObserver?.disconnect();
     const observer = new MutationObserver(() => {
         replaceVidplyPlayOverlaySvg(wrapper);
     });
@@ -260,9 +294,9 @@ function createPrivacyOverlay(service, track, onConsent, privacySettings = null,
     overlay.className = `vidply-playlist-privacy-overlay vidply-privacy-layer vidply-privacy-${service}`;
     overlay.setAttribute('data-privacy-service', service);
 
-    // Only set background image inline if poster exists (dynamic content)
     if (track.poster) {
-        overlay.style.backgroundImage = `url('${track.poster}')`;
+        const safePoster = track.poster.replace(/'/g, "\\'").replace(/\)/g, '\\)');
+        overlay.style.backgroundImage = `url('${safePoster}')`;
         overlay.style.backgroundSize = 'cover';
         overlay.style.backgroundPosition = 'center';
     }
@@ -277,7 +311,10 @@ function createPrivacyOverlay(service, track, onConsent, privacySettings = null,
     playButton.setAttribute('aria-label', settings.button_label);
 
     if (playIconInlineSvg) {
-        playButton.innerHTML = playIconInlineSvg;
+        const parsed = parseSvgFromMarkup(playIconInlineSvg);
+        if (parsed) {
+            playButton.appendChild(parsed);
+        }
     } else if (playIconUrl) {
         const img = document.createElement('img');
         img.className = 'vidply-play-overlay-image';
@@ -286,9 +323,9 @@ function createPrivacyOverlay(service, track, onConsent, privacySettings = null,
         img.setAttribute('aria-hidden', 'true');
         playButton.appendChild(img);
     } else {
-        const filterId = `vidply-play-shadow-privacy-${Date.now()}`;
+        const filterId = `vidply-play-shadow-privacy-${++filterIdCounter}`;
         playButton.innerHTML = `
-            <svg class="vidply-play-overlay" viewBox="0 0 80 80" width="80" height="80" aria-hidden="true">
+            <svg class="vidply-play-overlay" viewBox="0 0 80 80" width="80" height="80" aria-hidden="true" role="presentation">
                 <defs>
                     <filter id="${filterId}" x="-50%" y="-50%" width="200%" height="200%">
                         <feGaussianBlur in="SourceAlpha" stdDeviation="3"></feGaussianBlur>
@@ -308,17 +345,30 @@ function createPrivacyOverlay(service, track, onConsent, privacySettings = null,
     const privacyText = document.createElement('div');
     privacyText.className = 'vidply-privacy-text';
 
-    // Build privacy text HTML with optional headline
-    let privacyHtml = '<p>';
+    const p = document.createElement('p');
     if (settings.headline) {
-        privacyHtml += `<span class="h6">${settings.headline}</span> `;
+        const headlineEl = document.createElement('span');
+        headlineEl.className = 'vidply-privacy-headline';
+        headlineEl.setAttribute('role', 'heading');
+        headlineEl.setAttribute('aria-level', '2');
+        headlineEl.textContent = settings.headline;
+        p.appendChild(headlineEl);
+        p.appendChild(document.createTextNode(' '));
     }
-    privacyHtml += `${settings.intro_text} `;
-    privacyHtml += `<a href="${settings.policy_link}" target="_blank" rel="noreferrer" class="external-link">`;
-    privacyHtml += `${settings.link_text}</a> ${settings.outro_text}`;
-    privacyHtml += '</p>';
-
-    privacyText.innerHTML = privacyHtml;
+    p.appendChild(document.createTextNode(settings.intro_text + ' '));
+    const policyLink = document.createElement('a');
+    policyLink.href = isSafeUrl(settings.policy_link) ? settings.policy_link : getPrivacyPolicyUrl(service);
+    policyLink.target = '_blank';
+    policyLink.rel = 'noopener noreferrer';
+    policyLink.className = 'vidply-privacy-link';
+    policyLink.textContent = settings.link_text;
+    const srHint = document.createElement('span');
+    srHint.className = 'vidply-sr-only';
+    srHint.textContent = ' (opens in new window)';
+    policyLink.appendChild(srHint);
+    p.appendChild(policyLink);
+    p.appendChild(document.createTextNode(' ' + settings.outro_text));
+    privacyText.appendChild(p);
 
     innerContainer.appendChild(privacyText);
     overlay.appendChild(innerContainer);
@@ -327,28 +377,63 @@ function createPrivacyOverlay(service, track, onConsent, privacySettings = null,
         e.preventDefault();
         e.stopPropagation();
         privacyConsent.setConsent(service);
+        const container = overlay.parentElement;
         overlay.remove();
         onConsent();
+        const focusTarget = container?.querySelector('video, audio, button, [tabindex]');
+        if (focusTarget) setTimeout(() => focusTarget.focus(), OVERLAY_INSERT_DELAY);
     });
 
     return overlay;
 }
 
 /**
- * Setup HLS quality checking for a player
+ * Enable transcript/caption options when HLS subtitle tracks are discovered.
+ *
+ * VidPly's HLSRenderer emits 'hlssubtitletracksupdated' synchronously before
+ * calling updateCaptionButtonsForHls(), which in turn calls
+ * ensureTranscriptButton(). That method bails out when
+ * player.options.transcriptButton is false. By patching the options inside
+ * this handler we ensure the button is created.
  */
-function setupHLSQualityCheck(player) {
-    player.on('ready', () => {
-        const checkQuality = (attempts = 0) => {
-            if (attempts >= HLS_QUALITY_CHECK_MAX_ATTEMPTS) return;
-            if (player.renderer?.hls?.levels?.length > 0) {
-                player.controls?.buildControlBar?.();
-                window.dispatchEvent(new Event('resize'));
-            } else {
-                setTimeout(() => checkQuality(attempts + 1), HLS_QUALITY_CHECK_TIMEOUT);
+function setupHLSSubtitleTracking(player) {
+    player.on('hlssubtitletracksupdated', (data) => {
+        if (data.subtitleTracks?.length > 0) {
+            player.options.transcriptButton = true;
+            player.options.transcript = true;
+        }
+    });
+}
+
+/**
+ * Delayed refresh of HLS subtitle/caption state after manifest parse.
+ *
+ * When hls.js fires SUBTITLE_TRACKS_UPDATED, the TextTrack objects on
+ * the <video> element may not be fully created yet. VidPly's internal
+ * updateCaptionButtonsForHls() → captionManager.refreshTracks() can
+ * therefore miss them. This delayed refresh gives hls.js time to
+ * populate video.textTracks so the caption menu and transcript are
+ * properly populated.
+ */
+function setupHLSTrackRefresh(player) {
+    player.on('hlsmanifestparsed', () => {
+        setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+
+            const subtitleCount = player.renderer?.hls?.subtitleTracks?.length || 0;
+            if (subtitleCount > 0) {
+                player.invalidateTrackCache?.();
+                player.captionManager?.refreshTracks?.();
+                player.controlBar?.ensureCaptionsButton?.();
+                player.controlBar?.ensureCaptionStyleButton?.();
+                player.controlBar?.ensureTranscriptButton?.();
+
+                const tooltipContainer = player.controlBar?.rightButtons || player.controlBar?.element;
+                if (tooltipContainer) {
+                    player.controlBar.ensureButtonTooltips(tooltipContainer);
+                }
             }
-        };
-        setTimeout(checkQuality, HLS_QUALITY_CHECK_TIMEOUT);
+        }, HLS_TRACK_REFRESH_DELAY);
     });
 }
 
@@ -367,7 +452,7 @@ function initializeSingleElement(element) {
             source.src = externalSrc;
             source.type = 'application/x-mpegURL';
             element.appendChild(source);
-        } else if (externalSrc) {
+        } else if (externalSrc && isSafeUrl(externalSrc)) {
             element.src = externalSrc;
         }
 
@@ -378,12 +463,13 @@ function initializeSingleElement(element) {
         });
 
         if (isHLS) {
-            setupHLSQualityCheck(player);
+            setupHLSSubtitleTracking(player);
+            setupHLSTrackRefresh(player);
         }
 
         initializedPlayers.add(element);
         element._vidplyPlayer = player;
-        allPlayers.add(player);
+        trackPlayer(player);
     } catch (error) {
         console.error('[VidPly Init] Error:', error);
     }
@@ -458,16 +544,16 @@ function initializePlaylistElement(element) {
 
             /**
              * Apply per-track UI overrides (e.g. hide speed button).
-             * We rebuild the control bar because VidPly decides which buttons exist
-             * at build time based on `player.options.*Button`.
+             * Updates the option and toggles the DOM element directly.
              */
             const applyPerTrackUi = (track) => {
                 if (!track) return;
-                // If a track requests hiding the speed button, disable it for this track.
                 const hideSpeedButton = track.hideSpeedButton === true;
                 player.options.speedButton = !hideSpeedButton;
-                // Rebuild controls to reflect new option.
-                player.controls?.buildControlBar?.();
+                const speedBtn = player.controlBar?.controls?.speed;
+                if (speedBtn) {
+                    speedBtn.style.display = hideSpeedButton ? 'none' : '';
+                }
             };
 
             // Ensure initial state matches the first/current track.
@@ -514,7 +600,7 @@ function initializePlaylistElement(element) {
 
         initializedPlayers.add(element);
         element._vidplyPlayer = player;
-        allPlayers.add(player);
+        trackPlayer(player);
     } catch (error) {
         console.error('[VidPly Init] Playlist error:', error);
     }
@@ -838,11 +924,6 @@ function detectPageTheme() {
     return 'dark'; // Default to dark
 }
 
-// Alias for backward compatibility
-function setAllPlayersTheme(theme) {
-    applyThemeToAllPlayers(theme);
-}
-
 // Check if theme sync is enabled for any player on the page
 function isThemeSyncEnabled() {
     // Always enable if data-bs-theme is set, #themeSwitch exists, or data attribute is set
@@ -856,7 +937,7 @@ function applyThemeToAllPlayers(theme) {
     const validTheme = theme === 'light' ? 'light' : 'dark';
     
     // Method 1: Use tracked players
-    allPlayers.forEach(player => {
+    getAlivePlayers().forEach(player => {
         if (player && typeof player.setTheme === 'function') {
             try {
                 player.setTheme(validTheme);
@@ -951,7 +1032,7 @@ function setupThemeSync() {
 // Export theme functions for external use
 window.VidPlyTheme = {
     setTheme: applyThemeToAllPlayers,
-    getPlayers: () => Array.from(allPlayers),
+    getPlayers: () => getAlivePlayers(),
     detectPageTheme
 };
 

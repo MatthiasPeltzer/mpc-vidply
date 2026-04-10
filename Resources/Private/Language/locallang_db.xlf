@@ -36,20 +36,8 @@
       <trans-unit id="tabs.accessibility">
         <source>Accessibility</source>
       </trans-unit>
-      <trans-unit id="tabs.accessibility">
-        <source>Accessibility</source>
-      </trans-unit>
       <trans-unit id="tabs.captions">
         <source>Captions &amp; Chapters</source>
-      </trans-unit>
-      <trans-unit id="tabs.captions">
-        <source>Captions &amp; Chapters</source>
-      </trans-unit>
-      <trans-unit id="tt_content.tx_mpcvidply_playlist_items">
-        <source>Playlist Items</source>
-      </trans-unit>
-      <trans-unit id="tt_content.tx_mpcvidply_playlist_items.description">
-        <source>Add playlist items with individual media files and per-track features (captions, chapters, audio description, etc.). This provides maximum flexibility for complex playlists where each track needs different accessibility features.</source>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media">
         <source>VidPly Media</source>
@@ -170,66 +158,6 @@
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.title">
         <source>Title</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_playlist_item">
-        <source>VidPly Media Item</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_playlist_item.artist">
-        <source>Artist / Creator</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_playlist_item.artist.description">
-        <source>Optional: Artist name for audio tracks or creator/director for videos</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_playlist_item.audio_description">
-        <source>Audio Description</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_playlist_item.audio_description.description">
-        <source>Alternative video with audio description for this specific track</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_playlist_item.captions">
-        <source>Captions / Subtitles</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_playlist_item.captions.description">
-        <source>WebVTT caption files for this specific track (can have multiple languages)</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_playlist_item.chapters">
-        <source>Chapters</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_playlist_item.chapters.description">
-        <source>WebVTT chapter files for this specific track</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_playlist_item.description">
-        <source>Description</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_playlist_item.duration">
-        <source>Duration (seconds)</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_playlist_item.duration.description">
-        <source>Optional: Duration in seconds. Leave empty to auto-detect.</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_playlist_item.media">
-        <source>Media File</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_playlist_item.media.description">
-        <source>Upload the video or audio file for this item</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_playlist_item.poster">
-        <source>Poster / Thumbnail</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_playlist_item.poster.description">
-        <source>Thumbnail image for this specific track (shown in playlist panel)</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_playlist_item.sign_language">
-        <source>Sign Language Video</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_playlist_item.sign_language.description">
-        <source>Sign language overlay video for this specific track</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_playlist_item.title">
-        <source>Title</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_playlist_item.title.description">
-        <source>The title of this track (e.g., "Episode 1: Introduction" or "Song Title")</source>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_privacy_settings.soundcloud_button_label">
         <source>Button Label (optional)</source>

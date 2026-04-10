@@ -69,6 +69,9 @@
       <trans-unit id="privacy.load_content">
         <source>Load {0} content</source>
       </trans-unit>
+      <trans-unit id="privacy.opens_new_window">
+        <source>opens in new window</source>
+      </trans-unit>
       <trans-unit id="privacy.soundcloud.policy_link">
         <source>SoundCloud's privacy policy</source>
       </trans-unit>

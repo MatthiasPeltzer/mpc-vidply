@@ -55,10 +55,10 @@
     <div class="vidply-privacy-text">
         <p>
             <f:if condition="{headline}">
-                <span class="h6">{headline}</span>
+                <span class="vidply-privacy-headline" role="heading" aria-level="2">{headline}</span>
             </f:if>
             {introText}
-            <a href="{policyLink}" class="external-link" target="_blank" rel="noopener noreferrer">{linkText}</a>
+            <a href="{policyLink}" class="vidply-privacy-link" target="_blank" rel="noopener noreferrer">{linkText}<span class="vidply-sr-only"> (<f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:privacy.opens_new_window" default="opens in new window" />)</span></a>
             {outroText}
         </p>
     </div>

@@ -13,8 +13,10 @@
 
     // Constants
     const ASPECT_RATIO_16_9 = '56.25%';
-    const IFRAME_STYLE = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%;';
-    const IFRAME_BASE_ATTRS = 'width="100%" height="100%" frameborder="0" allowfullscreen';
+    const SAFE_ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
+    const YOUTUBE_ID_PATTERN = /^[a-zA-Z0-9_-]{1,20}$/;
+    const KNOWN_SERVICES = new Set(['youtube', 'vimeo', 'soundcloud']);
+    const initializedLayers = new WeakSet();
 
     const URL_PATTERNS = {
         youtube: [
@@ -36,23 +38,21 @@
         },
         soundcloud: {
             url: (url) => `https://w.soundcloud.com/player/?url=${url}&auto_play=true&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true`,
-            allow: 'autoplay',
-            extraAttrs: 'scrolling="no" frameborder="no"'
+            allow: 'autoplay'
         }
     };
 
     // Shared consent state - accessible globally for playlist integration
     window.VidPlyPrivacyConsent = window.VidPlyPrivacyConsent || {
-        youtube: false,
-        vimeo: false,
-        soundcloud: false,
+        _consent: new Set(),
 
         hasConsent(service) {
-            return !!this[service];
+            return KNOWN_SERVICES.has(service) && this._consent.has(service);
         },
 
         setConsent(service) {
-            this[service] = true;
+            if (!KNOWN_SERVICES.has(service)) return;
+            this._consent.add(service);
             document.dispatchEvent(new CustomEvent('vidply:privacy:consent', {
                 detail: {service}
             }));
@@ -84,23 +84,33 @@
     }
 
     /**
-     * Create iframe HTML for a service
+     * Create iframe element for a service using DOM APIs (no innerHTML)
      */
-    function createIframe(service, mediaId, containerId) {
+    function createIframeElement(service, mediaId, containerId) {
         const config = IFRAME_CONFIGS[service];
-        if (!config) return '';
+        if (!config) return null;
 
-        const baseAttrs = service === 'soundcloud' ? config.extraAttrs : IFRAME_BASE_ATTRS;
+        if (containerId && !SAFE_ID_PATTERN.test(containerId)) return null;
+        if (service === 'youtube' && !YOUTUBE_ID_PATTERN.test(mediaId)) return null;
+        if (service === 'vimeo' && !/^\d+$/.test(mediaId)) return null;
 
-        return `
-            <iframe
-                id="${containerId}"
-                ${baseAttrs}
-                src="${config.url(mediaId)}"
-                allow="${config.allow}"
-                style="${IFRAME_STYLE}">
-            </iframe>
-        `;
+        const iframe = document.createElement('iframe');
+        if (containerId) iframe.id = containerId;
+        iframe.src = config.url(mediaId);
+        iframe.setAttribute('allow', config.allow);
+        iframe.setAttribute('allowfullscreen', '');
+        iframe.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%';
+
+        if (service === 'soundcloud') {
+            iframe.setAttribute('scrolling', 'no');
+            iframe.setAttribute('frameborder', 'no');
+        } else {
+            iframe.width = '100%';
+            iframe.height = '100%';
+            iframe.setAttribute('frameborder', '0');
+        }
+
+        return iframe;
     }
 
     /**
@@ -115,23 +125,11 @@
         });
     }
 
-    /**
-     * Setup button event listeners
-     */
-    function setupButtonEffects(button) {
-        // Hover effects are handled via CSS to avoid conflicts with transform positioning
-        // Only handle focus/blur for accessibility outline
-        button.addEventListener('focus', () => {
-            button.style.outline = '3px solid rgba(255, 255, 255, 0.6)';
-            button.style.outlineOffset = '4px';
-        });
-        button.addEventListener('blur', () => button.style.outline = 'none');
-    }
 
     /**
      * Handle privacy layer click
      */
-    function handlePrivacyClick(layer, button) {
+    function handlePrivacyClick(layer) {
         const service = layer.getAttribute('data-vidply-privacy');
         const url = layer.getAttribute('data-vidply-url');
         const containerId = layer.getAttribute('data-vidply-id');
@@ -147,16 +145,19 @@
             return;
         }
 
-        const iframeHtml = createIframe(service, mediaId, containerId);
-        if (!iframeHtml) {
-            console.error('VidPlay Privacy Layer: Unknown service', service);
+        const iframe = createIframeElement(service, mediaId, containerId);
+        if (!iframe) {
+            console.error('VidPlay Privacy Layer: Could not create iframe for service', service);
             return;
         }
 
-        // Set consent and replace layer with iframe
+        const titleMap = {youtube: 'YouTube video player', vimeo: 'Vimeo video player', soundcloud: 'SoundCloud audio player'};
+        iframe.title = titleMap[service] || 'Embedded media player';
+
         window.VidPlyPrivacyConsent.setConsent(service);
         applyAspectRatioStyles(layer);
-        layer.innerHTML = iframeHtml;
+        layer.replaceChildren(iframe);
+        iframe.focus();
     }
 
     /**
@@ -164,11 +165,18 @@
      */
     function initPrivacyLayers() {
         document.querySelectorAll('[data-vidply-privacy]').forEach(layer => {
+            if (initializedLayers.has(layer)) return;
+            initializedLayers.add(layer);
+
             const button = layer.querySelector('.vidply-privacy-button');
             if (!button) return;
 
-            button.addEventListener('click', () => handlePrivacyClick(layer, button));
-            setupButtonEffects(button);
+            let clicked = false;
+            button.addEventListener('click', () => {
+                if (clicked) return;
+                clicked = true;
+                handlePrivacyClick(layer);
+            });
         });
     }
 

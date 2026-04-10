@@ -30,7 +30,7 @@ final class SoundCloudHelper extends AbstractOnlineMediaHelper
     {
         $url = $this->getOnlineMediaId($file);
         if ($url === '') {
-            return (string)GeneralUtility::getFileAbsFileName('EXT:mpc_vidply/Resources/Public/Images/audio.png');
+            return (string)GeneralUtility::getFileAbsFileName('EXT:mpc_vidply/Resources/Public/Icons/Extension.svg');
         }
 
         $cacheFile = $this->getTempFolderPath() . 'soundcloud_' . md5($url) . '.jpg';
@@ -47,7 +47,7 @@ final class SoundCloudHelper extends AbstractOnlineMediaHelper
 
         return file_exists($cacheFile)
             ? $cacheFile
-            : (string)GeneralUtility::getFileAbsFileName('EXT:mpc_vidply/Resources/Public/Images/audio.png');
+            : (string)GeneralUtility::getFileAbsFileName('EXT:mpc_vidply/Resources/Public/Icons/Extension.svg');
     }
 
     /** @return array<string, mixed> */

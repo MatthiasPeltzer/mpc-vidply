@@ -4,16 +4,18 @@
 
 <f:section name="Main">
     <f:variable name="wrapperClasses" value="{f:if(condition: vidply.useCssIcons, then: 'vidply-wrapper vidply-use-css-icons', else: 'vidply-wrapper')}" />
-    <f:if condition="{vidply.playIcon} || {vidply.privacyPlayButtonPosition} != 'center'">
-        <f:asset.css href="EXT:mpc_vidply/Resources/Public/Css/vidply-overrides.css" identifier="vidplyOverridesCSS"/>
+    <f:if condition="{vidply.privacyPlayIconUrl} || {vidply.privacyPlayButtonPosition} != 'center'">
+        <f:asset.css href="EXT:mpc_vidply/Resources/Public/Css/vidply-overrides.min.css" identifier="vidplyOverridesCSS"/>
     </f:if>
 
     <f:if condition="{vidply.useCssIcons}">
-        <f:asset.css href="EXT:mpc_vidply/Resources/Public/Css/vidply-icons.css" identifier="vidplyIconsCSS"/>
+        <f:asset.css href="EXT:mpc_vidply/Resources/Public/Css/vidply-icons.min.css" identifier="vidplyIconsCSS"/>
     </f:if>
 
     <div class="{wrapperClasses}"
          id="{vidply.uniqueId}-wrapper"
+         role="region"
+         aria-label="{f:if(condition: data.header, then: data.header, else: 'Media player')}"
          <f:if condition="{vidply.privacyPlayIconUrl}">data-vidply-play-icon="{vidply.privacyPlayIconUrl}"</f:if>
          data-vidply-play-position="{vidply.privacyPlayButtonPosition}"
          <f:if condition="{vidply.privacyPlayIconInlineSvg}">data-vidply-play-inline-svg="1"</f:if>
@@ -61,6 +63,7 @@
 <f:section name="VideoPlayer">
     <video
         id="{vidply.uniqueId}"
+        aria-label="{f:if(condition: data.header, then: data.header, else: 'Video player')}"
         <f:if condition="{vidply.privacyPlayIconUrl}">data-vidply-play-icon="{vidply.privacyPlayIconUrl}"</f:if>
         data-vidply-play-position="{vidply.privacyPlayButtonPosition}"
         <f:if condition="{vidply.playlistData}">
@@ -111,6 +114,7 @@
 <f:section name="AudioPlayer">
     <audio
         id="{vidply.uniqueId}"
+        aria-label="{f:if(condition: data.header, then: data.header, else: 'Audio player')}"
         <f:if condition="{vidply.privacyPlayIconUrl}">data-vidply-play-icon="{vidply.privacyPlayIconUrl}"</f:if>
         data-vidply-play-position="{vidply.privacyPlayButtonPosition}"
         <f:if condition="{vidply.playlistData}">
@@ -151,6 +155,8 @@
 <f:section name="MixedPlaylistPlayer">
     <div
         id="{vidply.uniqueId}"
+        role="region"
+        aria-label="{f:if(condition: data.header, then: data.header, else: 'Media playlist')}"
         <f:if condition="{vidply.privacyPlayIconUrl}">data-vidply-play-icon="{vidply.privacyPlayIconUrl}"</f:if>
         data-vidply-play-position="{vidply.privacyPlayButtonPosition}"
         data-vidply-options='{f:format.json(value: vidply.options)}'

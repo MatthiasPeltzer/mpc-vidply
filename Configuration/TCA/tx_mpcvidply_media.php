@@ -37,54 +37,6 @@ return [
         ],
     ],
     'types' => [
-        '0' => [
-            'showitem' => '
-                --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,
-                    media_type,
-                    media_file,
-                    media_url,
-                    --palette--;;metadata,
-                    poster,
-                    --palette--;;ui,
-                --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tabs.captions,
-                    captions,
-                    chapters,
-                    enable_transcript,
-                --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tabs.accessibility,
-                    audio_description,
-                    sign_language,
-                    sign_language_display_mode,
-                --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:categories,
-                    categories,
-                --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access,
-                    hidden,
-                    --palette--;;timeRestriction,
-            ',
-        ],
-        '1' => [
-            'showitem' => '
-                --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,
-                    media_type,
-                    media_file,
-                    media_url,
-                    --palette--;;metadata,
-                    poster,
-                    --palette--;;ui,
-                --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tabs.captions,
-                    captions,
-                    chapters,
-                    enable_transcript,
-                --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tabs.accessibility,
-                    audio_description,
-                    sign_language,
-                    sign_language_display_mode,
-                --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:categories,
-                    categories,
-                --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access,
-                    hidden,
-                    --palette--;;timeRestriction,
-            ',
-        ],
         'video' => [
             'showitem' => '
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,
@@ -271,6 +223,16 @@ return [
             ],
         ],
         'l10n_diffsource' => [
+            'config' => [
+                'type' => 'passthrough',
+            ],
+        ],
+        'l10n_source' => [
+            'config' => [
+                'type' => 'passthrough',
+            ],
+        ],
+        'l10n_state' => [
             'config' => [
                 'type' => 'passthrough',
             ],

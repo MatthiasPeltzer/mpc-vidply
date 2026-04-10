@@ -91,10 +91,7 @@ final class VidPlyPreviewRenderer extends StandardContentPreviewRenderer
                 $html .= '<img src="' . htmlspecialchars($posterUrl) . '" alt="" style="width: 60px; height: 60px; object-fit: cover; border-radius: var(--typo3-border-radius); border: 1px solid var(--typo3-border-color);" />';
                 $html .= '</div>';
             } else {
-                $mediaType = $mediaItem['media_type'] ?? 'video';
-                $isAudio = in_array($mediaType, ['audio', 'soundcloud'], true);
-                $fallbackImage = $isAudio ? 'audio.png' : 'video.png';
-                $fallbackAbsPath = GeneralUtility::getFileAbsFileName('EXT:mpc_vidply/Resources/Public/Images/' . $fallbackImage);
+                $fallbackAbsPath = GeneralUtility::getFileAbsFileName('EXT:mpc_vidply/Resources/Public/Icons/Extension.svg');
                 $fallbackUrl = $fallbackAbsPath ? PathUtility::getAbsoluteWebPath($fallbackAbsPath) : '';
 
                 $html .= '<div style="flex-shrink: 0;">';
@@ -221,7 +218,7 @@ final class VidPlyPreviewRenderer extends StandardContentPreviewRenderer
         try {
             $fileReferences = $this->posterRefsByMediaUid[$mediaUid] ?? [];
 
-            if ($fileReferences !== [] && isset($fileReferences[0])) {
+            if ($fileReferences !== []) {
                 $fileReference = $fileReferences[0];
                 $file = $fileReference->getOriginalFile();
 
