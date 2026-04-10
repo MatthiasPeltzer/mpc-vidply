@@ -159,7 +159,6 @@ class VidPlyProcessor implements DataProcessorInterface
         $playerOptions['playbackSpeed'] = (float)($data['tx_mpcvidply_playback_speed'] ?? 1.0);
         $playerOptions['language'] = $data['tx_mpcvidply_language'] ?? '';
         $playerOptions['defaultTranscriptLanguage'] = $playerOptions['language'];
-        $playerOptions['hideSpeedForHls'] = true;
         $playerOptions['deferLoad'] = !$playerOptions['autoplay'];
         $playerOptions['preload'] = 'metadata';
         $playerOptions['requirePlaybackForAccessibilityToggles'] = $playerOptions['deferLoad'];
@@ -236,7 +235,7 @@ class VidPlyProcessor implements DataProcessorInterface
             $tracks[] = $track;
 
             if ($mediaType === null) {
-                $mediaType = ($mediaRecord['media_type'] === MediaType::Audio->value) ? 'audio' : 'video';
+                $mediaType = (($mediaRecord['media_type'] ?? '') === MediaType::Audio->value) ? 'audio' : 'video';
             }
 
             $recordType = MediaType::tryFrom((string)($mediaRecord['media_type'] ?? ''));
@@ -495,7 +494,11 @@ class VidPlyProcessor implements DataProcessorInterface
                         $playIconInlineSvg = $this->getInlineSvgFromExtPath($normalizedIcon);
                     }
                 } else {
-                    $playIconUrl = $configuredIcon;
+                    $parsed = parse_url($configuredIcon);
+                    $scheme = strtolower($parsed['scheme'] ?? '');
+                    if ($scheme === '' || $scheme === 'https' || $scheme === 'http') {
+                        $playIconUrl = $configuredIcon;
+                    }
                 }
             }
 
@@ -682,27 +685,6 @@ class VidPlyProcessor implements DataProcessorInterface
     // -----------------------------------------------------------------------
     // SVG handling
     // -----------------------------------------------------------------------
-
-    private function getInlineSvgFromFileReference(FileReference $fileReference): ?string
-    {
-        try {
-            $originalFile = $fileReference->getOriginalFile();
-        } catch (\Throwable) {
-            return null;
-        }
-
-        if (strtolower((string)$originalFile->getExtension()) !== 'svg') {
-            return null;
-        }
-
-        try {
-            $localPath = $originalFile->getForLocalProcessing(false);
-        } catch (\Throwable) {
-            return null;
-        }
-
-        return $this->loadAndSanitizeSvgFromAbsolutePath((string)$localPath);
-    }
 
     private function getInlineSvgFromExtPath(string $extPathOrUrl): ?string
     {
@@ -901,8 +883,12 @@ class VidPlyProcessor implements DataProcessorInterface
         if (empty($mediaFiles)) {
             return null;
         }
+        $src = $this->getPublicUrlCached($mediaFiles[0]);
+        if ($src === '') {
+            return null;
+        }
         return [
-            'src' => $mediaFiles[0]->getPublicUrl(),
+            'src' => $src,
             'type' => $mediaType->value,
             'kind' => 'video',
         ];
@@ -980,17 +966,24 @@ class VidPlyProcessor implements DataProcessorInterface
     {
         $posterFiles = $this->getFileReferencesForMedia($mediaUid, 'poster');
         if (!empty($posterFiles)) {
-            $track['poster'] = $posterFiles[0]->getPublicUrl();
+            $posterUrl = (string)$posterFiles[0]->getPublicUrl();
+            if ($posterUrl !== '') {
+                $track['poster'] = $posterUrl;
+            }
         }
 
         $textTracks = [];
 
         $captionFiles = $this->getFileReferencesForMedia($mediaUid, 'captions');
         foreach ($captionFiles as $captionFile) {
+            $captionUrl = (string)$captionFile->getPublicUrl();
+            if ($captionUrl === '') {
+                continue;
+            }
             $properties = $captionFile->getProperties();
             $trackKind = $properties['tx_track_kind'] ?: 'captions';
             $trackData = [
-                'src' => $captionFile->getPublicUrl(),
+                'src' => $captionUrl,
                 'kind' => $trackKind,
                 'srclang' => $properties['tx_lang_code'] ?: 'en',
                 'label' => $properties['title'] ?: ($trackKind === 'descriptions' ? 'Descriptions' : 'Captions'),
@@ -1006,9 +999,13 @@ class VidPlyProcessor implements DataProcessorInterface
 
         $chapterFiles = $this->getFileReferencesForMedia($mediaUid, 'chapters');
         foreach ($chapterFiles as $chapterFile) {
+            $chapterUrl = (string)$chapterFile->getPublicUrl();
+            if ($chapterUrl === '') {
+                continue;
+            }
             $properties = $chapterFile->getProperties();
             $trackData = [
-                'src' => $chapterFile->getPublicUrl(),
+                'src' => $chapterUrl,
                 'kind' => 'chapters',
                 'srclang' => $properties['tx_lang_code'] ?: 'en',
                 'label' => $properties['title'] ?: 'Chapters',
@@ -1028,13 +1025,19 @@ class VidPlyProcessor implements DataProcessorInterface
 
         $audioDescFiles = $this->getFileReferencesForMedia($mediaUid, 'audio_description');
         if (!empty($audioDescFiles)) {
-            $track['audioDescriptionSrc'] = $audioDescFiles[0]->getPublicUrl();
+            $audioDescUrl = (string)$audioDescFiles[0]->getPublicUrl();
+            if ($audioDescUrl !== '') {
+                $track['audioDescriptionSrc'] = $audioDescUrl;
+            }
         }
 
         $signLangFiles = $this->getFileReferencesForMedia($mediaUid, 'sign_language');
         if (!empty($signLangFiles)) {
-            $track['signLanguageSrc'] = $signLangFiles[0]->getPublicUrl();
-            $track['signLanguageDisplayMode'] = $mediaRecord['sign_language_display_mode'] ?? 'pip';
+            $signLangUrl = (string)$signLangFiles[0]->getPublicUrl();
+            if ($signLangUrl !== '') {
+                $track['signLanguageSrc'] = $signLangUrl;
+                $track['signLanguageDisplayMode'] = $mediaRecord['sign_language_display_mode'] ?? 'pip';
+            }
         }
 
         if (!empty($mediaRecord['enable_transcript'])) {
@@ -1047,15 +1050,15 @@ class VidPlyProcessor implements DataProcessorInterface
     // -----------------------------------------------------------------------
 
     /**
-     * TYPO3 14+: System Resource API. TYPO3 13: legacy PathUtility method.
+     * TYPO3 14+: System Resource API. TYPO3 13: PathUtility (deprecated in 14, removed in 15).
      */
     private function resolvePublicResourceWebPath(string $resourcePath): string
     {
-        if (class_exists(\TYPO3\CMS\Core\SystemResource\SystemResourceFactory::class)) {
+        if (class_exists(\TYPO3\CMS\Core\Resource\SystemResourceFactory::class)) {
             try {
-                $factory = GeneralUtility::makeInstance(\TYPO3\CMS\Core\SystemResource\SystemResourceFactory::class);
+                $factory = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Resource\SystemResourceFactory::class);
                 $publisher = GeneralUtility::makeInstance(
-                    \TYPO3\CMS\Core\SystemResource\Publishing\SystemResourcePublisherInterface::class
+                    \TYPO3\CMS\Core\Resource\SystemResourcePublisherInterface::class
                 );
                 return (string)$publisher->generateUri(
                     $factory->createPublicResource($resourcePath),
@@ -1071,7 +1074,7 @@ class VidPlyProcessor implements DataProcessorInterface
 
     private function safeJsonEncode(mixed $value): string
     {
-        return json_encode($value, JSON_HEX_TAG | JSON_HEX_AMP | JSON_THROW_ON_ERROR);
+        return json_encode($value, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR);
     }
 
     protected function inferMimeTypeFromUrlCached(string $url, string $fallbackMimeType = ''): string

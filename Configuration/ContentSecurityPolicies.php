@@ -26,7 +26,6 @@ return Map::fromEntries([
             MutationMode::Extend,
             Directive::MediaSrc,
             SourceScheme::blob,
-            SourceScheme::data,
             SourceScheme::https
         ),
 

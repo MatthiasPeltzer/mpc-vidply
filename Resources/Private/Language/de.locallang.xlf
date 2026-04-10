@@ -91,6 +91,10 @@
         <source>Load {0} content</source>
         <target>{0}-Inhalt laden</target>
       </trans-unit>
+      <trans-unit id="privacy.opens_new_window">
+        <source>opens in new window</source>
+        <target>öffnet in neuem Fenster</target>
+      </trans-unit>
       <trans-unit id="privacy.soundcloud.policy_link">
         <source>SoundCloud's privacy policy</source>
         <target>die Datenschutzerklärung von SoundCloud</target>

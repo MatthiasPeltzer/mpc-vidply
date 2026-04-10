@@ -83,8 +83,7 @@ final class HlsHelper extends AbstractOnlineMediaHelper
     /** @return string */
     public function getPreviewImage(File $file)
     {
-        // Used by TYPO3 Filelist thumbnail rendering for online media files
-        return (string)GeneralUtility::getFileAbsFileName('EXT:mpc_vidply/Resources/Public/Images/video.png');
+        return (string)GeneralUtility::getFileAbsFileName('EXT:mpc_vidply/Resources/Public/Icons/Extension.svg');
     }
 
     /** @return array<string, mixed> */

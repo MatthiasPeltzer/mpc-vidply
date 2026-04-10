@@ -170,3 +170,12 @@ div[data-vidply-play-position="right-bottom"] ~ .vidply-play-overlay:active {
 .vidply-privacy-button--pos-right-bottom {
     bottom: 4rem !important;
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .vidply-play-overlay:hover,
+    .vidply-play-overlay:active,
+    .vidply-play-overlay-image:hover,
+    .vidply-play-overlay-image:active {
+        transform: none !important;
+    }
+}

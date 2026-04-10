@@ -14,7 +14,7 @@
 
 <f:for each="{chapters}" as="chapter">
     <track kind="{chapter.kind}" src="{chapter.src}" srclang="{chapter.srclang}"
-        <f:if condition="{chapter.label}">label="{chapter.label}"</f:if>
+        label="{f:if(condition: chapter.label, then: chapter.label, else: 'Chapters')}"
         <f:if condition="{chapter.describedSrc}">data-desc-src="{chapter.describedSrc}"</f:if>>
 </f:for>
 

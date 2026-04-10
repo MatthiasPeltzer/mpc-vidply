@@ -7,6 +7,7 @@ namespace Mpc\MpcVidply\Repository;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Context\Context;
 
 /**
  * Repository for VidPly media records with MM-relation resolution and language overlay.
@@ -22,10 +23,12 @@ final class MediaRepository
     ];
 
     private readonly ConnectionPool $connectionPool;
+    private readonly Context $context;
 
-    public function __construct(?ConnectionPool $connectionPool = null)
+    public function __construct(?ConnectionPool $connectionPool = null, ?Context $context = null)
     {
         $this->connectionPool = $connectionPool ?? GeneralUtility::makeInstance(ConnectionPool::class);
+        $this->context = $context ?? GeneralUtility::makeInstance(Context::class);
     }
 
     /**
@@ -105,8 +108,7 @@ final class MediaRepository
             ->from('tx_mpcvidply_media')
             ->where(
                 $qb->expr()->in('uid', $qb->createNamedParameter($uids, Connection::PARAM_INT_ARRAY)),
-                $qb->expr()->eq('deleted', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-                $qb->expr()->eq('hidden', $qb->createNamedParameter(0, Connection::PARAM_INT))
+                ...$this->buildAccessConditions($qb)
             )
             ->executeQuery()
             ->fetchAllAssociative();
@@ -173,8 +175,7 @@ final class MediaRepository
                 ->where(
                     $qb->expr()->in('uid', $qb->createNamedParameter($missingUids, Connection::PARAM_INT_ARRAY)),
                     $qb->expr()->eq('sys_language_uid', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-                    $qb->expr()->eq('deleted', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-                    $qb->expr()->eq('hidden', $qb->createNamedParameter(0, Connection::PARAM_INT))
+                    ...$this->buildAccessConditions($qb)
                 )
                 ->executeQuery()
                 ->fetchAllAssociative();
@@ -203,8 +204,7 @@ final class MediaRepository
             ->where(
                 $qb->expr()->in('l10n_parent', $qb->createNamedParameter($defaultUids, Connection::PARAM_INT_ARRAY)),
                 $qb->expr()->eq('sys_language_uid', $qb->createNamedParameter($languageId, Connection::PARAM_INT)),
-                $qb->expr()->eq('deleted', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-                $qb->expr()->eq('hidden', $qb->createNamedParameter(0, Connection::PARAM_INT))
+                ...$this->buildAccessConditions($qb)
             )
             ->executeQuery()
             ->fetchAllAssociative();
@@ -252,6 +252,34 @@ final class MediaRepository
             }
         }
         return $result;
+    }
+
+    /**
+     * @return list<\TYPO3\CMS\Core\Database\Query\Expression\CompositeExpression|string>
+     */
+    private function buildAccessConditions(\TYPO3\CMS\Core\Database\Query\QueryBuilder $qb): array
+    {
+        $conditions = [
+            $qb->expr()->eq('deleted', $qb->createNamedParameter(0, Connection::PARAM_INT)),
+            $qb->expr()->eq('hidden', $qb->createNamedParameter(0, Connection::PARAM_INT)),
+        ];
+
+        try {
+            $now = $this->context->getPropertyFromAspect('date', 'timestamp', 0);
+        } catch (\Throwable) {
+            $now = time();
+        }
+
+        $conditions[] = $qb->expr()->or(
+            $qb->expr()->eq('starttime', $qb->createNamedParameter(0, Connection::PARAM_INT)),
+            $qb->expr()->lte('starttime', $qb->createNamedParameter($now, Connection::PARAM_INT))
+        );
+        $conditions[] = $qb->expr()->or(
+            $qb->expr()->eq('endtime', $qb->createNamedParameter(0, Connection::PARAM_INT)),
+            $qb->expr()->gte('endtime', $qb->createNamedParameter($now, Connection::PARAM_INT))
+        );
+
+        return $conditions;
     }
 
     private function selectOverlayRecord(
