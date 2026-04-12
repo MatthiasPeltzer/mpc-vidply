@@ -1,6 +1,6 @@
 # VidPly TYPO3 Extension
 
-Universal, accessible video and audio player for **TYPO3 13/14** with YouTube, Vimeo, SoundCloud, and HLS streaming support.
+Universal, Accessible Video & Audio Player for TYPO3. Includes support for HTML5 video/audio, YouTube, Vimeo, SoundCloud, HLS and DASH streaming, playlists, captions, transcripts, sign language, and WCAG 2.2 AA accessibility compliance.
 
 ## Features
 
@@ -10,6 +10,7 @@ Universal, accessible video and audio player for **TYPO3 13/14** with YouTube, V
 - **Auto Playlists** - 2+ items automatically create playlists
 - **Full Accessibility** - Captions, chapters, audio description, sign language, keyboard controls
 - **HLS Streaming** - Adaptive bitrate streaming with hls.js
+- **DASH Streaming** - MPEG-DASH support via dash.js with adaptive quality and subtitles
 - **Modern Player** - Responsive, Picture-in-Picture, quality switching, playback speed
 - **Conditional Asset Loading** - Only loads JavaScript needed for your media types
 
@@ -35,6 +36,7 @@ Choose media type:
 - **Vimeo** - Paste video URL
 - **SoundCloud** - Paste track/set URL
 - **HLS** - Enter .m3u8 stream URL
+- **DASH** - Enter .mpd manifest URL
 
 ### Configure Privacy Layer Settings
 
@@ -68,6 +70,7 @@ Settings support multilingual content and apply to both single items and playlis
 | Vimeo | Video URL | Yes | GDPR consent required |
 | SoundCloud | Track/Set URL | Yes | GDPR consent required |
 | HLS | .m3u8 URL | No | Adaptive streaming |
+| DASH | .mpd URL | No | MPEG-DASH adaptive streaming |
 
 ## Privacy Layer
 
@@ -115,7 +118,7 @@ For YouTube, Vimeo, and SoundCloud:
 **Single Item** → Single player  
 **2+ Items** → Automatic playlist with visual panel, track navigation, auto-advance, and loop options
 
-**Lazy loading behavior (local MP4/MP3 + HLS):**
+**Lazy loading behavior (local MP4/MP3 + HLS/DASH):**
 - If **Autoplay is off**, the extension configures VidPly to **defer network loading** until the user starts playback (reduced initial bandwidth for pages with many players).
 - In **playlists**, selecting a track initializes the UI/metadata (poster, duration, captions/chapters menus) and a click on a playlist item **loads and plays** that track.
 
@@ -127,6 +130,7 @@ Only loads JavaScript needed for your media types:
 - **External services** - PrivacyLayer.js (~5KB)
 - **Local video/audio** - VidPly core + PlaylistInit (~180KB)
 - **HLS streaming** - Adds hls.js when .m3u8 streams detected
+- **DASH streaming** - Adds dash.js when .mpd streams detected
 - **Playlists** - PlaylistInit.js loads for 2+ items
 
 Performance improvement: Up to 97% reduction for external services.

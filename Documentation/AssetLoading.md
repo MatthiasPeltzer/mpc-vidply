@@ -9,9 +9,10 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 | Flag | Loads | When |
 |------|-------|------|
 | `needsPrivacyLayer` | PrivacyLayer.js + privacy-layer.css | YouTube, Vimeo, or SoundCloud present |
-| `needsVidPlay` | VidPly core (`vidply/vidply.esm.min.js` + code-split chunks) | Local video/audio or HLS (not external services) |
+| `needsVidPlay` | VidPly core (`vidply/vidply.esm.min.js` + code-split chunks) | Local video/audio, HLS, or DASH (not external services) |
 | `needsPlaylist` | PlaylistInit.js | 2+ media items OR native player |
 | `needsHLS` | hls.js (CDN) | HLS stream (.m3u8) detected |
+| `needsDASH` | dash.js (CDN) | DASH stream (.mpd) detected |
 
 **CSS always loads** - The vidply.min.css stylesheet is lightweight and always included for consistent styling.
 
@@ -47,6 +48,18 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 
 **Not Loaded:**
 - PrivacyLayer.js
+- dash.js
+
+### DASH Stream
+**Loaded:**
+- vidply.min.css
+- VidPly player
+- PlaylistInit.js
+- dash.js (MPEG-DASH streaming)
+
+**Not Loaded:**
+- PrivacyLayer.js
+- hls.js
 
 ### Playlist with 3 MP4 Videos
 **Loaded:**
@@ -79,6 +92,7 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 - Single YouTube: ~7KB (PrivacyLayer.js + privacy-layer.css)
 - Single local video: ~180KB (VidPly core + PlaylistInit)
 - HLS stream: ~530KB (VidPly + PlaylistInit + hls.js)
+- DASH stream: ~580KB (VidPly + PlaylistInit + dash.js)
 
 **Savings:**
 - External services: 97% reduction (350KB → 5KB)
@@ -94,20 +108,23 @@ $needsPrivacyLayer = false;
 $needsVidPlay = false;
 $needsPlaylist = false;
 $needsHLS = false;
+$needsDASH = false;
 
 // Check for external services
 if (in_array($firstTrackType, ['youtube', 'vimeo', 'soundcloud'])) {
     $needsPrivacyLayer = true;
 } else {
-    $needsVidPlay = true; // Native player for local/HLS
+    $needsVidPlay = true; // Native player for local/HLS/DASH
     $needsPlaylist = true;
 }
 
-// Check for HLS streams
+// Check for HLS and DASH streams
 foreach ($tracks as $track) {
     if (in_array($track['type'], ['hls', 'application/x-mpegurl'])) {
         $needsHLS = true;
-        break;
+    }
+    if (in_array($track['type'], ['dash', 'application/dash+xml'])) {
+        $needsDASH = true;
     }
 }
 ```
@@ -119,7 +136,8 @@ foreach ($tracks as $track) {
     needsPrivacyLayer: vidply.needsPrivacyLayer,
     needsVidPlay: vidply.needsVidPlay,
     needsPlaylist: vidply.needsPlaylist,
-    needsHLS: vidply.needsHLS
+    needsHLS: vidply.needsHLS,
+    needsDASH: vidply.needsDASH
 }" />
 ```
 
@@ -134,6 +152,11 @@ foreach ($tracks as $track) {
 <!-- HLS.js - only for HLS streams -->
 <f:if condition="{needsHLS}">
     <f:asset.script identifier="vidPlyHLS" src="https://cdn.jsdelivr.net/..." />
+</f:if>
+
+<!-- dash.js - only for DASH streams -->
+<f:if condition="{needsDASH}">
+    <f:asset.script identifier="vidPlyDASH" src="https://cdn.jsdelivr.net/..." />
 </f:if>
 
 <!-- VidPly Core - only for native player -->

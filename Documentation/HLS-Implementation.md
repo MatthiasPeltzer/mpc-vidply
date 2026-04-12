@@ -1,8 +1,10 @@
-# HLS Streaming Implementation
+# HLS & DASH Streaming Implementation
 
-**HLS streaming is fully working in all modern browsers!**
+**HLS and DASH streaming are fully working in all modern browsers!**
 
 ## Browser Support
+
+### HLS
 
 | Browser | Implementation | Status |
 |---------|---------------|--------|
@@ -10,9 +12,19 @@
 | Firefox | hls.js | Working |
 | Safari/iOS | Native | Working |
 
+### DASH
+
+| Browser | Implementation | Status |
+|---------|---------------|--------|
+| Chrome/Edge | dash.js | Working |
+| Firefox | dash.js | Working |
+| Safari | dash.js | Working |
+
 ## Technical Setup
 
-### 1. hls.js Library
+### HLS
+
+#### 1. hls.js Library
 
 **Loaded from CDN:**
 ```typoscript
@@ -22,7 +34,7 @@ page.includeJSFooter {
 }
 ```
 
-### 2. VidPly HLS Renderer
+#### 2. VidPly HLS Renderer
 
 **File:** `libs/vidply/src/renderers/HLSRenderer.js`
 
@@ -41,11 +53,32 @@ canPlayNatively() {
 }
 ```
 
-### 3. Content Security Policy
+### DASH
+
+#### 1. dash.js Library
+
+**Loaded from CDN:**
+```typoscript
+page.includeJSFooter {
+    dashjs = https://cdn.jsdelivr.net/npm/dashjs@latest/dist/dash.all.min.js
+    dashjs.external = 1
+}
+```
+
+#### 2. VidPly DASH Renderer
+
+**File:** `libs/vidply/src/renderers/DASHRenderer.js`
+
+Features:
+- Adaptive bitrate streaming with automatic quality switching
+- TTML and WebVTT subtitle support
+- Quality selection UI integration
+
+### Content Security Policy
 
 **File:** `Configuration/ContentSecurityPolicies.php`
 
-Required CSP directives:
+Required CSP directives (shared by HLS and DASH):
 ```php
 'media-src' => ['blob:', 'data:', 'https:'],
 'worker-src' => ['blob:'],
@@ -57,17 +90,24 @@ Required CSP directives:
 
 ### Backend
 
+**HLS:**
 1. Create VidPly media record
 2. Select **HLS Stream** media type
 3. Enter stream URL: `https://example.com/stream.m3u8`
 4. Add poster image
 5. Save
 
+**DASH:**
+1. Create VidPly media record
+2. Select **DASH Stream** media type
+3. Enter manifest URL: `https://example.com/stream/manifest.mpd`
+4. Add poster image
+5. Save
+
 ### Frontend
 
-- Auto-detects HLS streams
-- Safari uses native HLS
-- Other browsers use hls.js
+- Auto-detects stream type by URL extension (`.m3u8` for HLS, `.mpd` for DASH)
+- Safari uses native HLS; all browsers use dash.js for DASH
 - Quality switching available (if stream has multiple levels)
 
 ## Testing
@@ -76,9 +116,13 @@ Required CSP directives:
 ddev typo3 cache:flush
 ```
 
-Test URLs:
+**HLS test URLs:**
 - Apple Demo: `https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8`
 - Akamai Demo: `https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8`
+
+**DASH test URLs:**
+- DASH-IF: `https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd`
+- Unified Streaming: `https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.mpd`
 
 ## Troubleshooting
 
@@ -90,8 +134,8 @@ Test URLs:
 
 **No quality button:**
 - Verify stream has multiple quality levels
-- Check hls.js loads correctly
-- Ensure browser is not Safari (native HLS)
+- Check hls.js / dash.js loads correctly
+- For HLS: ensure browser is not Safari (native HLS)
 
 **CSP errors:**
 - Check `ContentSecurityPolicies.php` exists
@@ -100,7 +144,8 @@ Test URLs:
 
 ## Performance
 
-- **Adaptive bitrate** - Automatically adjusts quality
+- **Adaptive bitrate** - Automatically adjusts quality (HLS and DASH)
 - **Buffer optimization** - Smooth playback
-- **CDN delivery** - Fast hls.js loading
-- **Minimal overhead** - Only loads when needed
+- **CDN delivery** - Fast library loading via jsdelivr
+- **Minimal overhead** - Libraries only load when needed
+- **Conditional loading** - hls.js and dash.js are loaded independently based on media types

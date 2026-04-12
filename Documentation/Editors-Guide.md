@@ -16,6 +16,7 @@ VidPly is a universal, accessible media player supporting multiple sources:
 | **Vimeo** | Video URL | Yes (GDPR) | Professional videos |
 | **SoundCloud** | Track/Set URL | Yes (GDPR) | Music, podcasts |
 | **HLS** | .m3u8 URL | No | Live streaming |
+| **DASH** | .mpd URL | No | Adaptive streaming |
 
 ---
 
@@ -129,6 +130,20 @@ Or use the "Create new record" button in the VidPly Player element.
 4. Add a **poster image**
 
 **Example URL:** `https://example.com/stream/video.m3u8`
+
+---
+
+#### DASH Streaming
+
+**Use for:** Adaptive bitrate video via MPEG-DASH
+
+**How to create:**
+1. Select media type: **DASH**
+2. Enter the **Media URL** (must end in `.mpd`)
+3. Add a **title** (required)
+4. Add a **poster image**
+
+**Example URL:** `https://example.com/stream/manifest.mpd`
 
 ---
 
@@ -405,7 +420,7 @@ Settings apply to both single items and playlists. Empty fields automatically us
 ### Performance
 - Compress videos before upload
 - Use appropriate resolution (not always 4K)
-- Consider HLS for long content
+- Consider HLS or DASH for long content
 - External services (YouTube/Vimeo) reduce server load
 
 ### Mobile

@@ -17,7 +17,8 @@ Modular template structure for maintainability and customization.
     needsPrivacyLayer: vidply.needsPrivacyLayer,
     needsVidPlay: vidply.needsVidPlay,
     needsPlaylist: vidply.needsPlaylist,
-    needsHLS: vidply.needsHLS
+    needsHLS: vidply.needsHLS,
+    needsDASH: vidply.needsDASH
 }" />
 ```
 
@@ -26,6 +27,7 @@ Modular template structure for maintainability and customization.
 - `needsVidPlay` - Load VidPly core (native player)
 - `needsPlaylist` - Load PlaylistInit.js (playlists/player init)
 - `needsHLS` - Load hls.js (HLS streaming)
+- `needsDASH` - Load dash.js (DASH streaming)
 
 **Always loads:**
 - `vidply.min.css` - Player styling
@@ -34,6 +36,7 @@ Modular template structure for maintainability and customization.
 - `privacy-layer.css` - Privacy layer styles (external services only)
 - `PrivacyLayer.js` - YouTube, Vimeo, SoundCloud
 - `hls.js` (CDN) - HLS streams only
+- `dash.js` (CDN) - DASH streams only
 - `PlaylistInit.js` - Playlists or player init
 - `vidply/vidply.esm.min.js` - Native player only (plus code-split chunks)
 
@@ -55,7 +58,7 @@ See `Documentation/AssetLoading.md` for optimization details.
 ```
 
 Handles:
-- External sources (YouTube, Vimeo, HLS)
+- External sources (YouTube, Vimeo, HLS, DASH)
 - Multiple quality/format options
 - Playlist mode
 - Audio description sources
@@ -153,7 +156,7 @@ VidPly.html (Main)
 ├── Header
 ├── Check if external service?
 │   ├── YES → PrivacyLayer
-│   └── NO → VideoPlayer or AudioPlayer
+│   └── NO → VideoPlayer or AudioPlayer (local/HLS/DASH)
 │       ├── VideoSources / AudioSources
 │       ├── Tracks
 │       └── MetadataScripts (video only)
