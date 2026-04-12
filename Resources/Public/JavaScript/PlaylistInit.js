@@ -446,11 +446,17 @@ function initializeSingleElement(element) {
     try {
         const externalSrc = element.dataset.vidplySrc;
         const isHLS = externalSrc?.includes('.m3u8');
+        const isDASH = externalSrc?.includes('.mpd');
 
         if (isHLS) {
             const source = document.createElement('source');
             source.src = externalSrc;
             source.type = 'application/x-mpegURL';
+            element.appendChild(source);
+        } else if (isDASH) {
+            const source = document.createElement('source');
+            source.src = externalSrc;
+            source.type = 'application/dash+xml';
             element.appendChild(source);
         } else if (externalSrc && isSafeUrl(externalSrc)) {
             element.src = externalSrc;

@@ -99,6 +99,18 @@
       <trans-unit id="tx_mpcvidply_media.hls_kind.video">
         <source>Video</source>
       </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.dash_kind">
+        <source>DASH Type</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.dash_kind.description">
+        <source>Choose whether the DASH stream is audio-only or video</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.dash_kind.video">
+        <source>Video</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.dash_kind.audio">
+        <source>Audio (radio)</source>
+      </trans-unit>
       <trans-unit id="tx_mpcvidply_media.media_file">
         <source>Media File</source>
       </trans-unit>
@@ -113,6 +125,9 @@
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.media_type.hls">
         <source>HLS Stream</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.media_type.dash">
+        <source>DASH Stream</source>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.media_type.soundcloud">
         <source>SoundCloud</source>

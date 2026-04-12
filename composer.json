@@ -1,6 +1,6 @@
 {
   "name": "mpc/mpc-vidply",
-  "description": "Universal, Accessible Video & Audio Player for TYPO3. Includes support for HTML5 video/audio, YouTube, Vimeo, SoundCloud, HLS streaming, playlists, captions, transcripts, sign language, and WCAG 2.2 AA accessibility compliance.",
+  "description": "Universal, Accessible Video & Audio Player for TYPO3. Includes support for HTML5 video/audio, YouTube, Vimeo, SoundCloud, HLS and DASH streaming, playlists, captions, transcripts, sign language, and WCAG 2.2 AA accessibility compliance.",
   "homepage": "https://github.com/MatthiasPeltzer/mpc-vidply",
   "authors": [
     {
@@ -11,7 +11,7 @@
     }
   ],
   "type": "typo3-cms-extension",
-  "version": "1.0.51",
+  "version": "1.0.52",
   "license": ["GPL-2.0-or-later"],
   "require": {
     "php": "^8.2",

@@ -17,6 +17,7 @@ enum MediaType: string
     case Vimeo = 'vimeo';
     case SoundCloud = 'soundcloud';
     case Hls = 'hls';
+    case Dash = 'dash';
 
     /**
      * External services that require a privacy consent layer and embed via iframe.

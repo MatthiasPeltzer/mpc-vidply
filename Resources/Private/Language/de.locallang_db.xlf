@@ -131,6 +131,22 @@
         <source>Video</source>
         <target>Video</target>
       </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.dash_kind">
+        <source>DASH Type</source>
+        <target>DASH-Typ</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.dash_kind.audio">
+        <source>Audio (radio)</source>
+        <target>Audio (Radio)</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.dash_kind.description">
+        <source>Choose whether the DASH stream is audio-only or video</source>
+        <target>Wählen Sie aus, ob der DASH-Stream nur Audio (Radio) oder Video ist</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.dash_kind.video">
+        <source>Video</source>
+        <target>Video</target>
+      </trans-unit>
       <trans-unit id="tx_mpcvidply_media.media_file">
         <source>Media File</source>
         <target>Mediendatei</target>
@@ -150,6 +166,10 @@
       <trans-unit id="tx_mpcvidply_media.media_type.hls">
         <source>HLS Stream</source>
         <target>HLS Stream</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.media_type.dash">
+        <source>DASH Stream</source>
+        <target>DASH Stream</target>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.media_type.soundcloud">
         <source>SoundCloud</source>

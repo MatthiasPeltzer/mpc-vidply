@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Mpc\MpcVidply\OnlineMedia\Helpers\ExternalAudioHelper;
 use Mpc\MpcVidply\OnlineMedia\Helpers\ExternalVideoHelper;
+use Mpc\MpcVidply\OnlineMedia\Helpers\DashHelper;
 use Mpc\MpcVidply\OnlineMedia\Helpers\HlsHelper;
 use Mpc\MpcVidply\OnlineMedia\Helpers\SoundCloudHelper;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
@@ -45,6 +46,11 @@ if (trim((string)($extConf['allowedVideoDomains'] ?? '')) !== '') {
     $mediaExt = GeneralUtility::trimExplode(',', (string)($GLOBALS['TYPO3_CONF_VARS']['SYS']['mediafile_ext'] ?? ''), true);
     if (!in_array('hls', $mediaExt, true)) {
         $mediaExt[] = 'hls';
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['mediafile_ext'] = implode(',', $mediaExt);
+    }
+    $GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['onlineMediaHelpers']['dash'] ??= DashHelper::class;
+    if (!in_array('dash', $mediaExt, true)) {
+        $mediaExt[] = 'dash';
         $GLOBALS['TYPO3_CONF_VARS']['SYS']['mediafile_ext'] = implode(',', $mediaExt);
     }
 }

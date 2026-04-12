@@ -21,6 +21,7 @@ return [
             'vimeo' => 'mimetypes-media-video',
             'soundcloud' => 'mimetypes-media-audio',
             'hls' => 'mimetypes-media-video',
+            'dash' => 'mimetypes-media-video',
         ],
         'enablecolumns' => [
             'disabled' => 'hidden',
@@ -164,6 +165,30 @@ return [
                 ],
             ],
         ],
+        'dash' => [
+            'showitem' => '
+                --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,
+                    media_type,
+                    dash_kind,
+                    media_file,
+                    --palette--;;metadata,
+                    poster,
+                    --palette--;;ui,
+                --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:categories,
+                    categories,
+                --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access,
+                    hidden,
+                    --palette--;;timeRestriction,
+            ',
+            'columnsOverrides' => [
+                'media_file' => [
+                    'config' => [
+                        'allowed' => 'dash,mpd',
+                        'maxitems' => 1,
+                    ],
+                ],
+            ],
+        ],
         'hls' => [
             'showitem' => '
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,
@@ -285,6 +310,7 @@ return [
                     ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.media_type.vimeo', 'value' => 'vimeo'],
                     ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.media_type.soundcloud', 'value' => 'soundcloud'],
                     ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.media_type.hls', 'value' => 'hls'],
+                    ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.media_type.dash', 'value' => 'dash'],
                 ],
                 'default' => 'video',
                 'required' => true,
@@ -302,6 +328,21 @@ return [
                 'items' => [
                     ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.hls_kind.video', 'value' => 'video'],
                     ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.hls_kind.audio', 'value' => 'audio'],
+                ],
+                'default' => 'video',
+            ],
+        ],
+        'dash_kind' => [
+            'exclude' => false,
+            'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.dash_kind',
+            'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.dash_kind.description',
+            'displayCond' => 'FIELD:media_type:=:dash',
+            'config' => [
+                'type' => 'select',
+                'renderType' => 'selectSingle',
+                'items' => [
+                    ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.dash_kind.video', 'value' => 'video'],
+                    ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.dash_kind.audio', 'value' => 'audio'],
                 ],
                 'default' => 'video',
             ],
@@ -325,7 +366,7 @@ return [
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.media_file',
             'config' => [
                 'type' => 'file',
-                'allowed' => 'webm,mp4,externalvideo,mp3,ogg,externalaudio,youtube,vimeo',
+                'allowed' => 'webm,mp4,externalvideo,mp3,ogg,externalaudio,youtube,vimeo,dash,mpd',
                 'appearance' => [
                     // Enables the "Add media by URL" button (shown when onlineMediaHelpers are available)
                     'fileByUrlAllowed' => true,
