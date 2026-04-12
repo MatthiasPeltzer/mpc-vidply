@@ -47,6 +47,7 @@ mpc_vidply/
 │       ├── Icons/
 │       └── JavaScript/
 │           ├── hls.min.js        # HLS streaming
+│           ├── dash.all.min.js   # DASH streaming
 │           ├── PlaylistInit.js   # Playlist logic
 │           ├── PrivacyLayer.js   # GDPR consent
 │           └── vidply/           # Core player (ESM modules)
@@ -77,7 +78,7 @@ Or via Backend: Site Management → Sites → Sets → Add VidPly.
 
 ### `tx_mpcvidply_media`
 
-Media library records with types: `video`, `audio`, `youtube`, `vimeo`, `soundcloud`, `hls`
+Media library records with types: `video`, `audio`, `youtube`, `vimeo`, `soundcloud`, `hls`, `dash`
 
 **Key columns:**
 
@@ -85,7 +86,7 @@ Media library records with types: `video`, `audio`, `youtube`, `vimeo`, `soundcl
 |--------|------|-------------|
 | `media_type` | string | Type discriminator |
 | `media_file` | file | File references (video/audio) |
-| `media_url` | string | External URL (SoundCloud, HLS) |
+| `media_url` | string | External URL (SoundCloud, HLS, DASH) |
 | `title` | string | Display title |
 | `artist` | string | Creator name |
 | `poster` | file | Thumbnail image |
@@ -184,7 +185,7 @@ tt_content.mpc_vidply {
 ```html
 {mediaItems}           <!-- Array of processed media -->
 {isPlaylist}           <!-- true if 2+ items -->
-{hasLocalMedia}        <!-- Has video/audio/hls -->
+{hasLocalMedia}        <!-- Has video/audio/hls/dash -->
 {hasExternalService}   <!-- Has YouTube/Vimeo/SoundCloud -->
 {playerOptions}        <!-- Decoded options array -->
 {privacySettings}      <!-- Privacy layer settings per service -->
@@ -233,6 +234,7 @@ VidPly only loads JavaScript needed for current media types:
 | YouTube/Vimeo/SoundCloud only | PrivacyLayer.js | ~5KB |
 | Local video/audio | `vidply/vidply.esm.min.js` (+ chunks) + PlaylistInit.js | ~180KB |
 | HLS streaming | + hls.min.js | +60KB |
+| DASH streaming | + dash.all.min.js | +200KB |
 | Playlist (2+ items) | + PlaylistInit.js | +5KB |
 
 **Up to 97% reduction** for external-only content.
@@ -244,6 +246,7 @@ VidPly only loads JavaScript needed for current media types:
 | `PrivacyLayer.js` | GDPR consent for external services |
 | `PlaylistInit.js` | Playlist UI and navigation |
 | `hls.min.js` | HLS.js for adaptive streaming |
+| `dash.all.min.js` | dash.js for MPEG-DASH streaming |
 | `vidply/*.js` | Core player (ESM, code-split) |
 
 ### Player Initialization
@@ -314,18 +317,25 @@ Settings fall back to language file translations if database fields are empty.
 
 ---
 
-## 🌐 HLS Streaming
+## 🌐 HLS & DASH Streaming
 
 ### How It Works
 
+**HLS:**
 1. Detects `.m3u8` URL in media record
 2. Includes `hls.min.js` (only when needed)
 3. Initializes HLS.js on video element
 4. Provides quality switching UI
 
+**DASH:**
+1. Detects `.mpd` URL in media record
+2. Includes `dash.all.min.js` (only when needed)
+3. Initializes dash.js on video element
+4. Provides adaptive quality, TTML and WebVTT subtitle support
+
 ### CSP Configuration
 
-`Configuration/ContentSecurityPolicies.php` whitelists HLS domains.
+`Configuration/ContentSecurityPolicies.php` whitelists streaming domains.
 
 Add custom domains:
 
@@ -382,6 +392,7 @@ $GLOBALS['TCA']['tt_content']['columns']['tx_mpcvidply_options']['config']['item
 | MM relation broken | Check `tx_mpcvidply_content_media_mm` table |
 | JS not loading | Check browser console; verify TypoScript |
 | HLS not working | Check CORS headers on .m3u8 |
+| DASH not working | Check CORS headers on .mpd; verify dash.js loads |
 | Privacy layer stuck | Clear caches; check PrivacyLayer.js |
 
 ### Useful Queries
@@ -415,7 +426,7 @@ $GLOBALS['TYPO3_CONF_VARS']['FE']['debug'] = true;
 | [AssetLoading.md](AssetLoading.md) | Conditional JS loading optimization |
 | [Partials.md](Partials.md) | Template partial documentation |
 | [PrivacyLayer.md](PrivacyLayer.md) | GDPR implementation details |
-| [HLS-Implementation.md](HLS-Implementation.md) | HLS streaming technical details |
+| [HLS-Implementation.md](HLS-Implementation.md) | HLS & DASH streaming technical details |
 | [SettingsArchitecture.md](SettingsArchitecture.md) | Configuration system |
 | [Editors-Guide.md](Editors-Guide.md) | Guide for content editors |
 
@@ -425,6 +436,7 @@ $GLOBALS['TYPO3_CONF_VARS']['FE']['debug'] = true;
 
 - [TYPO3 Documentation](https://docs.typo3.org/)
 - [HLS.js](https://github.com/video-dev/hls.js/)
+- [dash.js](https://github.com/Dash-Industry-Forum/dash.js/)
 - [WebVTT Validator](https://quuz.org/webvtt/)
 - [WCAG 2.2 Media Guidelines](https://www.w3.org/WAI/media/av/)
 
