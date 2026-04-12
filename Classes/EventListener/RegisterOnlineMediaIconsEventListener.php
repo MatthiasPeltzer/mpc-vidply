@@ -21,6 +21,7 @@ final readonly class RegisterOnlineMediaIconsEventListener
         $this->iconRegistry->registerFileExtension('externalaudio', 'mimetypes-media-audio');
         $this->iconRegistry->registerFileExtension('soundcloud', 'mimetypes-media-audio');
         $this->iconRegistry->registerFileExtension('hls', 'mimetypes-media-video');
+        $this->iconRegistry->registerFileExtension('dash', 'mimetypes-media-video');
     }
 }
 

@@ -17,7 +17,7 @@ use TYPO3\CMS\Core\Context\Context;
 final class MediaRepository
 {
     private const MEDIA_COLUMNS = [
-        'uid', 'sys_language_uid', 'l10n_parent', 'media_type', 'hls_kind',
+        'uid', 'sys_language_uid', 'l10n_parent', 'media_type', 'hls_kind', 'dash_kind',
         'title', 'artist', 'description', 'duration', 'audio_description_duration',
         'hide_speed_button', 'enable_transcript', 'sign_language_display_mode',
     ];

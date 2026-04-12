@@ -357,7 +357,7 @@ class VidPlyProcessor implements DataProcessorInterface
         $optionOverrides = [];
 
         $firstType = MediaType::tryFrom($firstTrack['type'] ?? '');
-        if ($firstType !== null && in_array($firstType, [MediaType::YouTube, MediaType::Vimeo, MediaType::SoundCloud, MediaType::Hls], true)) {
+        if ($firstType !== null && in_array($firstType, [MediaType::YouTube, MediaType::Vimeo, MediaType::SoundCloud, MediaType::Hls, MediaType::Dash], true)) {
             $result['videoUrl'] = $firstTrack['src'];
         } elseif (!empty($firstTrack['sources']) && count($firstTrack['sources']) > 1) {
             $result['sources'] = $firstTrack['sources'];
@@ -525,7 +525,7 @@ class VidPlyProcessor implements DataProcessorInterface
     }
 
     /**
-     * @return array{needsPrivacyLayer: bool, needsVidPlay: bool, needsPlaylist: bool, needsHLS: bool}
+     * @return array{needsPrivacyLayer: bool, needsVidPlay: bool, needsPlaylist: bool, needsHLS: bool, needsDASH: bool}
      */
     private function resolveAssetFlags(?string $serviceType, array $trackResult): array
     {
@@ -535,9 +535,16 @@ class VidPlyProcessor implements DataProcessorInterface
         $needsPlaylist = $isPlaylist || $needsVidPlay;
 
         $needsHLS = false;
+        $needsDASH = false;
         foreach ($trackResult['tracks'] as $track) {
-            if (in_array($track['type'] ?? '', ['hls', 'application/x-mpegurl', 'application/vnd.apple.mpegurl'], true)) {
+            $t = (string)($track['type'] ?? '');
+            if (in_array($t, ['hls', 'application/x-mpegurl', 'application/vnd.apple.mpegurl'], true)) {
                 $needsHLS = true;
+            }
+            if (in_array($t, ['dash', 'application/dash+xml'], true)) {
+                $needsDASH = true;
+            }
+            if ($needsHLS && $needsDASH) {
                 break;
             }
         }
@@ -547,6 +554,7 @@ class VidPlyProcessor implements DataProcessorInterface
             'needsVidPlay' => $needsVidPlay,
             'needsPlaylist' => $needsPlaylist,
             'needsHLS' => $needsHLS,
+            'needsDASH' => $needsDASH,
         ];
     }
 
@@ -643,6 +651,7 @@ class VidPlyProcessor implements DataProcessorInterface
             'needsVidPlay' => $assetFlags['needsVidPlay'],
             'needsPlaylist' => $assetFlags['needsPlaylist'],
             'needsHLS' => $assetFlags['needsHLS'],
+            'needsDASH' => $assetFlags['needsDASH'],
             'videoUrl' => $singleTrackData['videoUrl'],
             'poster' => $singleTrackData['poster'],
             'captions' => $singleTrackData['captions'],
@@ -838,6 +847,7 @@ class VidPlyProcessor implements DataProcessorInterface
             MediaType::YouTube, MediaType::Vimeo => $this->resolveEmbedSource($mediaUid, $mediaType),
             MediaType::SoundCloud => $this->resolveSoundCloudSource($mediaUid),
             MediaType::Hls => $this->resolveHlsSource($mediaUid, $mediaRecord),
+            MediaType::Dash => $this->resolveDashSource($mediaUid, $mediaRecord),
             MediaType::Video, MediaType::Audio => $this->resolveLocalMediaSource($mediaUid, $mediaType),
         };
 
@@ -923,6 +933,21 @@ class VidPlyProcessor implements DataProcessorInterface
         ];
     }
 
+    /** @return array{src: string, type: string, kind: string}|null */
+    private function resolveDashSource(int $mediaUid, array $mediaRecord): ?array
+    {
+        $mediaFiles = $this->getFileReferencesForMedia($mediaUid, 'media_file');
+        if (empty($mediaFiles)) {
+            return null;
+        }
+        $dashKind = strtolower((string)($mediaRecord['dash_kind'] ?? 'video'));
+        return [
+            'src' => $this->getPublicUrlCached($mediaFiles[0]),
+            'type' => MediaType::Dash->value,
+            'kind' => in_array($dashKind, ['audio', 'video'], true) ? $dashKind : 'video',
+        ];
+    }
+
     /** @return array{src: string, type: string, kind: string, sources?: list<array>}|null */
     private function resolveLocalMediaSource(int $mediaUid, MediaType $mediaType): ?array
     {
@@ -938,7 +963,7 @@ class VidPlyProcessor implements DataProcessorInterface
             foreach ($mediaFiles as $mediaFile) {
                 $publicUrl = $this->getPublicUrlCached($mediaFile);
                 $mimeType = $this->getMimeTypeCached($mediaFile);
-                if (in_array($mediaFile->getExtension(), ['externalaudio', 'externalvideo', 'hls', 'm3u8'], true)) {
+                if (in_array($mediaFile->getExtension(), ['externalaudio', 'externalvideo', 'hls', 'm3u8', 'dash', 'mpd'], true)) {
                     $mimeType = $this->inferMimeTypeFromUrlCached($publicUrl, $mimeType);
                 }
                 $sources[] = [
@@ -947,6 +972,7 @@ class VidPlyProcessor implements DataProcessorInterface
                     'label' => 'Default',
                 ];
             }
+
             $result['sources'] = $sources;
             $result['src'] = $sources[0]['src'];
             $result['type'] = $sources[0]['type'];
@@ -954,7 +980,7 @@ class VidPlyProcessor implements DataProcessorInterface
             $mediaFile = $mediaFiles[0];
             $result['src'] = $this->getPublicUrlCached($mediaFile);
             $result['type'] = $this->getMimeTypeCached($mediaFile);
-            if (in_array($mediaFile->getExtension(), ['externalaudio', 'externalvideo', 'hls', 'm3u8'], true)) {
+            if (in_array($mediaFile->getExtension(), ['externalaudio', 'externalvideo', 'hls', 'm3u8', 'dash', 'mpd'], true)) {
                 $result['type'] = $this->inferMimeTypeFromUrlCached((string)$result['src'], (string)$result['type']);
             }
         }
@@ -1095,6 +1121,7 @@ class VidPlyProcessor implements DataProcessorInterface
             'aac' => 'audio/aac',
             'flac' => 'audio/flac',
             'm3u8' => 'application/vnd.apple.mpegurl',
+            'mpd' => 'application/dash+xml',
             'mp4' => 'video/mp4',
             'm4v' => 'video/x-m4v',
             'webm' => 'video/webm',

@@ -22,6 +22,9 @@ CREATE TABLE tx_mpcvidply_media (
 
 	# HLS streams can be audio-only (radio) or video
 	hls_kind varchar(10) DEFAULT 'video' NOT NULL,
+
+	# DASH streams can be audio-only or video
+	dash_kind varchar(10) DEFAULT 'video' NOT NULL,
 	
 	# URL (for YouTube, Vimeo, HLS, M3U)
 	media_url text,
