@@ -78,15 +78,15 @@ Or via Backend: Site Management → Sites → Sets → Add VidPly.
 
 ### `tx_mpcvidply_media`
 
-Media library records with types: `video`, `audio`, `youtube`, `vimeo`, `soundcloud`, `hls`, `dash`
+Media library records with types: `video`, `audio`, `youtube`, `vimeo`, `soundcloud`
 
 **Key columns:**
 
 | Column | Type | Description |
 |--------|------|-------------|
 | `media_type` | string | Type discriminator |
-| `media_file` | file | File references (video/audio) |
-| `media_url` | string | External URL (SoundCloud, HLS, DASH) |
+| `media_file` | file | File references (video/audio including HLS/DASH) |
+| `media_url` | string | External URL (SoundCloud) |
 | `title` | string | Display title |
 | `artist` | string | Creator name |
 | `poster` | file | Thumbnail image |
@@ -185,7 +185,7 @@ tt_content.mpc_vidply {
 ```html
 {mediaItems}           <!-- Array of processed media -->
 {isPlaylist}           <!-- true if 2+ items -->
-{hasLocalMedia}        <!-- Has video/audio/hls/dash -->
+{hasLocalMedia}        <!-- Has video/audio (including HLS/DASH sources) -->
 {hasExternalService}   <!-- Has YouTube/Vimeo/SoundCloud -->
 {playerOptions}        <!-- Decoded options array -->
 {privacySettings}      <!-- Privacy layer settings per service -->
@@ -319,19 +319,25 @@ Settings fall back to language file translations if database fields are empty.
 
 ## 🌐 HLS & DASH Streaming
 
+HLS and DASH are not separate media types. Streaming sources (.m3u8 / .mpd) are added as files within the **Video** or **Audio** media type alongside progressive fallbacks.
+
 ### How It Works
 
 **HLS:**
-1. Detects `.m3u8` URL in media record
+1. Detects `.m3u8` source in media file references (by MIME type or extension)
 2. Includes `hls.min.js` (only when needed)
-3. Initializes HLS.js on video element
+3. Initializes HLS.js on video/audio element
 4. Provides quality switching UI
+5. Embedded captions from HLS manifest used by default; local VTT files override
 
 **DASH:**
-1. Detects `.mpd` URL in media record
+1. Detects `.mpd` source in media file references (by MIME type or extension)
 2. Includes `dash.all.min.js` (only when needed)
-3. Initializes dash.js on video element
+3. Initializes dash.js on video/audio element
 4. Provides adaptive quality, TTML and WebVTT subtitle support
+5. Embedded subtitles from DASH manifest used by default; local VTT files override
+
+**Source priority:** DASH → HLS → progressive (MP4/WebM/MP3/OGG)
 
 ### CSP Configuration
 
@@ -391,8 +397,8 @@ $GLOBALS['TCA']['tt_content']['columns']['tx_mpcvidply_options']['config']['item
 | Media not showing | Check `tx_mpcvidply_media` record not hidden |
 | MM relation broken | Check `tx_mpcvidply_content_media_mm` table |
 | JS not loading | Check browser console; verify TypoScript |
-| HLS not working | Check CORS headers on .m3u8 |
-| DASH not working | Check CORS headers on .mpd; verify dash.js loads |
+| HLS not working | Check CORS headers on .m3u8; verify source file is in media record |
+| DASH not working | Check CORS headers on .mpd; verify source file is in media record; verify dash.js loads |
 | Privacy layer stuck | Clear caches; check PrivacyLayer.js |
 
 ### Useful Queries
@@ -426,7 +432,7 @@ $GLOBALS['TYPO3_CONF_VARS']['FE']['debug'] = true;
 | [AssetLoading.md](AssetLoading.md) | Conditional JS loading optimization |
 | [Partials.md](Partials.md) | Template partial documentation |
 | [PrivacyLayer.md](PrivacyLayer.md) | GDPR implementation details |
-| [HLS-Implementation.md](HLS-Implementation.md) | HLS & DASH streaming technical details |
+| [HLS-Implementation.md](HLS-Implementation.md) | HLS & DASH streaming technical details (integrated into video/audio types) |
 | [SettingsArchitecture.md](SettingsArchitecture.md) | Configuration system |
 | [Editors-Guide.md](Editors-Guide.md) | Guide for content editors |
 
