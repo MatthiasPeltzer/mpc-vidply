@@ -45,10 +45,12 @@ final class VidPlyPreviewRenderer extends StandardContentPreviewRenderer
         }
 
         $contentUid = (int)($record['uid'] ?? 0);
+        $l10nParent = (int)($record['l10n_parent'] ?? 0);
+        $lookupUid = $l10nParent > 0 ? $l10nParent : $contentUid;
         $html = '';
         $lang = $this->getLanguageService();
 
-        $mediaItems = $this->getMediaItems($contentUid);
+        $mediaItems = $this->getMediaItems($lookupUid);
 
         if ($mediaItems === []) {
             $noMedia = htmlspecialchars($lang->sL(self::LLL . 'preview.no_media') ?: 'No media items selected');

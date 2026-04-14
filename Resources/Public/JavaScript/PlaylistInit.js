@@ -445,8 +445,8 @@ function initializeSingleElement(element) {
 
     try {
         const externalSrc = element.dataset.vidplySrc;
-        const isHLS = externalSrc?.includes('.m3u8');
-        const isDASH = externalSrc?.includes('.mpd');
+        let isHLS = externalSrc?.includes('.m3u8');
+        let isDASH = externalSrc?.includes('.mpd');
 
         if (isHLS) {
             const source = document.createElement('source');
@@ -460,6 +460,21 @@ function initializeSingleElement(element) {
             element.appendChild(source);
         } else if (externalSrc && isSafeUrl(externalSrc)) {
             element.src = externalSrc;
+        }
+
+        if (!isHLS || !isDASH) {
+            const sourceEls = element.querySelectorAll('source');
+            for (const s of sourceEls) {
+                const t = (s.type || '').toLowerCase();
+                const u = (s.src || '').toLowerCase();
+                if (!isHLS && (t === 'application/x-mpegurl' || t === 'application/vnd.apple.mpegurl' || u.includes('.m3u8'))) {
+                    isHLS = true;
+                }
+                if (!isDASH && (t === 'application/dash+xml' || u.includes('.mpd'))) {
+                    isDASH = true;
+                }
+                if (isHLS && isDASH) break;
+            }
         }
 
         const options = element.dataset.vidplyOptions ? JSON.parse(element.dataset.vidplyOptions) : {};

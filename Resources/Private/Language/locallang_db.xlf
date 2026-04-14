@@ -60,11 +60,17 @@
       <trans-unit id="tx_mpcvidply_media.captions">
         <source>Captions / Subtitles (VTT)</source>
       </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.captions.description">
+        <source>Optional VTT files for captions or subtitles. For DASH/HLS streams, embedded subtitle tracks are used automatically; adding files here overrides or supplements the embedded tracks.</source>
+      </trans-unit>
       <trans-unit id="tx_mpcvidply_media.captions.add">
         <source>Add caption file</source>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.chapters">
         <source>Chapters (VTT)</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.chapters.description">
+        <source>Optional VTT files for chapter markers. For DASH/HLS streams, chapter metadata from the manifest is used automatically; adding files here overrides or supplements the embedded chapters.</source>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.chapters.add">
         <source>Add chapter file</source>
@@ -87,29 +93,11 @@
       <trans-unit id="tx_mpcvidply_media.hide_speed_button.description">
         <source>When enabled and the record is rendered as a single item, the playback speed control will be hidden.</source>
       </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.hls_kind">
-        <source>HLS Type</source>
+      <trans-unit id="tx_mpcvidply_media.allow_download">
+        <source>Allow download</source>
       </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.hls_kind.audio">
-        <source>Audio (radio)</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.hls_kind.description">
-        <source>Choose whether the HLS stream is audio-only (radio) or video</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.hls_kind.video">
-        <source>Video</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.dash_kind">
-        <source>DASH Type</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.dash_kind.description">
-        <source>Choose whether the DASH stream is audio-only or video</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.dash_kind.video">
-        <source>Video</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.dash_kind.audio">
-        <source>Audio (radio)</source>
+      <trans-unit id="tx_mpcvidply_media.allow_download.description">
+        <source>When enabled, a download button is shown in the player control bar, allowing the user to download the media file.</source>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.media_file">
         <source>Media File</source>
@@ -121,19 +109,13 @@
         <source>Media Type</source>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.media_type.audio">
-        <source>HTML5 Audio</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.media_type.hls">
-        <source>HLS Stream</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.media_type.dash">
-        <source>DASH Stream</source>
+        <source>Audio (MP3, OGG, HLS, DASH)</source>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.media_type.soundcloud">
         <source>SoundCloud</source>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.media_type.video">
-        <source>HTML5 Video</source>
+        <source>Video (MP4, WebM, HLS, DASH)</source>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.media_type.vimeo">
         <source>Vimeo</source>

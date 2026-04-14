@@ -10,11 +10,11 @@
 </f:if>
 
 <f:if condition="{needsHLS}">
-    <f:asset.script identifier="vidPlyHLS" src="EXT:mpc_vidply/Resources/Public/JavaScript/hls.min.js"/>
+    <f:asset.script identifier="vidPlyHLS" src="EXT:mpc_vidply/Resources/Public/JavaScript/hls.min.js" defer="true"/>
 </f:if>
 
 <f:if condition="{needsDASH}">
-    <f:asset.script identifier="vidPlyDASH" src="EXT:mpc_vidply/Resources/Public/JavaScript/dash.min.js"/>
+    <f:asset.script identifier="vidPlyDASH" src="EXT:mpc_vidply/Resources/Public/JavaScript/dash.min.js" defer="true"/>
 </f:if>
 
 <f:if condition="{needsPlaylist}">

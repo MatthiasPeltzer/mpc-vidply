@@ -20,11 +20,6 @@ CREATE TABLE tx_mpcvidply_media (
 	# Media Type
 	media_type varchar(50) DEFAULT 'video' NOT NULL,
 
-	# HLS streams can be audio-only (radio) or video
-	hls_kind varchar(10) DEFAULT 'video' NOT NULL,
-
-	# DASH streams can be audio-only or video
-	dash_kind varchar(10) DEFAULT 'video' NOT NULL,
 	
 	# URL (for YouTube, Vimeo, HLS, M3U)
 	media_url text,
@@ -60,6 +55,7 @@ CREATE TABLE tx_mpcvidply_media (
 
 	# Per-media UI overrides
 	hide_speed_button tinyint unsigned DEFAULT '0' NOT NULL,
+	allow_download tinyint unsigned DEFAULT '0' NOT NULL,
 	
 	# Standard TYPO3 fields
 	tstamp int unsigned DEFAULT '0' NOT NULL,
