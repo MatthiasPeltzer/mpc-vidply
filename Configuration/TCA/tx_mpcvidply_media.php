@@ -15,13 +15,11 @@ return [
         'type' => 'media_type',
         'typeicon_classes' => [
             'default' => 'mpc_vidply-plugin',
-            'video' => 'mimetypes-media-video',
-            'audio' => 'mimetypes-media-audio',
-            'youtube' => 'mimetypes-media-video',
-            'vimeo' => 'mimetypes-media-video',
-            'soundcloud' => 'mimetypes-media-audio',
-            'hls' => 'mimetypes-media-video',
-            'dash' => 'mimetypes-media-video',
+            'video' => 'mpc_vidply-plugin',
+            'audio' => 'mpc_vidply-plugin',
+            'youtube' => 'mpc_vidply-plugin',
+            'vimeo' => 'mpc_vidply-plugin',
+            'soundcloud' => 'mpc_vidply-plugin',
         ],
         'enablecolumns' => [
             'disabled' => 'hidden',
@@ -63,7 +61,7 @@ return [
             'columnsOverrides' => [
                 'media_file' => [
                     'config' => [
-                        'allowed' => 'webm,mp4,externalvideo',
+                        'allowed' => 'webm,mp4,externalvideo,hls,m3u8,dash,mpd',
                         'maxitems' => 10,
                     ],
                 ],
@@ -90,7 +88,7 @@ return [
             'columnsOverrides' => [
                 'media_file' => [
                     'config' => [
-                        'allowed' => 'mp3,ogg,externalaudio',
+                        'allowed' => 'dash,mpd,hls,m3u8,mp3,ogg,externalaudio',
                         'maxitems' => 10,
                     ],
                 ],
@@ -165,61 +163,13 @@ return [
                 ],
             ],
         ],
-        'dash' => [
-            'showitem' => '
-                --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,
-                    media_type,
-                    dash_kind,
-                    media_file,
-                    --palette--;;metadata,
-                    poster,
-                    --palette--;;ui,
-                --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:categories,
-                    categories,
-                --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access,
-                    hidden,
-                    --palette--;;timeRestriction,
-            ',
-            'columnsOverrides' => [
-                'media_file' => [
-                    'config' => [
-                        'allowed' => 'dash,mpd',
-                        'maxitems' => 1,
-                    ],
-                ],
-            ],
-        ],
-        'hls' => [
-            'showitem' => '
-                --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,
-                    media_type,
-                    hls_kind,
-                    media_file,
-                    --palette--;;metadata,
-                    poster,
-                    --palette--;;ui,
-                --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:categories,
-                    categories,
-                --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access,
-                    hidden,
-                    --palette--;;timeRestriction,
-            ',
-            'columnsOverrides' => [
-                'media_file' => [
-                    'config' => [
-                        'allowed' => 'hls,m3u8',
-                        'maxitems' => 1,
-                    ],
-                ],
-            ],
-        ],
     ],
     'palettes' => [
         'metadata' => [
             'showitem' => 'title,--linebreak--,artist,--linebreak--,description,--linebreak--,duration,audio_description_duration',
         ],
         'ui' => [
-            'showitem' => 'hide_speed_button',
+            'showitem' => 'hide_speed_button,allow_download',
         ],
         'timeRestriction' => [
             'showitem' => 'starttime,endtime',
@@ -309,43 +259,11 @@ return [
                     ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.media_type.youtube', 'value' => 'youtube'],
                     ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.media_type.vimeo', 'value' => 'vimeo'],
                     ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.media_type.soundcloud', 'value' => 'soundcloud'],
-                    ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.media_type.hls', 'value' => 'hls'],
-                    ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.media_type.dash', 'value' => 'dash'],
                 ],
                 'default' => 'video',
                 'required' => true,
             ],
             'onChange' => 'reload',
-        ],
-        'hls_kind' => [
-            'exclude' => false,
-            'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.hls_kind',
-            'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.hls_kind.description',
-            'displayCond' => 'FIELD:media_type:=:hls',
-            'config' => [
-                'type' => 'select',
-                'renderType' => 'selectSingle',
-                'items' => [
-                    ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.hls_kind.video', 'value' => 'video'],
-                    ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.hls_kind.audio', 'value' => 'audio'],
-                ],
-                'default' => 'video',
-            ],
-        ],
-        'dash_kind' => [
-            'exclude' => false,
-            'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.dash_kind',
-            'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.dash_kind.description',
-            'displayCond' => 'FIELD:media_type:=:dash',
-            'config' => [
-                'type' => 'select',
-                'renderType' => 'selectSingle',
-                'items' => [
-                    ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.dash_kind.video', 'value' => 'video'],
-                    ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.dash_kind.audio', 'value' => 'audio'],
-                ],
-                'default' => 'video',
-            ],
         ],
         'media_url' => [
             'exclude' => false,
@@ -373,7 +291,6 @@ return [
                     'fileUploadAllowed' => true,
                 ],
                 'maxitems' => 10,
-                'minitems' => 1,
                 'overrideChildTca' => [
                     'columns' => [
                         'description' => [
@@ -506,6 +423,7 @@ return [
         'captions' => [
             'exclude' => true,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.captions',
+            'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.captions.description',
             'config' => [
                 'type' => 'file',
                 'allowed' => 'vtt',
@@ -596,6 +514,7 @@ return [
         'chapters' => [
             'exclude' => true,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.chapters',
+            'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.chapters.description',
             'config' => [
                 'type' => 'file',
                 'allowed' => 'vtt',
@@ -770,6 +689,20 @@ return [
             'exclude' => true,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.hide_speed_button',
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.hide_speed_button.description',
+            'config' => [
+                'type' => 'check',
+                'renderType' => 'checkboxToggle',
+                'items' => [
+                    [
+                        'label' => '',
+                    ],
+                ],
+            ],
+        ],
+        'allow_download' => [
+            'exclude' => true,
+            'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.allow_download',
+            'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.allow_download.description',
             'config' => [
                 'type' => 'check',
                 'renderType' => 'checkboxToggle',

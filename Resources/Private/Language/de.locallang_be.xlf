@@ -4,8 +4,8 @@
     <header/>
     <body>
       <trans-unit id="content_element.description">
-        <source>Universal, accessible video and audio player with support for HTML5, YouTube, Vimeo, HLS streaming, playlists, captions, and full accessibility features.</source>
-        <target>Universeller, barrierefreier Video- und Audio-Player mit Unterstützung für HTML5, YouTube, Vimeo, HLS-Streaming, Playlists, Untertitel und umfassenden Barrierefreiheitsfunktionen.</target>
+        <source>Universal, accessible video and audio player with support for HTML5, YouTube, Vimeo, HLS/DASH streaming, playlists, captions, and full accessibility features.</source>
+        <target>Universeller, barrierefreier Video- und Audio-Player mit Unterstützung für HTML5, YouTube, Vimeo, HLS-/DASH-Streaming, Playlists, Untertitel und umfassenden Barrierefreiheitsfunktionen.</target>
       </trans-unit>
       <trans-unit id="content_element.title">
         <source>VidPly Player</source>
@@ -107,10 +107,6 @@
         <source>Audio Files (MP3 / WAV / OGG)</source>
         <target>Audiodateien (MP3 / WAV / OGG)</target>
       </trans-unit>
-      <trans-unit id="tt_content.tx_mpcvidply_media_hls">
-        <source>HLS Manifest (.m3u8)</source>
-        <target>HLS-Manifest (.m3u8)</target>
-      </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_media_items">
         <source>Media Items</source>
         <target>Medien-Elemente</target>
@@ -130,10 +126,6 @@
       <trans-unit id="tt_content.tx_mpcvidply_media_type.audio">
         <source>Audio (HTML5)</source>
         <target>Audio (HTML5)</target>
-      </trans-unit>
-      <trans-unit id="tt_content.tx_mpcvidply_media_type.hls">
-        <source>HLS Streaming</source>
-        <target>HLS Streaming</target>
       </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_media_type.video">
         <source>Video (HTML5)</source>

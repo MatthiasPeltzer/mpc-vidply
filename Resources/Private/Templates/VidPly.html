@@ -88,6 +88,7 @@
         </f:if>
         preload="{vidply.options.preload}"
         <f:if condition="{vidply.poster}">poster="{vidply.poster}"</f:if>
+        <f:if condition="{vidply.downloadUrl}">data-vidply-download-url="{vidply.downloadUrl}"</f:if>
     >
         <f:render partial="VidPly/VideoSources" arguments="{
             videoUrl: vidply.videoUrl,
@@ -138,6 +139,7 @@
             </f:else>
         </f:if>
         preload="{vidply.options.preload}"
+        <f:if condition="{vidply.downloadUrl}">data-vidply-download-url="{vidply.downloadUrl}"</f:if>
     >
         <f:render partial="VidPly/AudioSources" arguments="{
             playlistData: vidply.playlistData,

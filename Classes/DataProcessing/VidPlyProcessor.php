@@ -96,7 +96,10 @@ class VidPlyProcessor implements DataProcessorInterface
 
         $playerOptions = $this->buildPlayerOptions($data);
         $languageId = $this->resolveLanguageId($request, $data);
-        $mediaRecords = $this->mediaRepository->findByContentUid((int)$data['uid'], $languageId);
+        $contentUid = (int)$data['uid'];
+        $l10nParent = (int)($data['l10n_parent'] ?? 0);
+        $lookupUid = $l10nParent > 0 ? $l10nParent : $contentUid;
+        $mediaRecords = $this->mediaRepository->findByContentUid($lookupUid, $languageId);
         $this->prefetchRelatedFiles($mediaRecords);
 
         $trackResult = $this->buildTracksResult($mediaRecords);
@@ -357,7 +360,7 @@ class VidPlyProcessor implements DataProcessorInterface
         $optionOverrides = [];
 
         $firstType = MediaType::tryFrom($firstTrack['type'] ?? '');
-        if ($firstType !== null && in_array($firstType, [MediaType::YouTube, MediaType::Vimeo, MediaType::SoundCloud, MediaType::Hls, MediaType::Dash], true)) {
+        if ($firstType !== null && in_array($firstType, [MediaType::YouTube, MediaType::Vimeo, MediaType::SoundCloud], true)) {
             $result['videoUrl'] = $firstTrack['src'];
         } elseif (!empty($firstTrack['sources']) && count($firstTrack['sources']) > 1) {
             $result['sources'] = $firstTrack['sources'];
@@ -411,6 +414,14 @@ class VidPlyProcessor implements DataProcessorInterface
             $optionOverrides['signLanguagePosition'] = 'bottom-right';
             $displayMode = $firstTrack['signLanguageDisplayMode'] ?? 'pip';
             $optionOverrides['signLanguageDisplayMode'] = in_array($displayMode, ['pip', 'main', 'both'], true) ? $displayMode : 'pip';
+        }
+
+        if (!empty($firstTrack['allowDownload'])) {
+            $downloadUrl = $this->resolveDownloadUrl($firstTrack);
+            if ($downloadUrl !== null) {
+                $result['downloadUrl'] = $downloadUrl;
+                $optionOverrides['downloadButton'] = true;
+            }
         }
 
         return ['trackData' => $result, 'optionOverrides' => $optionOverrides];
@@ -537,12 +548,17 @@ class VidPlyProcessor implements DataProcessorInterface
         $needsHLS = false;
         $needsDASH = false;
         foreach ($trackResult['tracks'] as $track) {
-            $t = (string)($track['type'] ?? '');
-            if (in_array($t, ['hls', 'application/x-mpegurl', 'application/vnd.apple.mpegurl'], true)) {
-                $needsHLS = true;
+            $typesToCheck = [(string)($track['type'] ?? '')];
+            foreach ($track['sources'] ?? [] as $source) {
+                $typesToCheck[] = (string)($source['type'] ?? '');
             }
-            if (in_array($t, ['dash', 'application/dash+xml'], true)) {
-                $needsDASH = true;
+            foreach ($typesToCheck as $t) {
+                if (in_array($t, ['application/x-mpegurl', 'application/vnd.apple.mpegurl'], true)) {
+                    $needsHLS = true;
+                }
+                if ($t === 'application/dash+xml') {
+                    $needsDASH = true;
+                }
             }
             if ($needsHLS && $needsDASH) {
                 break;
@@ -686,6 +702,10 @@ class VidPlyProcessor implements DataProcessorInterface
             $vidplyData['mediaFiles'] = [];
         } else {
             $vidplyData['mediaFiles'] = $singleTrackData['mediaFiles'];
+        }
+
+        if (!empty($singleTrackData['downloadUrl'])) {
+            $vidplyData['downloadUrl'] = $singleTrackData['downloadUrl'];
         }
 
         return $vidplyData;
@@ -846,8 +866,6 @@ class VidPlyProcessor implements DataProcessorInterface
         $sourceData = match ($mediaType) {
             MediaType::YouTube, MediaType::Vimeo => $this->resolveEmbedSource($mediaUid, $mediaType),
             MediaType::SoundCloud => $this->resolveSoundCloudSource($mediaUid),
-            MediaType::Hls => $this->resolveHlsSource($mediaUid, $mediaRecord),
-            MediaType::Dash => $this->resolveDashSource($mediaUid, $mediaRecord),
             MediaType::Video, MediaType::Audio => $this->resolveLocalMediaSource($mediaUid, $mediaType),
         };
 
@@ -870,6 +888,9 @@ class VidPlyProcessor implements DataProcessorInterface
         if (!empty($mediaRecord['hide_speed_button'])) {
             $track['hideSpeedButton'] = true;
         }
+        if (!empty($mediaRecord['allow_download'])) {
+            $track['allowDownload'] = true;
+        }
         if (!empty($mediaRecord['artist'])) {
             $track['artist'] = $mediaRecord['artist'];
         }
@@ -884,6 +905,23 @@ class VidPlyProcessor implements DataProcessorInterface
         }
 
         return $track;
+    }
+
+    private function resolveDownloadUrl(array $track): ?string
+    {
+        $progressiveTypes = ['video/mp4', 'video/webm', 'audio/mpeg', 'audio/ogg'];
+
+        // Prefer a progressive source from multi-source tracks
+        if (!empty($track['sources'])) {
+            foreach ($track['sources'] as $source) {
+                if (in_array($source['type'] ?? '', $progressiveTypes, true)) {
+                    return $source['src'];
+                }
+            }
+        }
+
+        $src = $track['src'] ?? '';
+        return $src !== '' ? $src : null;
     }
 
     /** @return array{src: string, type: string, kind: string}|null */
@@ -918,36 +956,6 @@ class VidPlyProcessor implements DataProcessorInterface
         ];
     }
 
-    /** @return array{src: string, type: string, kind: string}|null */
-    private function resolveHlsSource(int $mediaUid, array $mediaRecord): ?array
-    {
-        $mediaFiles = $this->getFileReferencesForMedia($mediaUid, 'media_file');
-        if (empty($mediaFiles)) {
-            return null;
-        }
-        $hlsKind = strtolower((string)($mediaRecord['hls_kind'] ?? 'video'));
-        return [
-            'src' => $this->getPublicUrlCached($mediaFiles[0]),
-            'type' => MediaType::Hls->value,
-            'kind' => in_array($hlsKind, ['audio', 'video'], true) ? $hlsKind : 'video',
-        ];
-    }
-
-    /** @return array{src: string, type: string, kind: string}|null */
-    private function resolveDashSource(int $mediaUid, array $mediaRecord): ?array
-    {
-        $mediaFiles = $this->getFileReferencesForMedia($mediaUid, 'media_file');
-        if (empty($mediaFiles)) {
-            return null;
-        }
-        $dashKind = strtolower((string)($mediaRecord['dash_kind'] ?? 'video'));
-        return [
-            'src' => $this->getPublicUrlCached($mediaFiles[0]),
-            'type' => MediaType::Dash->value,
-            'kind' => in_array($dashKind, ['audio', 'video'], true) ? $dashKind : 'video',
-        ];
-    }
-
     /** @return array{src: string, type: string, kind: string, sources?: list<array>}|null */
     private function resolveLocalMediaSource(int $mediaUid, MediaType $mediaType): ?array
     {
@@ -972,6 +980,17 @@ class VidPlyProcessor implements DataProcessorInterface
                     'label' => 'Default',
                 ];
             }
+
+            usort($sources, static function (array $a, array $b): int {
+                $priority = static function (string $type): int {
+                    return match (true) {
+                        $type === 'application/dash+xml' => 0,
+                        in_array($type, ['application/x-mpegurl', 'application/vnd.apple.mpegurl'], true) => 1,
+                        default => 2,
+                    };
+                };
+                return $priority($a['type']) <=> $priority($b['type']);
+            });
 
             $result['sources'] = $sources;
             $result['src'] = $sources[0]['src'];

@@ -4,7 +4,7 @@
     <header/>
     <body>
       <trans-unit id="content_element.description">
-        <source>Universal, accessible video and audio player with support for HTML5, YouTube, Vimeo, HLS streaming, playlists, captions, and full accessibility features.</source>
+        <source>Universal, accessible video and audio player with support for HTML5, YouTube, Vimeo, HLS/DASH streaming, playlists, captions, and full accessibility features.</source>
       </trans-unit>
       <trans-unit id="content_element.title">
         <source>VidPly Player</source>
@@ -81,9 +81,6 @@
       <trans-unit id="tt_content.tx_mpcvidply_media_audio">
         <source>Audio Files (MP3 / WAV / OGG)</source>
       </trans-unit>
-      <trans-unit id="tt_content.tx_mpcvidply_media_hls">
-        <source>HLS Manifest (.m3u8)</source>
-      </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_media_items">
         <source>Media Items</source>
       </trans-unit>
@@ -98,9 +95,6 @@
       </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_media_type.audio">
         <source>Audio (HTML5)</source>
-      </trans-unit>
-      <trans-unit id="tt_content.tx_mpcvidply_media_type.hls">
-        <source>HLS Streaming</source>
       </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_media_type.video">
         <source>Video (HTML5)</source>
