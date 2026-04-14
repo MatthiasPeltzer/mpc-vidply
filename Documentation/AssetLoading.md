@@ -9,10 +9,10 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 | Flag | Loads | When |
 |------|-------|------|
 | `needsPrivacyLayer` | PrivacyLayer.js + privacy-layer.css | YouTube, Vimeo, or SoundCloud present |
-| `needsVidPlay` | VidPly core (`vidply/vidply.esm.min.js` + code-split chunks) | Local video/audio, HLS, or DASH (not external services) |
+| `needsVidPlay` | VidPly core (`vidply/vidply.esm.min.js` + code-split chunks) | Video or audio media (not external services) |
 | `needsPlaylist` | PlaylistInit.js | 2+ media items OR native player |
-| `needsHLS` | hls.js (CDN) | HLS stream (.m3u8) detected |
-| `needsDASH` | dash.js (CDN) | DASH stream (.mpd) detected |
+| `needsHLS` | hls.js | HLS source (.m3u8) detected in media files |
+| `needsDASH` | dash.js | DASH source (.mpd) detected in media files |
 
 **CSS always loads** - The vidply.min.css stylesheet is lightweight and always included for consistent styling.
 
@@ -39,7 +39,7 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 - PrivacyLayer.js
 - hls.js
 
-### HLS Stream
+### Video with HLS Source
 **Loaded:**
 - vidply.min.css
 - VidPly player
@@ -50,7 +50,7 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 - PrivacyLayer.js
 - dash.js
 
-### DASH Stream
+### Video with DASH Source
 **Loaded:**
 - vidply.min.css
 - VidPly player
@@ -91,8 +91,8 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 **After optimization:**
 - Single YouTube: ~7KB (PrivacyLayer.js + privacy-layer.css)
 - Single local video: ~180KB (VidPly core + PlaylistInit)
-- HLS stream: ~530KB (VidPly + PlaylistInit + hls.js)
-- DASH stream: ~580KB (VidPly + PlaylistInit + dash.js)
+- Video with HLS source: ~530KB (VidPly + PlaylistInit + hls.js)
+- Video with DASH source: ~580KB (VidPly + PlaylistInit + dash.js)
 
 **Savings:**
 - External services: 97% reduction (350KB → 5KB)
@@ -114,16 +114,16 @@ $needsDASH = false;
 if (in_array($firstTrackType, ['youtube', 'vimeo', 'soundcloud'])) {
     $needsPrivacyLayer = true;
 } else {
-    $needsVidPlay = true; // Native player for local/HLS/DASH
+    $needsVidPlay = true; // Native player for video/audio
     $needsPlaylist = true;
 }
 
-// Check for HLS and DASH streams
+// Check for HLS and DASH streams (detected by MIME type)
 foreach ($tracks as $track) {
-    if (in_array($track['type'], ['hls', 'application/x-mpegurl'])) {
+    if (in_array($track['type'], ['application/x-mpegurl', 'application/vnd.apple.mpegurl'])) {
         $needsHLS = true;
     }
-    if (in_array($track['type'], ['dash', 'application/dash+xml'])) {
+    if ($track['type'] === 'application/dash+xml') {
         $needsDASH = true;
     }
 }

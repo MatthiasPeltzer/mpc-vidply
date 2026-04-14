@@ -58,7 +58,7 @@ See `Documentation/AssetLoading.md` for optimization details.
 ```
 
 Handles:
-- External sources (YouTube, Vimeo, HLS, DASH)
+- Multiple source formats with fallback order (DASH → HLS → MP4/WebM)
 - Multiple quality/format options
 - Playlist mode
 - Audio description sources
@@ -79,7 +79,7 @@ Handles:
 ```
 
 Handles:
-- Multiple formats (MP3, OGG)
+- Multiple source formats with fallback order (DASH → HLS → MP3/OGG)
 - Playlist mode
 - Format fallback
 
@@ -156,7 +156,7 @@ VidPly.html (Main)
 ├── Header
 ├── Check if external service?
 │   ├── YES → PrivacyLayer
-│   └── NO → VideoPlayer or AudioPlayer (local/HLS/DASH)
+│   └── NO → VideoPlayer or AudioPlayer (video/audio, may include HLS/DASH sources)
 │       ├── VideoSources / AudioSources
 │       ├── Tracks
 │       └── MetadataScripts (video only)

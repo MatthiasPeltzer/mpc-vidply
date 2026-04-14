@@ -10,13 +10,11 @@ VidPly is a universal, accessible media player supporting multiple sources:
 
 | Media Type | Source | Privacy Layer | Best For |
 |------------|--------|---------------|----------|
-| **HTML5 Video** | Upload MP4/WebM | No | Local videos |
-| **HTML5 Audio** | Upload MP3/OGG | No | Podcasts, music |
+| **Video** | Upload MP4/WebM + HLS/DASH | No | Local & streaming video |
+| **Audio** | Upload MP3/OGG + HLS/DASH | No | Podcasts, music, streaming |
 | **YouTube** | Video URL | Yes (GDPR) | External videos |
 | **Vimeo** | Video URL | Yes (GDPR) | Professional videos |
 | **SoundCloud** | Track/Set URL | Yes (GDPR) | Music, podcasts |
-| **HLS** | .m3u8 URL | No | Live streaming |
-| **DASH** | .mpd URL | No | Adaptive streaming |
 
 ---
 
@@ -42,36 +40,39 @@ Or use the "Create new record" button in the VidPly Player element.
 
 ### Media Types Explained
 
-#### HTML5 Video
+#### Video
 
-**Use for:** Self-hosted video files
+**Use for:** Self-hosted video files, HLS/DASH streaming with optional progressive fallbacks
 
-**Supported formats:** MP4, WebM, OGG
+**Supported formats:** MP4, WebM, HLS (.m3u8), DASH (.mpd)
 
 **How to create:**
-1. Select media type: **HTML5 Video**
-2. Click "Add media file" and upload your video
-3. Add a **title** (required)
-4. Add a **poster image** (thumbnail shown before playback)
+1. Select media type: **Video**
+2. Click "Add media file" and upload your video or add a streaming URL (.m3u8 / .mpd)
+3. Optionally add additional files as fallbacks (e.g. DASH + HLS + MP4)
+4. Add a **title** (required)
+5. Add a **poster image** (thumbnail shown before playback)
 
 **Tips:**
-- Upload multiple formats (MP4 + WebM) for browser compatibility
-- Recommended: MP4 with H.264 codec for widest support
+- Upload multiple formats for browser compatibility and fallback (DASH → HLS → MP4/WebM)
+- Recommended: MP4 with H.264 codec as progressive fallback
+- HLS/DASH sources use embedded captions by default; local VTT files can override them
 - Keep file sizes reasonable (compress for web)
 
 ---
 
-#### HTML5 Audio
+#### Audio
 
-**Use for:** Podcasts, music, audio content
+**Use for:** Podcasts, music, audio content, audio streaming
 
-**Supported formats:** MP3, OGG, WAV
+**Supported formats:** MP3, OGG, HLS (.m3u8), DASH (.mpd)
 
 **How to create:**
-1. Select media type: **HTML5 Audio**
-2. Click "Add media file" and upload your audio
-3. Add a **title** (required)
-4. Optionally add a **poster image** (album art)
+1. Select media type: **Audio**
+2. Click "Add media file" and upload your audio or add a streaming URL (.m3u8 / .mpd)
+3. Optionally add additional files as fallbacks (e.g. DASH + HLS + MP3)
+4. Add a **title** (required)
+5. Optionally add a **poster image** (album art)
 
 ---
 
@@ -116,34 +117,6 @@ Or use the "Create new record" button in the VidPly Player element.
 2. Enter the **Media URL** (track or set URL)
 3. Add a **title** (required)
 4. Add a **poster image** (optional)
-
----
-
-#### HLS Streaming
-
-**Use for:** Live streams, adaptive bitrate video
-
-**How to create:**
-1. Select media type: **HLS**
-2. Enter the **Media URL** (must end in `.m3u8`)
-3. Add a **title** (required)
-4. Add a **poster image**
-
-**Example URL:** `https://example.com/stream/video.m3u8`
-
----
-
-#### DASH Streaming
-
-**Use for:** Adaptive bitrate video via MPEG-DASH
-
-**How to create:**
-1. Select media type: **DASH**
-2. Enter the **Media URL** (must end in `.mpd`)
-3. Add a **title** (required)
-4. Add a **poster image**
-
-**Example URL:** `https://example.com/stream/manifest.mpd`
 
 ---
 
@@ -420,7 +393,7 @@ Settings apply to both single items and playlists. Empty fields automatically us
 ### Performance
 - Compress videos before upload
 - Use appropriate resolution (not always 4K)
-- Consider HLS or DASH for long content
+- Consider adding HLS or DASH streaming sources for long content
 - External services (YouTube/Vimeo) reduce server load
 
 ### Mobile
@@ -456,7 +429,8 @@ Ensure your VTT files:
 
 | Task | Steps |
 |------|-------|
-| Add video | List → New VidPly Media → Video → Upload |
+| Add video | List → New VidPly Media → Video → Upload / add streaming URL |
+| Add audio | List → New VidPly Media → Audio → Upload / add streaming URL |
 | Add YouTube | List → New VidPly Media → YouTube → Paste URL |
 | Add captions | Edit media → Captions tab → Add VTT |
 | Create playlist | VidPly Player → Select 2+ items |

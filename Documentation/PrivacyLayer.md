@@ -110,7 +110,7 @@ button.addEventListener('click', function() {
         <f:render partial="VidPly/PrivacyLayer" />
     </f:then>
     <f:else>
-        <!-- VidPly player (local, HLS, DASH) -->
+        <!-- VidPly player (video/audio, including HLS/DASH sources) -->
         <f:render section="VideoPlayer" />
     </f:else>
 </f:if>

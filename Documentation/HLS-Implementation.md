@@ -90,24 +90,28 @@ Required CSP directives (shared by HLS and DASH):
 
 ### Backend
 
-**HLS:**
-1. Create VidPly media record
-2. Select **HLS Stream** media type
-3. Enter stream URL: `https://example.com/stream.m3u8`
-4. Add poster image
-5. Save
+HLS and DASH are not standalone media types. Instead, streaming sources are added as files within the **Video** or **Audio** media type.
 
-**DASH:**
-1. Create VidPly media record
-2. Select **DASH Stream** media type
-3. Enter manifest URL: `https://example.com/stream/manifest.mpd`
-4. Add poster image
-5. Save
+**Adding HLS/DASH to a Video record:**
+1. Create VidPly media record with type **Video**
+2. Add a `.m3u8` (HLS) or `.mpd` (DASH) file as a media source
+3. Optionally add progressive fallbacks (MP4, WebM) — the player will prefer DASH → HLS → progressive
+4. Optionally add local VTT files to override embedded captions/subtitles
+5. Add poster image
+6. Save
+
+**Adding HLS/DASH to an Audio record:**
+1. Create VidPly media record with type **Audio**
+2. Add a `.m3u8` (HLS) or `.mpd` (DASH) file as a media source
+3. Optionally add progressive fallbacks (MP3, OGG)
+4. Save
 
 ### Frontend
 
-- Auto-detects stream type by URL extension (`.m3u8` for HLS, `.mpd` for DASH)
+- Auto-detects stream type by MIME type or URL extension (`.m3u8` for HLS, `.mpd` for DASH)
+- Source priority: DASH → HLS → progressive fallback
 - Safari uses native HLS; all browsers use dash.js for DASH
+- Embedded captions/subtitles from HLS/DASH manifests are used by default; local VTT files act as optional overrides
 - Quality switching available (if stream has multiple levels)
 
 ## Testing
@@ -148,4 +152,4 @@ ddev typo3 cache:flush
 - **Buffer optimization** - Smooth playback
 - **CDN delivery** - Fast library loading via jsdelivr
 - **Minimal overhead** - Libraries only load when needed
-- **Conditional loading** - hls.js and dash.js are loaded independently based on media types
+- **Conditional loading** - hls.js and dash.js are loaded independently based on detected source formats
