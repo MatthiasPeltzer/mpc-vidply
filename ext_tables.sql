@@ -20,11 +20,7 @@ CREATE TABLE tx_mpcvidply_media (
 	# Media Type
 	media_type varchar(50) DEFAULT 'video' NOT NULL,
 
-	
-	# URL (for YouTube, Vimeo, HLS, M3U)
-	media_url text,
-	
-	# File (for HTML5 Video/Audio)
+	# File (for HTML5 Video/Audio and external helpers)
 	media_file int unsigned DEFAULT '0' NOT NULL,
 	
 	# Metadata

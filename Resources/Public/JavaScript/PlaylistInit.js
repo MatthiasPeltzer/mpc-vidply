@@ -47,11 +47,26 @@ function trackPlayer(player) {
 // Counter for unique SVG filter IDs
 let filterIdCounter = 0;
 
-// Suppress VidPly's internal console logs
-const originalConsoleLog = console.log;
+const VIDPLY_DEBUG = Boolean(window.VIDPLY_DEBUG);
+const hasVidPlyPrefix = (value) => {
+    if (typeof value === 'string') return value.startsWith('VidPly');
+    if (value && typeof value.toString === 'function') {
+        try {
+            return value.toString().startsWith('VidPly');
+        } catch {
+            return false;
+        }
+    }
+    return false;
+};
 const suppressVidPlyLogs = (fn) => {
+    if (VIDPLY_DEBUG) {
+        fn();
+        return;
+    }
+    const originalConsoleLog = console.log;
     console.log = (...args) => {
-        if (args[0]?.toString().startsWith('VidPly')) return;
+        if (hasVidPlyPrefix(args[0])) return;
         originalConsoleLog.apply(console, args);
     };
     try {
@@ -105,6 +120,15 @@ const isSafeUrl = (url) => {
     }
 };
 
+const CSS_URL_UNSAFE_CHARS = /[\x00-\x1f\x7f"'()\\<>`]/;
+const sanitizeCssUrl = (url) => {
+    if (typeof url !== 'string') return null;
+    const trimmed = url.trim();
+    if (trimmed === '' || CSS_URL_UNSAFE_CHARS.test(trimmed)) return null;
+    if (!isSafeUrl(trimmed)) return null;
+    return trimmed;
+};
+
 // Language utilities
 const getPageLanguage = () => (document.documentElement.lang || 'en').split('-')[0].toLowerCase();
 
@@ -120,7 +144,8 @@ const TRANSLATIONS = {
         loadYoutube: 'Load and play YouTube content',
         loadVimeo: 'Load and play Vimeo content',
         loadSoundcloud: 'Load and play SoundCloud content',
-        loadDefault: 'Load and play content'
+        loadDefault: 'Load and play content',
+        opensNewWindow: ' (opens in new window)'
     },
     de: {
         videoIntro: 'Um das Video zu aktivieren, müssen Sie auf die Schaltfläche klicken. Nach der Aktivierung gilt',
@@ -132,7 +157,8 @@ const TRANSLATIONS = {
         loadYoutube: 'YouTube-Inhalt laden und abspielen',
         loadVimeo: 'Vimeo-Inhalt laden und abspielen',
         loadSoundcloud: 'SoundCloud-Inhalt laden und abspielen',
-        loadDefault: 'Inhalt laden und abspielen'
+        loadDefault: 'Inhalt laden und abspielen',
+        opensNewWindow: ' (öffnet in neuem Fenster)'
     },
     es: {
         videoIntro: 'Para activar el vídeo, debe hacer clic en el botón. Después de activar el botón,',
@@ -144,7 +170,8 @@ const TRANSLATIONS = {
         loadYoutube: 'Cargar y reproducir contenido de YouTube',
         loadVimeo: 'Cargar y reproducir contenido de Vimeo',
         loadSoundcloud: 'Cargar y reproducir contenido de SoundCloud',
-        loadDefault: 'Cargar y reproducir contenido'
+        loadDefault: 'Cargar y reproducir contenido',
+        opensNewWindow: ' (se abre en una ventana nueva)'
     },
     it: {
         videoIntro: 'Per attivare il video, è necessario fare clic sul pulsante. Dopo aver attivato il pulsante,',
@@ -156,7 +183,8 @@ const TRANSLATIONS = {
         loadYoutube: 'Carica e riproduci contenuto YouTube',
         loadVimeo: 'Carica e riproduci contenuto Vimeo',
         loadSoundcloud: 'Carica e riproduci contenuto SoundCloud',
-        loadDefault: 'Carica e riproduci contenuto'
+        loadDefault: 'Carica e riproduci contenuto',
+        opensNewWindow: ' (si apre in una nuova finestra)'
     },
     ja: {
         videoIntro: '動画を有効にするには、ボタンをクリックしてください。ボタンを有効にすると、',
@@ -168,7 +196,8 @@ const TRANSLATIONS = {
         loadYoutube: 'YouTubeコンテンツを読み込んで再生',
         loadVimeo: 'Vimeoコンテンツを読み込んで再生',
         loadSoundcloud: 'SoundCloudコンテンツを読み込んで再生',
-        loadDefault: 'コンテンツを読み込んで再生'
+        loadDefault: 'コンテンツを読み込んで再生',
+        opensNewWindow: '（新しいウィンドウで開きます）'
     },
     fr: {
         videoIntro: 'Pour activer la vidéo, vous devez cliquer sur le bouton. Après avoir activé le bouton,',
@@ -180,7 +209,8 @@ const TRANSLATIONS = {
         loadYoutube: 'Charger et lire le contenu YouTube',
         loadVimeo: 'Charger et lire le contenu Vimeo',
         loadSoundcloud: 'Charger et lire le contenu SoundCloud',
-        loadDefault: 'Charger et lire le contenu'
+        loadDefault: 'Charger et lire le contenu',
+        opensNewWindow: ' (s\u2019ouvre dans une nouvelle fen\u00eatre)'
     }
 };
 
@@ -294,11 +324,11 @@ function createPrivacyOverlay(service, track, onConsent, privacySettings = null,
     overlay.className = `vidply-playlist-privacy-overlay vidply-privacy-layer vidply-privacy-${service}`;
     overlay.setAttribute('data-privacy-service', service);
 
-    if (track.poster) {
-        const safePoster = track.poster.replace(/'/g, "\\'").replace(/\)/g, '\\)');
-        overlay.style.backgroundImage = `url('${safePoster}')`;
-        overlay.style.backgroundSize = 'cover';
-        overlay.style.backgroundPosition = 'center';
+    const safePoster = sanitizeCssUrl(track.poster);
+    if (safePoster) {
+        overlay.style.setProperty('background-image', `url("${safePoster}")`);
+        overlay.style.setProperty('background-size', 'cover');
+        overlay.style.setProperty('background-position', 'center');
     }
 
     const innerContainer = document.createElement('div');
@@ -364,7 +394,7 @@ function createPrivacyOverlay(service, track, onConsent, privacySettings = null,
     policyLink.textContent = settings.link_text;
     const srHint = document.createElement('span');
     srHint.className = 'vidply-sr-only';
-    srHint.textContent = ' (opens in new window)';
+    srHint.textContent = getTranslation('opensNewWindow');
     policyLink.appendChild(srHint);
     p.appendChild(policyLink);
     p.appendChild(document.createTextNode(' ' + settings.outro_text));
@@ -1068,6 +1098,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Observe and replace main VidPly play overlays (big play icon) when inline SVG is available
     document.querySelectorAll('.vidply-wrapper[data-vidply-play-inline-svg]').forEach(observeVidplyOverlays);
     
-    // Setup theme synchronization (if enabled)
-    setupThemeSync();
+    if (isThemeSyncEnabled()) {
+        setupThemeSync();
+    }
 });

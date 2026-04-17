@@ -102,14 +102,15 @@ class VidPlyProcessor implements DataProcessorInterface
         $mediaRecords = $this->mediaRepository->findByContentUid($lookupUid, $languageId);
         $this->prefetchRelatedFiles($mediaRecords);
 
-        $trackResult = $this->buildTracksResult($mediaRecords);
+        $siteDefaultLanguageCode = $this->resolveSiteDefaultLanguageCode($request);
+        $trackResult = $this->buildTracksResult($mediaRecords, $siteDefaultLanguageCode);
         $this->applyTrackDependentOptions($playerOptions, $trackResult, $mediaRecords);
 
         $playlistResult = $this->buildPlaylistData($trackResult, $playerOptions);
         $playlistData = $playlistResult['playlistData'];
         $playerOptions = array_merge($playerOptions, $playlistResult['optionOverrides']);
 
-        $singleTrackResult = $this->extractSingleTrackData($trackResult);
+        $singleTrackResult = $this->extractSingleTrackData($trackResult, $siteDefaultLanguageCode);
         $singleTrackData = $singleTrackResult['trackData'];
         $playerOptions = array_merge($playerOptions, $singleTrackResult['optionOverrides']);
 
@@ -222,7 +223,7 @@ class VidPlyProcessor implements DataProcessorInterface
      *     isMixedPlaylist: bool
      * }
      */
-    private function buildTracksResult(array $mediaRecords): array
+    private function buildTracksResult(array $mediaRecords, string $siteDefaultLanguageCode = 'en'): array
     {
         $tracks = [];
         $mediaType = null;
@@ -231,7 +232,7 @@ class VidPlyProcessor implements DataProcessorInterface
         $hasExternalMedia = false;
 
         foreach ($mediaRecords as $mediaRecord) {
-            $track = $this->processMediaRecord($mediaRecord);
+            $track = $this->processMediaRecord($mediaRecord, $siteDefaultLanguageCode);
             if ($track === null) {
                 continue;
             }
@@ -338,7 +339,7 @@ class VidPlyProcessor implements DataProcessorInterface
      *     optionOverrides: array
      * }
      */
-    private function extractSingleTrackData(array $trackResult): array
+    private function extractSingleTrackData(array $trackResult, string $siteDefaultLanguageCode = 'en'): array
     {
         $empty = [
             'videoUrl' => '',
@@ -374,8 +375,11 @@ class VidPlyProcessor implements DataProcessorInterface
         }
 
         if (!empty($firstTrack['poster'])) {
-            $result['poster'] = $firstTrack['poster'];
-            $optionOverrides['poster'] = $firstTrack['poster'];
+            $safePoster = $this->sanitizeUrlForCssUrl((string)$firstTrack['poster']);
+            if ($safePoster !== null) {
+                $result['poster'] = $safePoster;
+                $optionOverrides['poster'] = $safePoster;
+            }
         }
 
         if (!empty($firstTrack['duration'])) {
@@ -395,7 +399,7 @@ class VidPlyProcessor implements DataProcessorInterface
         if (!empty($firstTrack['audioDescriptionSrc'])) {
             $result['audioDescriptionTracks'][] = [
                 'src' => $firstTrack['audioDescriptionSrc'],
-                'lang' => '',
+                'lang' => $siteDefaultLanguageCode,
                 'label' => 'Audio Description',
                 'mimeType' => '',
             ];
@@ -406,7 +410,7 @@ class VidPlyProcessor implements DataProcessorInterface
         if (!empty($firstTrack['signLanguageSrc'])) {
             $result['signLanguage'][] = [
                 'src' => $firstTrack['signLanguageSrc'],
-                'lang' => '',
+                'lang' => $siteDefaultLanguageCode,
                 'label' => 'Sign Language',
             ];
             $optionOverrides['signLanguageSrc'] = $firstTrack['signLanguageSrc'];
@@ -505,11 +509,17 @@ class VidPlyProcessor implements DataProcessorInterface
                         $playIconInlineSvg = $this->getInlineSvgFromExtPath($normalizedIcon);
                     }
                 } else {
-                    $parsed = parse_url($configuredIcon);
-                    $scheme = strtolower($parsed['scheme'] ?? '');
-                    if ($scheme === '' || $scheme === 'https' || $scheme === 'http') {
-                        $playIconUrl = $configuredIcon;
-                    }
+                    $playIconUrl = $this->validatePlayIconExternalUrl($configuredIcon, $extConf);
+                }
+            }
+
+            if ($playIconUrl !== null) {
+                $safePlayIconUrl = $this->sanitizeUrlForCssUrl($playIconUrl);
+                if ($safePlayIconUrl === null) {
+                    $playIconUrl = null;
+                    $playIconInlineSvg = null;
+                } else {
+                    $playIconUrl = $safePlayIconUrl;
                 }
             }
 
@@ -712,6 +722,157 @@ class VidPlyProcessor implements DataProcessorInterface
     }
 
     // -----------------------------------------------------------------------
+    // URL / text sanitization
+    // -----------------------------------------------------------------------
+
+    /**
+     * Allow-listed kind values for <track> elements.
+     * Used to reject database values that would confuse the player or AT.
+     */
+    private const ALLOWED_TRACK_KINDS = ['captions', 'subtitles', 'descriptions', 'chapters', 'metadata'];
+
+    /**
+     * Return the URL unchanged if it is safe to embed inside a CSS `url('...')`
+     * literal, otherwise return null.
+     *
+     * Rejects:
+     * - empty strings
+     * - control characters (incl. CR/LF/TAB)
+     * - characters that can break out of the `url()` / attribute context:
+     *   '"', "'", '(', ')', '\\', '<', '>', '`'
+     * - non-http(s) schemes (a relative/root-relative path is accepted)
+     */
+    private function sanitizeUrlForCssUrl(?string $url): ?string
+    {
+        if ($url === null) {
+            return null;
+        }
+        $url = trim($url);
+        if ($url === '') {
+            return null;
+        }
+
+        if (preg_match('/[\x00-\x1f\x7f"\'()\\\\<>`]/', $url)) {
+            return null;
+        }
+
+        if (preg_match('/^[a-zA-Z][a-zA-Z0-9+.\-]*:/', $url)) {
+            $scheme = strtolower((string)(parse_url($url, PHP_URL_SCHEME) ?? ''));
+            if ($scheme !== 'http' && $scheme !== 'https') {
+                return null;
+            }
+        }
+
+        return $url;
+    }
+
+    /**
+     * Validate that a configured external play-icon URL matches the admin-configured
+     * allow-list. If no allow-list is configured, external URLs are rejected — admins
+     * can still reference FAL/EXT: icons safely.
+     *
+     * @param array<string, mixed> $extConf
+     */
+    private function validatePlayIconExternalUrl(string $configuredIcon, array $extConf): ?string
+    {
+        $parsed = parse_url($configuredIcon);
+        $scheme = strtolower((string)($parsed['scheme'] ?? ''));
+        $host = strtolower((string)($parsed['host'] ?? ''));
+
+        if ($scheme === '' && $host === '') {
+            return $configuredIcon;
+        }
+
+        if ($scheme !== 'http' && $scheme !== 'https') {
+            return null;
+        }
+
+        $raw = (string)($extConf['allowedPlayIconDomains'] ?? '');
+        $items = preg_split('/[,\r\n]+/', $raw) ?: [];
+        $allowedPatterns = array_values(array_filter(array_map('trim', $items), static fn(string $v): bool => $v !== ''));
+        if ($allowedPatterns === []) {
+            return null;
+        }
+
+        foreach ($allowedPatterns as $pattern) {
+            $pattern = strtolower($pattern);
+            if ($pattern === $host) {
+                return $configuredIcon;
+            }
+            if (str_starts_with($pattern, '*.')) {
+                $base = substr($pattern, 2);
+                if ($base === '' || !str_contains($base, '.')) {
+                    continue;
+                }
+                if ($host === $base || str_ends_with($host, '.' . $base)) {
+                    return $configuredIcon;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Resolve the site's default two-letter language code for use as a fallback
+     * for <track srclang> and audio-description/sign-language `lang` fields.
+     */
+    private function resolveSiteDefaultLanguageCode(ServerRequestInterface $request): string
+    {
+        $site = $request->getAttribute('site');
+        if ($site !== null && method_exists($site, 'getDefaultLanguage')) {
+            try {
+                $defaultLanguage = $site->getDefaultLanguage();
+                $code = strtolower((string)$defaultLanguage->getTwoLetterIsoCode());
+                if ($code !== '') {
+                    return $code;
+                }
+                $locale = (string)$defaultLanguage->getLocale();
+                if ($locale !== '') {
+                    return strtolower(explode('_', explode('-', $locale)[0])[0]);
+                }
+            } catch (\Throwable) {
+            }
+        }
+        return 'en';
+    }
+
+    /**
+     * @param array<string, mixed> $textTrack
+     * @return array<string, mixed>
+     */
+    private function sanitizeTextTrack(array $textTrack, string $fallbackLanguageCode): array
+    {
+        $kind = strtolower((string)($textTrack['kind'] ?? ''));
+        if (!in_array($kind, self::ALLOWED_TRACK_KINDS, true)) {
+            $kind = 'captions';
+        }
+        $textTrack['kind'] = $kind;
+
+        $srclang = trim((string)($textTrack['srclang'] ?? ''));
+        if ($srclang === '') {
+            $srclang = $fallbackLanguageCode;
+        }
+        $textTrack['srclang'] = $srclang;
+
+        $label = $this->stripControlChars((string)($textTrack['label'] ?? ''));
+        if ($label === '') {
+            $label = $kind === 'chapters' ? 'Chapters' : ($kind === 'descriptions' ? 'Descriptions' : 'Captions');
+        }
+        if (mb_strlen($label) > 255) {
+            $label = mb_substr($label, 0, 255);
+        }
+        $textTrack['label'] = $label;
+
+        return $textTrack;
+    }
+
+    private function stripControlChars(string $value): string
+    {
+        return (string)preg_replace('/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/u', '', $value);
+    }
+
+    // -----------------------------------------------------------------------
     // SVG handling
     // -----------------------------------------------------------------------
 
@@ -853,7 +1014,7 @@ class VidPlyProcessor implements DataProcessorInterface
     // Single media record → track array
     // -----------------------------------------------------------------------
 
-    protected function processMediaRecord(array $mediaRecord): ?array
+    protected function processMediaRecord(array $mediaRecord, string $siteDefaultLanguageCode = 'en'): ?array
     {
         $mediaType = MediaType::tryFrom((string)($mediaRecord['media_type'] ?? ''));
         if ($mediaType === null) {
@@ -874,7 +1035,7 @@ class VidPlyProcessor implements DataProcessorInterface
         }
 
         $track = array_merge($track, $sourceData);
-        $this->enrichTrackWithAccessibilityData($track, $mediaUid, $mediaRecord);
+        $this->enrichTrackWithAccessibilityData($track, $mediaUid, $mediaRecord, $siteDefaultLanguageCode);
 
         return $track;
     }
@@ -1007,13 +1168,14 @@ class VidPlyProcessor implements DataProcessorInterface
         return $result;
     }
 
-    private function enrichTrackWithAccessibilityData(array &$track, int $mediaUid, array $mediaRecord): void
+    private function enrichTrackWithAccessibilityData(array &$track, int $mediaUid, array $mediaRecord, string $siteDefaultLanguageCode = 'en'): void
     {
         $posterFiles = $this->getFileReferencesForMedia($mediaUid, 'poster');
         if (!empty($posterFiles)) {
             $posterUrl = (string)$posterFiles[0]->getPublicUrl();
-            if ($posterUrl !== '') {
-                $track['poster'] = $posterUrl;
+            $safePosterUrl = $this->sanitizeUrlForCssUrl($posterUrl);
+            if ($safePosterUrl !== null) {
+                $track['poster'] = $safePosterUrl;
             }
         }
 
@@ -1026,13 +1188,12 @@ class VidPlyProcessor implements DataProcessorInterface
                 continue;
             }
             $properties = $captionFile->getProperties();
-            $trackKind = $properties['tx_track_kind'] ?: 'captions';
-            $trackData = [
+            $trackData = $this->sanitizeTextTrack([
                 'src' => $captionUrl,
-                'kind' => $trackKind,
-                'srclang' => $properties['tx_lang_code'] ?: 'en',
-                'label' => $properties['title'] ?: ($trackKind === 'descriptions' ? 'Descriptions' : 'Captions'),
-            ];
+                'kind' => (string)($properties['tx_track_kind'] ?? ''),
+                'srclang' => (string)($properties['tx_lang_code'] ?? ''),
+                'label' => (string)($properties['title'] ?? ''),
+            ], $siteDefaultLanguageCode);
 
             $descSrcUrl = $this->getDescribedSourceUrl($captionFile);
             if ($descSrcUrl !== null) {
@@ -1049,12 +1210,12 @@ class VidPlyProcessor implements DataProcessorInterface
                 continue;
             }
             $properties = $chapterFile->getProperties();
-            $trackData = [
+            $trackData = $this->sanitizeTextTrack([
                 'src' => $chapterUrl,
                 'kind' => 'chapters',
-                'srclang' => $properties['tx_lang_code'] ?: 'en',
-                'label' => $properties['title'] ?: 'Chapters',
-            ];
+                'srclang' => (string)($properties['tx_lang_code'] ?? ''),
+                'label' => (string)($properties['title'] ?? ''),
+            ], $siteDefaultLanguageCode);
 
             $descSrcUrl = $this->getDescribedSourceUrl($chapterFile);
             if ($descSrcUrl !== null) {
@@ -1117,6 +1278,15 @@ class VidPlyProcessor implements DataProcessorInterface
         return PathUtility::getPublicResourceWebPath($resourcePath);
     }
 
+    /**
+     * JSON-encode a value safely for embedding inside `<script type="application/json">`.
+     *
+     * The JSON_HEX_* flags escape `<`, `>`, `&`, `'`, `"` as `\uXXXX` sequences so
+     * the emitted JSON cannot prematurely close the enclosing <script> tag or break
+     * out of an attribute, which is required because consumers render the result
+     * with `<f:format.raw>` (a <script type="application/json"> body cannot contain
+     * HTML-escape entities). Do NOT remove these flags.
+     */
     private function safeJsonEncode(mixed $value): string
     {
         return json_encode($value, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR);

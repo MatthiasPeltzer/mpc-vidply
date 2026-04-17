@@ -27,6 +27,12 @@
       <trans-unit id="preview.playlist_count">
         <source>Playlist with %d items</source>
       </trans-unit>
+      <trans-unit id="preview.poster_alt">
+        <source>Poster for &quot;%s&quot;</source>
+      </trans-unit>
+      <trans-unit id="preview.icon_alt">
+        <source>VidPly item</source>
+      </trans-unit>
       <trans-unit id="preview.untitled">
         <source>Untitled</source>
       </trans-unit>

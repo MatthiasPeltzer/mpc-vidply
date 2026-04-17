@@ -123,12 +123,6 @@
       <trans-unit id="tx_mpcvidply_media.media_type.youtube">
         <source>YouTube</source>
       </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.media_url">
-        <source>Media URL</source>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.media_url.description">
-        <source>Enter the URL for YouTube, Vimeo, SoundCloud, or HLS stream</source>
-      </trans-unit>
       <trans-unit id="tx_mpcvidply_media.poster">
         <source>Poster / Thumbnail</source>
       </trans-unit>

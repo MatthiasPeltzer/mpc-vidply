@@ -18,6 +18,9 @@
       <trans-unit id="config.playIcon">
         <source>Play button icon (EXT: path, URL, or public path)</source>
       </trans-unit>
+      <trans-unit id="config.allowedPlayIconDomains">
+        <source>Allow-list for external play-icon domains (comma or newline separated; e.g. cdn.example.com, *.example.com). External URLs are rejected if empty — EXT:/relative paths always work.</source>
+      </trans-unit>
       <trans-unit id="config.playPosition">
         <source>Play button position</source>
       </trans-unit>

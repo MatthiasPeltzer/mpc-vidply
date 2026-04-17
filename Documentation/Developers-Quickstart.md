@@ -85,8 +85,7 @@ Media library records with types: `video`, `audio`, `youtube`, `vimeo`, `soundcl
 | Column | Type | Description |
 |--------|------|-------------|
 | `media_type` | string | Type discriminator |
-| `media_file` | file | File references (video/audio including HLS/DASH) |
-| `media_url` | string | External URL (SoundCloud) |
+| `media_file` | file | File references (video/audio, HLS/DASH, YouTube/Vimeo/SoundCloud via FAL online-media helpers) |
 | `title` | string | Display title |
 | `artist` | string | Creator name |
 | `poster` | file | Thumbnail image |

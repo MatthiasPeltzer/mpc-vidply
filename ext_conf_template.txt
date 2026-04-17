@@ -6,6 +6,9 @@ allowedAudioDomains =
 # cat=config/ui/10; type=string; label=LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:config.playIcon
 playIcon =
 
+# cat=config/ui/15; type=string; label=LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:config.allowedPlayIconDomains
+allowedPlayIconDomains =
+
 # cat=config/ui/20; type=options[center=Center,left-top=Left top,right-top=Right top,left-bottom=Left bottom,right-bottom=Right bottom]; label=LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:config.playPosition
 playPosition = center
 

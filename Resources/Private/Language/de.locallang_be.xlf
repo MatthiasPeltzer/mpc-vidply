@@ -35,6 +35,14 @@
         <source>Playlist with %d items</source>
         <target>Wiedergabeliste mit %d Elementen</target>
       </trans-unit>
+      <trans-unit id="preview.poster_alt">
+        <source>Poster for &quot;%s&quot;</source>
+        <target>Vorschaubild für &quot;%s&quot;</target>
+      </trans-unit>
+      <trans-unit id="preview.icon_alt">
+        <source>VidPly item</source>
+        <target>VidPly-Element</target>
+      </trans-unit>
       <trans-unit id="preview.untitled">
         <source>Untitled</source>
         <target>Ohne Titel</target>

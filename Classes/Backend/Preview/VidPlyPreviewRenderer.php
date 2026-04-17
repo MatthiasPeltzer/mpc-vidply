@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\Backend\Preview;
 
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Backend\Preview\StandardContentPreviewRenderer;
 use TYPO3\CMS\Backend\View\BackendLayout\Grid\GridColumnItem;
 use TYPO3\CMS\Core\Database\Connection;
@@ -15,8 +17,10 @@ use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
 
-final class VidPlyPreviewRenderer extends StandardContentPreviewRenderer
+final class VidPlyPreviewRenderer extends StandardContentPreviewRenderer implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     private const LLL = 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:';
 
     private readonly ConnectionPool $connectionPool;
@@ -82,15 +86,23 @@ final class VidPlyPreviewRenderer extends StandardContentPreviewRenderer
             $html .= '<strong style="font-size: 14px; display: block; margin-bottom: 8px;">' . htmlspecialchars($playlistLabel) . '</strong>';
         }
 
+        $posterAltFormat = $lang->sL(self::LLL . 'preview.poster_alt') ?: 'Poster for "%s"';
+        $iconAltLabel = $lang->sL(self::LLL . 'preview.icon_alt') ?: 'VidPly item';
+
         foreach ($mediaItems as $mediaItem) {
             $mediaUid = (int)$mediaItem['uid'];
             $posterUrl = $this->getPosterImageUrl($mediaUid);
+            $itemTitle = (string)($mediaItem['title'] ?? '');
+            if ($itemTitle === '') {
+                $itemTitle = $untitledLabel;
+            }
 
             $html .= '<div class="callout callout-default" style="margin: 5px 0; padding: 8px; display: flex; align-items: center; gap: 10px;">';
 
             if ($posterUrl) {
+                $posterAlt = sprintf($posterAltFormat, $itemTitle);
                 $html .= '<div style="flex-shrink: 0;">';
-                $html .= '<img src="' . htmlspecialchars($posterUrl) . '" alt="" style="width: 60px; height: 60px; object-fit: cover; border-radius: var(--typo3-border-radius); border: 1px solid var(--typo3-border-color);" />';
+                $html .= '<img src="' . htmlspecialchars($posterUrl) . '" alt="' . htmlspecialchars($posterAlt) . '" style="width: 60px; height: 60px; object-fit: cover; border-radius: var(--typo3-border-radius); border: 1px solid var(--typo3-border-color);" />';
                 $html .= '</div>';
             } else {
                 $fallbackAbsPath = GeneralUtility::getFileAbsFileName('EXT:mpc_vidply/Resources/Public/Icons/Extension.svg');
@@ -98,9 +110,9 @@ final class VidPlyPreviewRenderer extends StandardContentPreviewRenderer
 
                 $html .= '<div style="flex-shrink: 0;">';
                 if ($fallbackUrl !== '') {
-                    $html .= '<img src="' . htmlspecialchars($fallbackUrl) . '" alt="" style="width: 60px; height: 60px; object-fit: contain; border-radius: var(--typo3-border-radius); border: 1px solid var(--typo3-border-color); background: var(--typo3-surface-base);" />';
+                    $html .= '<img src="' . htmlspecialchars($fallbackUrl) . '" alt="" role="presentation" style="width: 60px; height: 60px; object-fit: contain; border-radius: var(--typo3-border-radius); border: 1px solid var(--typo3-border-color); background: var(--typo3-surface-base);" />';
                 } else {
-                    $html .= '<div style="width: 60px; height: 60px; background: var(--typo3-surface-base); border: 1px solid var(--typo3-border-color); border-radius: var(--typo3-border-radius);"></div>';
+                    $html .= '<div role="img" aria-label="' . htmlspecialchars($iconAltLabel) . '" style="width: 60px; height: 60px; background: var(--typo3-surface-base); border: 1px solid var(--typo3-border-color); border-radius: var(--typo3-border-radius);"></div>';
                 }
                 $html .= '</div>';
             }
@@ -240,7 +252,16 @@ final class VidPlyPreviewRenderer extends StandardContentPreviewRenderer
                     }
                 }
             }
-        } catch (\Exception) {
+        } catch (ResourceDoesNotExistException $e) {
+            $this->logger?->debug('VidPly preview: poster file reference missing', [
+                'mediaUid' => $mediaUid,
+                'exception' => $e,
+            ]);
+        } catch (\Throwable $e) {
+            $this->logger?->warning('VidPly preview: failed to resolve poster URL', [
+                'mediaUid' => $mediaUid,
+                'exception' => $e,
+            ]);
         }
 
         return null;

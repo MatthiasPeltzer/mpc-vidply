@@ -13,6 +13,10 @@ $ctrl = [
         'delete' => 'deleted',
         'rootLevel' => -1, // Allow on root level AND in page tree
         'security' => [
+            // Global privacy configuration records are typically stored on the
+            // root level (pid=0) or on sysfolders, neither of which is a
+            // regular content page. Without this flag, TYPO3 would reject
+            // saving them on certain doktypes.
             'ignorePageTypeRestriction' => true,
         ],
         'iconfile' => 'EXT:mpc_vidply/Resources/Public/Icons/Extension.svg',

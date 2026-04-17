@@ -52,12 +52,12 @@ final readonly class PrivacySettingsService
         $recordLanguageId = (int)($settings['sys_language_uid'] ?? 0);
 
         $result = [
-            'headline' => (string)($settings[$serviceKey . 'headline'] ?? ''),
-            'intro_text' => (string)($settings[$serviceKey . 'intro_text'] ?? ''),
-            'outro_text' => (string)($settings[$serviceKey . 'outro_text'] ?? ''),
-            'policy_link' => (string)($settings[$serviceKey . 'policy_link'] ?? ''),
-            'link_text' => (string)($settings[$serviceKey . 'link_text'] ?? ''),
-            'button_label' => (string)($settings[$serviceKey . 'button_label'] ?? ''),
+            'headline' => $this->sanitizePrivacyText((string)($settings[$serviceKey . 'headline'] ?? ''), 255),
+            'intro_text' => $this->sanitizePrivacyText((string)($settings[$serviceKey . 'intro_text'] ?? ''), 2000),
+            'outro_text' => $this->sanitizePrivacyText((string)($settings[$serviceKey . 'outro_text'] ?? ''), 2000),
+            'policy_link' => trim((string)($settings[$serviceKey . 'policy_link'] ?? '')),
+            'link_text' => $this->sanitizePrivacyText((string)($settings[$serviceKey . 'link_text'] ?? ''), 255),
+            'button_label' => $this->sanitizePrivacyText((string)($settings[$serviceKey . 'button_label'] ?? ''), 255),
         ];
 
         $useDbValues = $languageId === 0 || $recordLanguageId === $languageId;
@@ -176,6 +176,24 @@ final readonly class PrivacySettingsService
     {
         $scheme = parse_url(trim($url), PHP_URL_SCHEME);
         return is_string($scheme) && in_array(strtolower($scheme), ['http', 'https'], true);
+    }
+
+    /**
+     * Strip control characters (except TAB, LF, CR) and clamp the string to $maxLength
+     * characters. The output is still HTML-escaped by Fluid when emitted; this only
+     * protects against DB-sourced control characters and unbounded length.
+     */
+    private function sanitizePrivacyText(string $value, int $maxLength): string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return '';
+        }
+        $value = (string)preg_replace('/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/u', '', $value);
+        if ($maxLength > 0 && mb_strlen($value) > $maxLength) {
+            $value = mb_substr($value, 0, $maxLength);
+        }
+        return $value;
     }
 
     private function getLanguageService(int $languageId = 0, ?ServerRequestInterface $request = null): \TYPO3\CMS\Core\Localization\LanguageService
