@@ -31,6 +31,18 @@ trait ExternalMediaDomainValidationTrait
     }
 
     /**
+     * Check whether a host matches one of the admin-configured patterns.
+     *
+     * Supported pattern shapes (case-insensitive; optional `scheme://` prefix):
+     *   - Exact host:         "example.com"
+     *   - Wildcard subdomain: "*.example.com"     matches example.com and any subdomain
+     *
+     * Bare top-level domains (e.g. "*.com", "*.co.uk") are deliberately rejected to
+     * avoid accidentally allow-listing the whole TLD. A wildcard base therefore must
+     * contain at least one dot. This is a pragmatic check and not a full Public Suffix
+     * List validation — administrators should still configure the narrowest possible
+     * pattern.
+     *
      * @param string[] $allowedDomainPatterns
      */
     private function isHostAllowed(string $scheme, string $host, array $allowedDomainPatterns): bool
@@ -67,7 +79,10 @@ trait ExternalMediaDomainValidationTrait
 
             if (str_starts_with($patternHost, '*.')) {
                 $base = substr($patternHost, 2);
-                if ($base !== '' && ($host === $base || str_ends_with($host, '.' . $base))) {
+                if ($base === '' || !str_contains($base, '.')) {
+                    continue;
+                }
+                if ($host === $base || str_ends_with($host, '.' . $base)) {
                     return true;
                 }
             }

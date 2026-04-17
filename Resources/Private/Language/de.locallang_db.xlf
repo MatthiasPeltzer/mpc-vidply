@@ -163,14 +163,6 @@
         <source>YouTube</source>
         <target>YouTube</target>
       </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.media_url">
-        <source>Media URL</source>
-        <target>Medien-URL</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.media_url.description">
-        <source>Enter the URL for YouTube, Vimeo, SoundCloud, or HLS stream</source>
-        <target>Geben Sie die URL für YouTube, Vimeo, SoundCloud oder HLS-Stream ein</target>
-      </trans-unit>
       <trans-unit id="tx_mpcvidply_media.poster">
         <source>Poster / Thumbnail</source>
         <target>Vorschaubild / Thumbnail</target>

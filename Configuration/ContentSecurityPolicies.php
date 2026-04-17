@@ -21,11 +21,17 @@ use TYPO3\CMS\Core\Type\Map;
 return Map::fromEntries([
     Scope::frontend(),
     new MutationCollection(
-        // blob: for media sources (HLS streaming segments)
+        // blob: for HLS streaming segments; data: for the `data:,WEBVTT` stub
+        // that hls.js attaches to every <track> element it creates
+        // (see hls.js/src/utils/texttrack-utils.ts → createTrackNode).
+        // Without data: the <track> never finishes loading and cues are not
+        // exposed to TranscriptManager, which breaks captions and transcripts
+        // on HLS streams (and any media element that points at a data: URL).
         new Mutation(
             MutationMode::Extend,
             Directive::MediaSrc,
             SourceScheme::blob,
+            SourceScheme::data,
             SourceScheme::https
         ),
 

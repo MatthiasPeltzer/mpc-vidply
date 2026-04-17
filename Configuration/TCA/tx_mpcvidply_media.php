@@ -32,6 +32,10 @@ return [
         'translationSource' => 'l10n_source',
         'iconfile' => 'EXT:mpc_vidply/Resources/Public/Icons/Extension.svg',
         'security' => [
+            // These records are child records of tt_content plugins (edited via
+            // IRRE in the content element), so the page type of the storage
+            // page must not be enforced. Without this flag, editors working in
+            // a page of a non-default doktype would be blocked from saving.
             'ignorePageTypeRestriction' => true,
         ],
     ],
@@ -264,20 +268,6 @@ return [
                 'required' => true,
             ],
             'onChange' => 'reload',
-        ],
-        'media_url' => [
-            'exclude' => false,
-            'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.media_url',
-            'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.media_url.description',
-            'config' => [
-                'type' => 'input',
-                'size' => 50,
-                'max' => 1024,
-                'eval' => 'trim',
-                // Required is enforced per media type via columnsOverrides.
-                'required' => false,
-                'placeholder' => 'https://example.com/stream.m3u8',
-            ],
         ],
         'media_file' => [
             'exclude' => false,
