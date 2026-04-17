@@ -362,7 +362,7 @@ return [
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.poster',
             'config' => [
                 'type' => 'file',
-                'allowed' => 'common-image-types',
+                'allowed' => 'png,webp,jpg,jpeg,svg',
                 'maxitems' => 1,
                 'overrideChildTca' => [
                     'columns' => [
