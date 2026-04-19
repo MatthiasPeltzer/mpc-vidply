@@ -9,25 +9,28 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 | Flag | Loads | When |
 |------|-------|------|
 | `needsPrivacyLayer` | PrivacyLayer.js + privacy-layer.css | YouTube, Vimeo, or SoundCloud present |
-| `needsVidPlay` | VidPly core (`vidply/vidply.esm.min.js` + code-split chunks) | Video or audio media (not external services) |
+| `needsVidPlay` | VidPly core (`vidply/vidply.esm.min.js` + code-split chunks; compiled from TypeScript, includes the buffering spinner, the optional download button and the SoundCloud renderer) | Video or audio media (not external services) |
 | `needsPlaylist` | PlaylistInit.js | 2+ media items OR native player |
 | `needsHLS` | hls.js | HLS source (.m3u8) detected in media files |
 | `needsDASH` | dash.js | DASH source (.mpd) detected in media files |
 
-**CSS always loads** - The vidply.min.css stylesheet is lightweight and always included for consistent styling.
+**CSS always loads** — `vidply.min.css` is lightweight and always included for consistent styling. It also contains the styles for the centered buffering spinner (`.vidply-loading` / `.vidply-buffering`) and the download button.
+
+**SoundCloud uses the privacy-layer path by default** — In `mpc-vidply` SoundCloud media items load only `PrivacyLayer.js` + `privacy-layer.css` (not the VidPly core), because the SoundCloud Widget iframe brings its own UI. The bundled standalone `SoundCloudRenderer` is shipped inside the VidPly core bundle and is therefore only fetched for pages that already need the VidPly core for other reasons (local video / audio, HLS, DASH). See **PrivacyLayer.md → "Switch SoundCloud to Renderer Mode"** for opting in.
 
 ## Examples
 
-### Single YouTube Video
+### Single YouTube / Vimeo / SoundCloud Item
 **Loaded:**
-- vidply.min.css (styling)
+- vidply.min.css (styling, incl. spinner & download button styles)
 - privacy-layer.css (privacy layer styles)
-- PrivacyLayer.js (consent handling)
+- PrivacyLayer.js (consent handling, mounts the service iframe after consent)
 
 **Not Loaded:**
-- VidPly player
+- VidPly player core (and therefore not the bundled `SoundCloudRenderer` either — see PrivacyLayer.md for the renderer-mode opt-in)
 - PlaylistInit.js
 - hls.js
+- dash.js
 
 ### Single Local MP4 Video
 **Loaded:**
@@ -71,7 +74,7 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 - PrivacyLayer.js
 - hls.js
 
-### Mixed Playlist (YouTube + Vimeo)
+### Mixed Playlist (YouTube + Vimeo + SoundCloud)
 **Loaded:**
 - vidply.min.css
 - privacy-layer.css
@@ -79,24 +82,36 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 - PlaylistInit.js (for playlist management)
 
 **Not Loaded:**
-- VidPly player (external services use native players)
+- VidPly player (external services use native iframes via the privacy layer)
 - hls.js
+- dash.js
+
+### Mixed Playlist (Local MP4 + YouTube)
+**Loaded:**
+- vidply.min.css
+- privacy-layer.css
+- PrivacyLayer.js (for the YouTube item)
+- VidPly core (for the MP4 item — also brings the buffering spinner, download button and SoundCloud renderer along, even though they aren't all used)
+- PlaylistInit.js
 
 ## Performance Impact
 
 **Before optimization:**
-- All 5 JavaScript files loaded on every page with VidPly
-- Total: ~350KB (including hls.js from CDN)
+- All JavaScript files loaded on every page with VidPly
+- Total: ~530KB (including hls.js from CDN)
 
 **After optimization:**
-- Single YouTube: ~7KB (PrivacyLayer.js + privacy-layer.css)
-- Single local video: ~180KB (VidPly core + PlaylistInit)
-- Video with HLS source: ~530KB (VidPly + PlaylistInit + hls.js)
-- Video with DASH source: ~580KB (VidPly + PlaylistInit + dash.js)
+- Single YouTube / Vimeo / SoundCloud: ~7KB (PrivacyLayer.js + privacy-layer.css)
+- Single local video: ~180KB (VidPly core + PlaylistInit) — already includes the buffering spinner, optional download button and the SoundCloud renderer
+- Video with HLS source: ~240KB (VidPly + PlaylistInit + hls.js)
+- Video with DASH source: ~380KB (VidPly + PlaylistInit + dash.js)
+- Video with HLS + DASH sources: ~440KB (VidPly + PlaylistInit + hls.js + dash.js)
 
 **Savings:**
-- External services: 97% reduction (350KB → 5KB)
-- Local video: 50% reduction (no hls.js needed)
+- External services: 97% reduction (~350KB → ~7KB)
+- Local video without streaming: ~65% reduction vs. the unoptimized "load everything" baseline
+
+> Sizes are minified, **uncompressed**. Real-world transfer is typically 30–40% of these numbers after gzip / brotli.
 
 ## Implementation
 
@@ -112,9 +127,12 @@ $needsDASH = false;
 
 // Check for external services
 if (in_array($firstTrackType, ['youtube', 'vimeo', 'soundcloud'])) {
+    // External services use the privacy-layer iframe path.
+    // SoundCloud could alternatively be routed through the bundled
+    // `SoundCloudRenderer` (set $needsVidPlay = true) — see PrivacyLayer.md.
     $needsPrivacyLayer = true;
 } else {
-    $needsVidPlay = true; // Native player for video/audio
+    $needsVidPlay = true; // Native VidPly player for local video/audio (incl. HLS/DASH sources)
     $needsPlaylist = true;
 }
 
@@ -217,7 +235,7 @@ To verify conditional loading:
 
 Potential future optimizations:
 - Lazy load CSS (currently always loads)
-- Split VidPly core into smaller modules
+- Split VidPly core into smaller modules (the SoundCloud renderer, download button and buffering spinner are already lazy-loadable as separate chunks via TypeScript dynamic `import()`s — exposing per-feature flags to the DataProcessor would let us drop them when not needed)
 - Preload critical assets based on above-the-fold content
 - Service worker for offline caching
 

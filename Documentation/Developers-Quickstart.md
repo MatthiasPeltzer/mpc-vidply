@@ -46,11 +46,11 @@ mpc_vidply/
 │       ├── Css/vidply.min.css
 │       ├── Icons/
 │       └── JavaScript/
-│           ├── hls.min.js        # HLS streaming
-│           ├── dash.all.min.js   # DASH streaming
+│           ├── hls.min.js        # HLS streaming (loaded only when needed)
+│           ├── dash.all.min.js   # DASH streaming (loaded only when needed)
 │           ├── PlaylistInit.js   # Playlist logic
-│           ├── PrivacyLayer.js   # GDPR consent
-│           └── vidply/           # Core player (ESM modules)
+│           ├── PrivacyLayer.js   # GDPR consent (YouTube/Vimeo/SoundCloud)
+│           └── vidply/           # Core player (compiled from TypeScript, ESM, code-split)
 └── Documentation/
     ├── AssetLoading.md
     ├── HLS-Implementation.md
@@ -242,11 +242,11 @@ VidPly only loads JavaScript needed for current media types:
 
 | File | Purpose |
 |------|---------|
-| `PrivacyLayer.js` | GDPR consent for external services |
+| `PrivacyLayer.js` | GDPR consent for external services (YouTube / Vimeo / SoundCloud) |
 | `PlaylistInit.js` | Playlist UI and navigation |
-| `hls.min.js` | HLS.js for adaptive streaming |
+| `hls.min.js` | hls.js for adaptive HLS streaming (Chrome / Firefox / Edge / desktop Safari) |
 | `dash.all.min.js` | dash.js for MPEG-DASH streaming |
-| `vidply/*.js` | Core player (ESM, code-split) |
+| `vidply/*.js` | Core player (compiled TypeScript → ESM, code-split, includes SoundCloud renderer + buffering spinner + optional download button) |
 
 ### Player Initialization
 
@@ -324,10 +324,11 @@ HLS and DASH are not separate media types. Streaming sources (.m3u8 / .mpd) are 
 
 **HLS:**
 1. Detects `.m3u8` source in media file references (by MIME type or extension)
-2. Includes `hls.min.js` (only when needed)
-3. Initializes HLS.js on video/audio element
+2. Includes `hls.min.js` (only when needed) — the VidPly bundle uses it on Chrome / Firefox / Edge / desktop Safari for full feature parity
+3. On iOS / iPadOS Safari (where MSE is unavailable), VidPly automatically falls back to **native HLS** and bridges the browser's `TextTrack` API into the VidPly captions, transcript and quality menus — no separate code path required
 4. Provides quality switching UI
 5. Embedded captions from HLS manifest used by default; local VTT files override
+6. The HLS renderer also reacts to `Hls.Events.SUBTITLE_FRAG_PROCESSED`, so the interactive transcript stays in sync as new subtitle fragments are loaded for long / live streams
 
 **DASH:**
 1. Detects `.mpd` source in media file references (by MIME type or extension)
@@ -340,16 +341,19 @@ HLS and DASH are not separate media types. Streaming sources (.m3u8 / .mpd) are 
 
 ### CSP Configuration
 
-`Configuration/ContentSecurityPolicies.php` whitelists streaming domains.
+`Configuration/ContentSecurityPolicies.php` whitelists streaming domains and the schemes used by `hls.js` / `dash.js`.
 
 Add custom domains:
 
 ```php
 return [
     'default-src' => ["'self'"],
-    'media-src' => ["'self'", 'blob:', 'https://your-cdn.com'],
+    'media-src' => ["'self'", 'blob:', 'data:', 'https://your-cdn.com'],
+    'connect-src' => ["'self'", 'https://your-cdn.com'],
 ];
 ```
+
+> `blob:` is required because `hls.js` / `dash.js` set a `blob:` URL on `<video>.src` while playing. `data:` is required because some HLS variants embed init segments / subtitles inline as data URIs.
 
 ---
 
@@ -479,5 +483,5 @@ tx_mpcvidply_privacy_settings -- Privacy layer configuration
 
 ---
 
-**Version:** 1.0.18 | **TYPO3:** 13.4+ / 14.x | **PHP:** ≥8.2
+**Version:** 1.1.3 | **TYPO3:** 13.4+ / 14.x | **PHP:** ≥8.2
 
