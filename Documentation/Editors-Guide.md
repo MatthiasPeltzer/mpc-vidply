@@ -51,12 +51,13 @@ Or use the "Create new record" button in the VidPly Player element.
 2. Click "Add media file" and upload your video or add a streaming URL (.m3u8 / .mpd)
 3. Optionally add additional files as fallbacks (e.g. DASH + HLS + MP4)
 4. Add a **title** (required)
-5. Add a **poster image** (thumbnail shown before playback)
+5. Add a **poster image** (thumbnail shown before playback) — **allowed formats: JPG / JPEG, PNG, WebP, SVG**
 
 **Tips:**
 - Upload multiple formats for browser compatibility and fallback (DASH → HLS → MP4/WebM)
 - Recommended: MP4 with H.264 codec as progressive fallback
 - HLS/DASH sources use embedded captions by default; local VTT files can override them
+- HLS streams play through `hls.js` on Chrome / Firefox / Edge / desktop Safari and through native HLS on iOS / iPadOS — captions, transcript and quality controls work on all platforms
 - Keep file sizes reasonable (compress for web)
 
 ---
@@ -72,7 +73,7 @@ Or use the "Create new record" button in the VidPly Player element.
 2. Click "Add media file" and upload your audio or add a streaming URL (.m3u8 / .mpd)
 3. Optionally add additional files as fallbacks (e.g. DASH + HLS + MP3)
 4. Add a **title** (required)
-5. Optionally add a **poster image** (album art)
+5. Optionally add a **poster image** (album art) — **allowed formats: JPG / JPEG, PNG, WebP, SVG**
 
 ---
 
@@ -85,7 +86,7 @@ Or use the "Create new record" button in the VidPly Player element.
 2. Click "Add media file" → "Add external video"
 3. Paste the YouTube URL (e.g., `https://www.youtube.com/watch?v=...`)
 4. Add a **title** (required)
-5. Add a **poster image** (shown before consent)
+5. Add a **poster image** (shown before consent) — **allowed formats: JPG / JPEG, PNG, WebP, SVG**
 
 **Privacy behavior:**
 - Video does NOT load until user clicks play
@@ -104,7 +105,7 @@ Or use the "Create new record" button in the VidPly Player element.
 2. Click "Add media file" → "Add external video"
 3. Paste the Vimeo URL (e.g., `https://vimeo.com/123456789`)
 4. Add a **title** (required)
-5. Add a **poster image**
+5. Add a **poster image** — **allowed formats: JPG / JPEG, PNG, WebP, SVG**
 
 ---
 
@@ -116,7 +117,9 @@ Or use the "Create new record" button in the VidPly Player element.
 1. Select media type: **SoundCloud**
 2. Enter the **Media URL** (track or set URL)
 3. Add a **title** (required)
-4. Add a **poster image** (optional)
+4. Add a **poster image** (optional) — **allowed formats: JPG / JPEG, PNG, WebP, SVG**
+
+> SoundCloud combines a **GDPR consent overlay** (no tracking before the user accepts) with the dedicated VidPly **SoundCloud renderer** that takes over after consent — playback, seek, volume, transcript and the rest of the VidPly UI behave the same as for YouTube and Vimeo.
 
 ---
 
@@ -139,6 +142,8 @@ Every media record has a **metadata palette**:
 - **Hide speed button**: Hides the playback speed control for this media item.
   - **Single item**: the speed control is hidden.
   - **Playlist**: the speed control is hidden **only while this item is the active track** (it can re-appear for other tracks).
+- **Buffering spinner**: A centered loading spinner is shown automatically while the player is buffering — no configuration required. Works for local files, HLS and DASH streams.
+- **Download button** *(if exposed by your sitepackage / TCA override)*: Per-media toggle to show a download button in the control bar. For HLS / DASH sources, also configure an explicit download URL pointing to a single MP4 / MP3 / WebM file (manifests are not directly downloadable).
 
 ## Accessibility Features
 

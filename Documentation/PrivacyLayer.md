@@ -8,11 +8,15 @@ External content only loads **after explicit user consent**, preventing tracking
 
 ## Supported Services
 
-| Service | Type | Domain | Features |
-|---------|------|--------|----------|
-| YouTube | Video | `youtube-nocookie.com` | Privacy-enhanced |
-| Vimeo | Video | `player.vimeo.com` | Standard player |
-| SoundCloud | Audio/Sets | `w.soundcloud.com` | Visual waveform |
+| Service | Type | Post-consent player | Domain | Features |
+|---|---|---|---|---|
+| YouTube | Video | YouTube IFrame embed | `youtube-nocookie.com` | Privacy-enhanced |
+| Vimeo | Video | Vimeo Player embed | `player.vimeo.com` | Standard player |
+| SoundCloud | Audio / Sets | SoundCloud Widget iframe (the same URL the bundled `SoundCloudRenderer` in `vidply` would use) | `w.soundcloud.com` | Visual waveform |
+
+> **About the SoundCloud renderer**
+>
+> The bundled VidPly player ships a dedicated `SoundCloudRenderer` (`src/renderers/SoundCloudRenderer.ts`) that wraps the SoundCloud Widget API into VidPly's unified play / pause / seek / volume controls. In `mpc-vidply` SoundCloud is normally rendered through the **privacy layer**, which loads the SoundCloud Widget iframe directly after consent — the Widget brings its own UI. If you embed `vidply` standalone (or override the `PrivacyLayer.html` partial) you can opt into the renderer-based path to get fully unified VidPly controls around SoundCloud playback.
 
 ## How It Works
 
@@ -23,10 +27,13 @@ External content only loads **after explicit user consent**, preventing tracking
 - No tracking scripts loaded
 
 ### After Click
-- Privacy layer replaced with iframe
-- Service player loads
+- Privacy layer replaced with the service-specific iframe
+  - YouTube → privacy-enhanced YouTube IFrame embed
+  - Vimeo → Vimeo Player embed
+  - SoundCloud → SoundCloud Widget iframe (visual waveform mode)
 - **Auto-play enabled** (immediate playback)
-- Service's privacy policy applies
+- Service's privacy policy applies from this point on
+- For SoundCloud, the Widget iframe is the same URL VidPly's standalone `SoundCloudRenderer` uses internally — so the user-visible result is identical, the only difference is *who* mounts it (privacy layer vs. VidPly renderer).
 
 ## User Experience
 
@@ -83,12 +90,13 @@ Settings support multilingual content via TYPO3's translation system. Empty fiel
 
 ### Files
 - `Partials/VidPly/PrivacyLayer.html` - Consent layer template
-- `JavaScript/PrivacyLayer.js` - Lazy iframe loading
+- `JavaScript/PrivacyLayer.js` - Lazy iframe loading (YouTube / Vimeo / SoundCloud Widget)
 - `JavaScript/PlaylistInit.js` - Playlist privacy layer handling
 - `Classes/Service/PrivacySettingsService.php` - Fetches privacy settings from database
 - `Configuration/TCA/tx_mpcvidply_privacy_settings.php` - Backend configuration
 - `Resources/Public/Css/privacy-layer.css` - Privacy layer styles
 - Language files with translations
+- (Standalone vidply, optional) `vidply/src/renderers/SoundCloudRenderer.ts` - Renderer-based SoundCloud playback wrapped in VidPly's UI
 
 ### JavaScript
 ```javascript
@@ -167,6 +175,7 @@ https://w.soundcloud.com/player/
 - Visual waveform (16:9)
 - Clean UI
 - Works with tracks and sets/playlists
+- Same URL is used by VidPly's standalone `SoundCloudRenderer`. In `mpc-vidply` the privacy layer mounts this iframe directly (the SoundCloud Widget brings its own play / pause / progress controls). In standalone vidply usage, `SoundCloudRenderer` mounts the same iframe but additionally talks to it via the SoundCloud Widget API so VidPly's own controls (play / pause / seek / volume) drive playback.
 
 ## Database Structure
 
@@ -252,6 +261,16 @@ Privacy layer styles are in `Resources/Public/Css/privacy-layer.css`. Override i
 2. Add case in `PrivacyLayer.js` `createXyzIframe()`
 3. Add translations
 4. Update DataProcessor to handle new type
+
+### Switch SoundCloud to Renderer Mode (advanced)
+
+If you want SoundCloud playback to be driven by VidPly's native controls instead of the SoundCloud Widget UI:
+
+1. Override `Partials/VidPly/PrivacyLayer.html` so that, after consent for SoundCloud, the partial mounts an `<audio data-vidply src="{soundcloudUrl}">` element instead of a raw iframe.
+2. Make sure the VidPly core bundle is loaded for SoundCloud media (in stock `mpc-vidply` it is not, because external services use the privacy-layer iframe path). You can do this by extending `VidPlyProcessor` to set `$needsVidPlay = true` when SoundCloud is present.
+3. The bundled `SoundCloudRenderer` (auto-detected for any URL containing `soundcloud.com`) will take over and route VidPly's play / pause / seek / volume / progress through the SoundCloud Widget API.
+
+This is purely opt-in — the default `mpc-vidply` flow keeps the lightweight iframe path, which loads less JavaScript per page.
 
 ## Browser Support
 

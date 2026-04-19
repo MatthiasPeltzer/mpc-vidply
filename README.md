@@ -9,9 +9,13 @@ Universal, Accessible Video & Audio Player for TYPO3. Includes support for HTML5
 - **Media Library** - Reusable media records across your site
 - **Auto Playlists** - 2+ items automatically create playlists
 - **Full Accessibility** - Captions, chapters, audio description, sign language, keyboard controls
-- **HLS Streaming** - Adaptive bitrate streaming with hls.js (integrated into video/audio types)
+- **HLS Streaming** - Adaptive bitrate streaming with hls.js (Chrome / Firefox / Edge / desktop Safari) and native HLS on iOS / iPadOS — both paths integrate with VidPly's captions, transcript and quality menus
 - **DASH Streaming** - MPEG-DASH via dash.js with adaptive quality and subtitles (integrated into video/audio types)
+- **SoundCloud Renderer** - First-class SoundCloud playback through the SoundCloud Widget API (in addition to the GDPR consent layer)
+- **Buffering Spinner** - Centered loading spinner shown automatically while the media is buffering
+- **Optional Download Button** - Per-media download control with custom URL support
 - **Modern Player** - Responsive, Picture-in-Picture, quality switching, playback speed
+- **TypeScript Codebase** - The bundled VidPly player is now authored in strict TypeScript with shipped `.d.ts` declarations
 - **Conditional Asset Loading** - Only loads JavaScript needed for your media types
 
 ## Quick Start
@@ -67,7 +71,7 @@ Settings support multilingual content and apply to both single items and playlis
 | Audio | Upload/URL | No | MP3, OGG, HLS (.m3u8), DASH (.mpd) with fallbacks |
 | YouTube | Video URL | Yes | GDPR consent required |
 | Vimeo | Video URL | Yes | GDPR consent required |
-| SoundCloud | Track/Set URL | Yes | GDPR consent required |
+| SoundCloud | Track/Set URL | Yes | GDPR consent required; once accepted, played via the dedicated SoundCloud Widget renderer |
 
 ## Privacy Layer
 
