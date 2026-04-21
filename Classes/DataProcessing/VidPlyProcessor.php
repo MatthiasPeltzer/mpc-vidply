@@ -284,6 +284,22 @@ class VidPlyProcessor implements DataProcessorInterface
         if (!$trackResult['isPlaylist'] && isset($mediaRecords[0]) && !empty($mediaRecords[0]['hide_speed_button'])) {
             $playerOptions['speedButton'] = false;
         }
+
+        // Floating player is an opt-in replacement for native Picture-in-Picture.
+        // It is only meaningful for single-video records (playlists are out of scope
+        // for v1) and requires the player to render <video>, so we skip audio.
+        if (
+            !$trackResult['isPlaylist']
+            && isset($mediaRecords[0])
+            && !empty($mediaRecords[0]['enable_floating_player'])
+            && ($mediaRecords[0]['media_type'] ?? '') === 'video'
+        ) {
+            $playerOptions['floating'] = true;
+            $playerOptions['floatingPosition'] = 'bottom-right';
+            // The FloatingPlayerManager wires itself to the existing PiP button
+            // when floating is enabled, so make sure the button is rendered.
+            $playerOptions['pipButton'] = true;
+        }
     }
 
     /**

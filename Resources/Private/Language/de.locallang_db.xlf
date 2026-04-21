@@ -131,6 +131,14 @@
         <source>When enabled, a download button is shown in the player control bar, allowing the user to download the media file.</source>
         <target>Wenn aktiviert, wird eine Download-Schaltfläche in der Player-Steuerleiste angezeigt, mit der die Mediendatei heruntergeladen werden kann.</target>
       </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.enable_floating_player">
+        <source>Enable floating player (custom PiP)</source>
+        <target>Schwebenden Player aktivieren (eigenes Bild-in-Bild)</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.enable_floating_player.description">
+        <source>When enabled, the player disables the browser's native Picture-in-Picture, adds a PiP button to the control bar, and pops the video into a draggable, resizable floating window that also appears when the video scrolls out of view while playing.</source>
+        <target>Wenn aktiviert, deaktiviert der Player das native Bild-in-Bild des Browsers, blendet eine PiP-Schaltfläche in der Steuerleiste ein und zeigt das Video in einem ziehbaren, in der Größe veränderbaren schwebenden Fenster an – auch wenn das Video beim Abspielen aus dem sichtbaren Bereich gescrollt wird.</target>
+      </trans-unit>
       <trans-unit id="tx_mpcvidply_media.media_file">
         <source>Media File</source>
         <target>Mediendatei</target>

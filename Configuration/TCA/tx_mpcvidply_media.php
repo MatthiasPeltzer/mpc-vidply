@@ -173,7 +173,7 @@ return [
             'showitem' => 'title,--linebreak--,artist,--linebreak--,description,--linebreak--,duration,audio_description_duration',
         ],
         'ui' => [
-            'showitem' => 'hide_speed_button,allow_download',
+            'showitem' => 'hide_speed_button,allow_download,enable_floating_player',
         ],
         'timeRestriction' => [
             'showitem' => 'starttime,endtime',
@@ -693,6 +693,27 @@ return [
             'exclude' => true,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.allow_download',
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.allow_download.description',
+            'config' => [
+                'type' => 'check',
+                'renderType' => 'checkboxToggle',
+                'items' => [
+                    [
+                        'label' => '',
+                    ],
+                ],
+            ],
+        ],
+        // Per-media opt-in for the custom in-page floating player (our
+        // replacement for native Picture-in-Picture). When enabled, the player
+        // renders a PiP button in the control bar that pops the video into a
+        // draggable/resizable floating window anchored to the viewport, and
+        // automatically pops out when the video scrolls out of view while
+        // playing. Only meaningful for single video records.
+        'enable_floating_player' => [
+            'exclude' => true,
+            'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.enable_floating_player',
+            'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.enable_floating_player.description',
+            'displayCond' => 'FIELD:media_type:=:video',
             'config' => [
                 'type' => 'check',
                 'renderType' => 'checkboxToggle',

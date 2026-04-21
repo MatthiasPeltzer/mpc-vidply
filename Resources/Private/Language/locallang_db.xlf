@@ -99,6 +99,12 @@
       <trans-unit id="tx_mpcvidply_media.allow_download.description">
         <source>When enabled, a download button is shown in the player control bar, allowing the user to download the media file.</source>
       </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.enable_floating_player">
+        <source>Enable floating player (custom PiP)</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.enable_floating_player.description">
+        <source>When enabled, the player disables the browser's native Picture-in-Picture, adds a PiP button to the control bar, and pops the video into a draggable, resizable floating window that also appears when the video scrolls out of view while playing.</source>
+      </trans-unit>
       <trans-unit id="tx_mpcvidply_media.media_file">
         <source>Media File</source>
       </trans-unit>
