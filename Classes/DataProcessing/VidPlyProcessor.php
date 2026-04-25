@@ -417,9 +417,47 @@ class VidPlyProcessor implements DataProcessorInterface
         $optionOverrides = [];
 
         $firstType = MediaType::tryFrom($firstTrack['type'] ?? '');
+        $firstMimeType = strtolower((string)($firstTrack['type'] ?? ''));
+        $mseMimeTypes = [
+            'application/dash+xml',
+            'application/x-mpegurl',
+            'application/vnd.apple.mpegurl',
+        ];
+        $hasMultipleSources = !empty($firstTrack['sources']) && count($firstTrack['sources']) > 1;
+        $isSingleMseSource = !$hasMultipleSources && in_array($firstMimeType, $mseMimeTypes, true);
+
+        $mseSourceUrl = null;
+        if (!empty($firstTrack['sources'])) {
+            foreach ($firstTrack['sources'] as $source) {
+                $sourceMime = strtolower((string)($source['type'] ?? ''));
+                if (in_array($sourceMime, $mseMimeTypes, true)) {
+                    $mseSourceUrl = $source['src'] ?? null;
+                    break;
+                }
+            }
+        }
+
         if ($firstType !== null && in_array($firstType, [MediaType::YouTube, MediaType::Vimeo, MediaType::SoundCloud], true)) {
             $result['videoUrl'] = $firstTrack['src'];
-        } elseif (!empty($firstTrack['sources']) && count($firstTrack['sources']) > 1) {
+        } elseif ($isSingleMseSource) {
+            // Firefox fires a "may not load data from blob:" security warning when a
+            // <video> element first tries to preload an unplayable <source> (a DASH
+            // or HLS manifest) and is then handed a blob: URL by dash.js / hls.js via
+            // MediaSource Extensions. Routing the manifest through data-vidply-src
+            // (instead of a <source> child) avoids rendering the unplayable source in
+            // the first place — the MSE renderers pick the URL up from the attribute.
+            // See Mozilla bug 1768052 and moonfire-nvr issue #286 for the upstream
+            // Firefox behaviour.
+            $result['videoUrl'] = $firstTrack['src'];
+        } elseif ($mseSourceUrl !== null) {
+            // Multi-source track that contains a DASH/HLS manifest alongside native
+            // fallbacks (e.g. an MP4). dash.js / hls.js take over playback and strip
+            // all <source> children on init, so rendering the native fallbacks is
+            // pointless and triggers the same Firefox preload/blob race described
+            // above. Hand the manifest URL to the MSE renderer via data-vidply-src
+            // and suppress the <source> list entirely.
+            $result['videoUrl'] = $mseSourceUrl;
+        } elseif ($hasMultipleSources) {
             $result['sources'] = $firstTrack['sources'];
         } else {
             $result['mediaFiles'][] = [
