@@ -285,6 +285,17 @@ class VidPlyProcessor implements DataProcessorInterface
             $playerOptions['speedButton'] = false;
         }
 
+        // MSE-based streams (DASH via dash.js, HLS via hls.js) rely on attaching
+        // the MediaSource during renderer init. Deferring attachSource to the
+        // first play() click triggers a race in dash.js where the manifest
+        // resolves while media.play() has already started, causing
+        // "SourceBuffer has been removed" errors. Force eager load for these
+        // streams so MSE is fully wired up before playback is requested.
+        if ($this->hasMseStream($trackResult['tracks'])) {
+            $playerOptions['deferLoad'] = false;
+            $playerOptions['requirePlaybackForAccessibilityToggles'] = false;
+        }
+
         // Floating player is an opt-in replacement for native Picture-in-Picture.
         // It is only meaningful for single-video records (playlists are out of scope
         // for v1) and requires the player to render <video>, so we skip audio.
@@ -300,6 +311,35 @@ class VidPlyProcessor implements DataProcessorInterface
             // when floating is enabled, so make sure the button is rendered.
             $playerOptions['pipButton'] = true;
         }
+    }
+
+    /**
+     * Detect whether any track (or one of its alternative sources) uses a
+     * MediaSource Extensions based streaming protocol (DASH or HLS).
+     *
+     * @param list<array> $tracks
+     */
+    private function hasMseStream(array $tracks): bool
+    {
+        $mseTypes = [
+            'application/dash+xml',
+            'application/x-mpegurl',
+            'application/vnd.apple.mpegurl',
+        ];
+
+        foreach ($tracks as $track) {
+            $candidates = [(string)($track['type'] ?? '')];
+            foreach ($track['sources'] ?? [] as $source) {
+                $candidates[] = (string)($source['type'] ?? '');
+            }
+            foreach ($candidates as $type) {
+                if ($type !== '' && in_array(strtolower($type), $mseTypes, true)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
