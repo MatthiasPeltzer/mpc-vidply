@@ -1,0 +1,104 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+
+<f:layout name="Default" />
+
+<f:section name="Main">
+    <f:asset.css href="EXT:mpc_vidply/Resources/Public/Css/listview.min.css" identifier="vidplyListviewCSS"/>
+
+    <f:if condition="{detail.found}">
+        <f:then>
+            <article class="mpc-vidply-detail" id="mpc-vidply-detail-{detail.mediaUid}">
+                <header class="mpc-vidply-detail__header">
+                    <h1 class="mpc-vidply-detail__title">{detail.title}</h1>
+                    <p class="mpc-vidply-detail__meta">
+                        <f:if condition="{detail.artist}">
+                            {detail.artist}
+                        </f:if>
+                    </p>
+                </header>
+
+                <div class="mpc-vidply-detail__player">
+                    <f:if condition="{vidply}">
+                        <f:render partial="VidPly/Player" arguments="{_all}" />
+                    </f:if>
+                </div>
+
+                <f:if condition="{detail.description}">
+                    <p class="mpc-vidply-detail__description">
+                        <f:format.html>{detail.description}</f:format.html>
+                    </p>
+                </f:if>
+
+                <f:if condition="{detail.longDescription}">
+                    <div class="mpc-vidply-detail__long-description">
+                        <f:format.html>{detail.longDescription}</f:format.html>
+                    </div>
+                </f:if>
+
+                <f:if condition="{detail.categories}">
+                    <nav class="mpc-vidply-detail__categories"
+                         aria-label="{f:translate(key: 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:detail.categories', default: 'Categories')}">
+                        <ul class="mpc-vidply-detail__category-list">
+                            <f:for each="{detail.categories}" as="category">
+                                <li class="mpc-vidply-detail__category">
+                                    <span class="mpc-vidply-detail__category-chip">{category.title}</span>
+                                </li>
+                            </f:for>
+                        </ul>
+                    </nav>
+                </f:if>
+
+                <f:if condition="{detail.jsonLd}">
+                    <script type="application/ld+json"><f:format.raw>{detail.jsonLd}</f:format.raw></script>
+                </f:if>
+
+                <f:if condition="{detail.related}">
+                    <section class="mpc-vidply-listview-section mpc-vidply-listview-section--shelf mpc-vidply-detail__related"
+                             aria-labelledby="mpc-vidply-detail-related-heading">
+                        <header class="mpc-vidply-listview-section__header">
+                            <h2 id="mpc-vidply-detail-related-heading"
+                                class="mpc-vidply-listview-section__title">
+                                <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:detail.related">
+                                    You might also like
+                                </f:translate>
+                            </h2>
+                        </header>
+
+                        <f:asset.script identifier="vidplyListviewJs" src="EXT:mpc_vidply/Resources/Public/JavaScript/Listview.min.js" type="module"/>
+
+                        <div class="mpc-vidply-listview-shelf-wrapper">
+                            <f:render partial="Listview/ShelfArrows" arguments="{domId: 'mpc-vidply-detail-related'}" />
+                            <ul class="mpc-vidply-listview-shelf mpc-vidply-listview-shelf--poster"
+                                id="mpc-vidply-detail-related-track"
+                                data-vidply-shelf
+                                role="list"
+                                tabindex="0">
+                                <f:for each="{detail.related}" as="card">
+                                    <li class="mpc-vidply-listview-shelf__item" role="listitem">
+                                        <f:render partial="Listview/Card" arguments="{card: card, cardStyle: 'poster'}" />
+                                    </li>
+                                </f:for>
+                            </ul>
+                        </div>
+                    </section>
+                </f:if>
+            </article>
+        </f:then>
+        <f:else>
+            <div class="mpc-vidply-detail mpc-vidply-detail--not-found" role="alert">
+                <h1 class="mpc-vidply-detail__title">
+                    <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:detail.not_found.title">
+                        Media not found
+                    </f:translate>
+                </h1>
+                <p>
+                    <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:detail.not_found.description">
+                        The requested media is no longer available.
+                    </f:translate>
+                </p>
+            </div>
+        </f:else>
+    </f:if>
+</f:section>
+
+</html>

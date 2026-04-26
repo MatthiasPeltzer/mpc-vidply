@@ -111,6 +111,70 @@
         <source>Google's privacy policy</source>
         <target>die Datenschutzerklärung von Google</target>
       </trans-unit>
+      <trans-unit id="listview.empty">
+        <source>No media rows have been configured yet.</source>
+        <target>Es wurden noch keine Medien-Reihen konfiguriert.</target>
+      </trans-unit>
+      <trans-unit id="listview.row.untitled">
+        <source>Selection</source>
+        <target>Auswahl</target>
+      </trans-unit>
+      <trans-unit id="listview.row.all">
+        <source>Show all</source>
+        <target>Alle anzeigen</target>
+      </trans-unit>
+      <trans-unit id="listview.shelf.prev">
+        <source>Previous items</source>
+        <target>Vorherige Einträge</target>
+      </trans-unit>
+      <trans-unit id="listview.shelf.next">
+        <source>Next items</source>
+        <target>Nächste Einträge</target>
+      </trans-unit>
+      <trans-unit id="listview.sort.label">
+        <source>Sort by</source>
+        <target>Sortieren</target>
+      </trans-unit>
+      <trans-unit id="listview.pagination.nav">
+        <source>Pagination</source>
+        <target>Seiten</target>
+      </trans-unit>
+      <trans-unit id="listview.pagination.nav_aria">
+        <source>Pagination, page {0} of {1}</source>
+        <target>Seitennavigation, Seite {0} von {1}</target>
+      </trans-unit>
+      <trans-unit id="listview.pagination.previous">
+        <source>Previous</source>
+        <target>Zurück</target>
+      </trans-unit>
+      <trans-unit id="listview.pagination.next">
+        <source>Next</source>
+        <target>Weiter</target>
+      </trans-unit>
+      <trans-unit id="listview.pagination.page_of">
+        <source>Page {0} of {1}</source>
+        <target>Seite {0} von {1}</target>
+      </trans-unit>
+      <trans-unit id="detail.duration">
+        <source>Duration</source>
+        <target>Dauer</target>
+      </trans-unit>
+      <trans-unit id="detail.categories">
+        <source>Categories</source>
+        <target>Kategorien</target>
+      </trans-unit>
+      <trans-unit id="detail.related">
+        <source>You might also like</source>
+        <target>Das könnte Sie auch interessieren</target>
+      </trans-unit>
+      <trans-unit id="detail.not_found.title">
+        <source>Media not found</source>
+        <target>Inhalt nicht gefunden</target>
+      </trans-unit>
+      <trans-unit id="detail.not_found.description">
+        <source>The requested media is no longer available.</source>
+        <target>Der angeforderte Inhalt ist nicht mehr verfügbar.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

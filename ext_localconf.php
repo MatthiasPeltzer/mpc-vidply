@@ -7,10 +7,18 @@ use Mpc\MpcVidply\OnlineMedia\Helpers\ExternalVideoHelper;
 use Mpc\MpcVidply\OnlineMedia\Helpers\DashHelper;
 use Mpc\MpcVidply\OnlineMedia\Helpers\HlsHelper;
 use Mpc\MpcVidply\OnlineMedia\Helpers\SoundCloudHelper;
+use Mpc\MpcVidply\Hooks\VidPlyPlaylistTranslationSync;
+use Mpc\MpcVidply\Routing\Aspect\VidPlyMediaRouteAspect;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 defined('TYPO3') or die('Access denied.');
+
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = VidPlyPlaylistTranslationSync::class;
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processCmdmapClass'][] = VidPlyPlaylistTranslationSync::class;
+
+// Custom route aspect for `route-enhancers.yaml` (slug optional → query fallback).
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['routing']['aspects']['MpcVidplyMediaRoute'] = VidPlyMediaRouteAspect::class;
 
 // Register custom Online Media helpers (Add media by URL)
 // Only register if the corresponding allow-list is configured to avoid advertising providers that would always reject URLs.

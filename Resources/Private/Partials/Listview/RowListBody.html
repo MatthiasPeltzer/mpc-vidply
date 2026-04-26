@@ -1,0 +1,41 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<f:comment>Shared grid &amp; shelf body for Listview/Row; used with or without pagination wrapper.</f:comment>
+<f:switch expression="{row.layout}">
+    <f:case value="grid">
+        <ul class="mpc-vidply-listview-grid mpc-vidply-listview-grid--{row.cardStyle}"
+            data-mpc-vidply-list-root
+            id="{row.domId}-list"
+            role="list">
+            <f:for each="{row.cards}" as="card" iteration="i">
+                <li class="mpc-vidply-listview-grid__item" role="listitem"
+                    data-mpc-vidply-order="{i.index}"
+                    data-mpc-vidply-crdate="{card.crdate}"
+                    data-mpc-vidply-title="{card.title -> f:format.htmlspecialchars()}">
+                    <f:render partial="Listview/Card" arguments="{card: card, cardStyle: row.cardStyle}" />
+                </li>
+            </f:for>
+        </ul>
+    </f:case>
+    <f:defaultCase>
+        <div class="mpc-vidply-listview-shelf-wrapper">
+            <f:render partial="Listview/ShelfArrows" arguments="{domId: row.domId}" />
+            <ul class="mpc-vidply-listview-shelf mpc-vidply-listview-shelf--{row.cardStyle}"
+                id="{row.domId}-track"
+                data-vidply-shelf
+                data-mpc-vidply-list-root
+                role="list"
+                tabindex="0"
+                aria-label="{f:if(condition: row.headline, then: row.headline, else: 'Media shelf')}">
+                <f:for each="{row.cards}" as="card" iteration="i">
+                    <li class="mpc-vidply-listview-shelf__item" role="listitem"
+                        data-mpc-vidply-order="{i.index}"
+                        data-mpc-vidply-crdate="{card.crdate}"
+                        data-mpc-vidply-title="{card.title -> f:format.htmlspecialchars()}">
+                        <f:render partial="Listview/Card" arguments="{card: card, cardStyle: row.cardStyle}" />
+                    </li>
+                </f:for>
+            </ul>
+        </div>
+    </f:defaultCase>
+</f:switch>
+</html>

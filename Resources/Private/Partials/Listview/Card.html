@@ -1,0 +1,106 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+
+<article class="mpc-vidply-card mpc-vidply-card--{cardStyle}">
+    <f:if condition="{card.detailUrl}">
+        <f:then>
+            <a class="mpc-vidply-card__link" href="{card.detailUrl}"
+               aria-label="{card.title}{f:if(condition: card.durationFormatted, then: ', {card.durationFormatted}')}">
+                <f:render section="Media" arguments="{card: card, cardStyle: cardStyle}" />
+            </a>
+        </f:then>
+        <f:else>
+            <f:render section="Media" arguments="{card: card, cardStyle: cardStyle}" />
+        </f:else>
+    </f:if>
+</article>
+
+<f:section name="Media">
+    <figure class="mpc-vidply-card__media">
+        <f:switch expression="{cardStyle}">
+            <f:case value="poster_compact">
+                <f:variable name="imgWidth" value="480c" />
+                <f:variable name="imgHeight" value="640c" />
+                <f:variable name="imgWidth2x" value="960c" />
+                <f:variable name="imgHeight2x" value="1280c" />
+            </f:case>
+            <f:case value="landscape">
+                <f:variable name="imgWidth" value="800c" />
+                <f:variable name="imgHeight" value="450c" />
+                <f:variable name="imgWidth2x" value="1600c" />
+                <f:variable name="imgHeight2x" value="900c" />
+            </f:case>
+            <f:defaultCase>
+                <f:variable name="imgWidth" value="640c" />
+                <f:variable name="imgHeight" value="360c" />
+                <f:variable name="imgWidth2x" value="1280c" />
+                <f:variable name="imgHeight2x" value="720c" />
+            </f:defaultCase>
+        </f:switch>
+
+        <f:if condition="{card.posterReferenceUid}">
+            <f:then>
+                <picture>
+                    <source type="image/webp"
+                            srcset="{f:uri.image(src: card.posterReferenceUid, treatIdAsReference: 1, width: imgWidth, height: imgHeight, fileExtension: 'webp')} 1x, {f:uri.image(src: card.posterReferenceUid, treatIdAsReference: 1, width: imgWidth2x, height: imgHeight2x, fileExtension: 'webp')} 2x" />
+                    <f:image src="{card.posterReferenceUid}"
+                             treatIdAsReference="1"
+                             class="mpc-vidply-card__image"
+                             width="{imgWidth}"
+                             height="{imgHeight}"
+                             alt="{card.posterAlt}"
+                             loading="lazy"
+                             decoding="async"
+                             fileExtension="webp" />
+                </picture>
+            </f:then>
+            <f:else>
+                <f:if condition="{card.poster}">
+                    <f:then>
+                        <img class="mpc-vidply-card__image"
+                             src="{card.poster}"
+                             alt="{card.posterAlt}"
+                             loading="lazy"
+                             decoding="async" />
+                    </f:then>
+                    <f:else>
+                        <span class="mpc-vidply-card__placeholder" aria-hidden="true"></span>
+                    </f:else>
+                </f:if>
+            </f:else>
+        </f:if>
+
+        <f:if condition="{card.durationFormatted}">
+            <span class="mpc-vidply-card__duration-badge" aria-hidden="true">{card.durationFormatted}</span>
+        </f:if>
+        <span class="mpc-vidply-card__media-type-badge mpc-vidply-card__media-type-badge--{card.mediaType}"
+              aria-hidden="true">
+            <f:switch expression="{card.mediaType}">
+                <f:case value="audio">Audio</f:case>
+                <f:case value="soundcloud">SoundCloud</f:case>
+                <f:case value="youtube">YouTube</f:case>
+                <f:case value="vimeo">Vimeo</f:case>
+                <f:defaultCase>Video</f:defaultCase>
+            </f:switch>
+        </span>
+        <figcaption class="mpc-vidply-card__caption">
+            <h3 class="mpc-vidply-card__title">{card.title}</h3>
+            <f:if condition="{card.artist}">
+                <p class="mpc-vidply-card__meta">{card.artist}</p>
+            </f:if>
+            <f:if condition="{card.categories}">
+                <ul class="mpc-vidply-card__category-list"
+                    aria-label="{f:translate(key: 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:detail.categories', default: 'Categories')}">
+                    <f:for each="{card.categories}" as="category">
+                        <f:if condition="{category.title}">
+                            <li class="mpc-vidply-card__category-item">
+                                <span class="mpc-vidply-card__category-chip">{category.title}</span>
+                            </li>
+                        </f:if>
+                    </f:for>
+                </ul>
+            </f:if>
+        </figcaption>
+    </figure>
+</f:section>
+
+</html>

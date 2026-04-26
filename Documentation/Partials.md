@@ -183,6 +183,24 @@ your_sitepackage/
 
 Other partials remain unchanged.
 
+---
+
+## Listview & detail templates
+
+Location: `Resources/Private/Partials/Listview/` and
+`Resources/Private/Templates/Listview.html` / `Detail.html`
+
+| Partial / template | Role |
+|--------------------|------|
+| `Listview/Row` | One shelf or grid row: headline, sort `<select>`, optional paginate wrapper |
+| `Listview/RowListBody` | Shared `<ul>` for grid or shelf (used with or without pagination) |
+| `Listview/Card` | Single media card (poster, title, artist, category chips, link) |
+| `Listview/ShelfArrows` | Previous/next controls for the horizontal shelf |
+
+Override the same way with `partialRootPaths` for `mpc_vidply` listview
+TypoScript if your sitepackage needs different markup; keep `data-*`
+attributes if you rely on `Listview.js` (shelf, sort, pagination).
+
 ## Benefits
 
 - **Single Responsibility** - Each partial has one clear purpose

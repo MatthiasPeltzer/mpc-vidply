@@ -9,6 +9,72 @@
       <trans-unit id="content_element.title">
         <source>VidPly Player</source>
       </trans-unit>
+      <trans-unit id="content_element.listview.title">
+        <source>VidPly Listview</source>
+      </trans-unit>
+      <trans-unit id="content_element.listview.description">
+        <source>Overview element rendering one or more "shelves" of media cards (grid or horizontal scroller), Mediathek style. Cards link to a detail page with SEO-friendly slug URLs.</source>
+      </trans-unit>
+      <trans-unit id="content_element.detail.title">
+        <source>VidPly Detail</source>
+      </trans-unit>
+      <trans-unit id="content_element.detail.description">
+        <source>Renders the VidPly player and metadata for the media record referenced by the URL (e.g. /mediathek/my-slug). Typically placed once on a dedicated detail page.</source>
+      </trans-unit>
+      <trans-unit id="tabs.listview_rows">
+        <source>Listview Rows</source>
+      </trans-unit>
+      <trans-unit id="tabs.listview_settings">
+        <source>Detail Page</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_listview_rows">
+        <source>Listview Rows</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_listview_rows.description">
+        <source>Add one row per "shelf". Each row has its own headline, layout, and media selection.</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_detail_page">
+        <source>Detail Page</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_detail_page.description">
+        <source>Target page for card links. The page should contain the "VidPly Detail" content element and be served under a route enhancer (e.g. /mediathek).</source>
+      </trans-unit>
+      <trans-unit id="preview.listview.empty">
+        <source>No listview rows configured yet</source>
+      </trans-unit>
+      <trans-unit id="preview.listview.empty.hint">
+        <source>Add at least one row to this listview element</source>
+      </trans-unit>
+      <trans-unit id="preview.listview.summary">
+        <source>%d listview row(s) configured</source>
+      </trans-unit>
+      <trans-unit id="preview.listview.layout.shelf">
+        <source>Shelf</source>
+      </trans-unit>
+      <trans-unit id="preview.listview.layout.grid">
+        <source>Grid</source>
+      </trans-unit>
+      <trans-unit id="preview.listview.selection.manual">
+        <source>Manual</source>
+      </trans-unit>
+      <trans-unit id="preview.listview.selection.category">
+        <source>By category</source>
+      </trans-unit>
+      <trans-unit id="preview.listview.detail_page">
+        <source>Detail page: PID %d</source>
+      </trans-unit>
+      <trans-unit id="preview.listview.detail_page.missing">
+        <source>No detail page selected — card links will not be generated</source>
+      </trans-unit>
+      <trans-unit id="preview.listview.row_items_empty">
+        <source>No media items in this row</source>
+      </trans-unit>
+      <trans-unit id="preview.listview.row_items_truncated">
+        <source>%1$d of %2$d items shown</source>
+      </trans-unit>
+      <trans-unit id="preview.listview.row_items_capped">
+        <source>Preview shows at most %d items per row</source>
+      </trans-unit>
       <trans-unit id="preview.external_audio">
         <source>External Audio</source>
       </trans-unit>
@@ -80,6 +146,15 @@
       </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_language.auto">
         <source>Auto (detect from page language)</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_show_related">
+        <source>Related content</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_show_related.description">
+        <source>When enabled, a horizontal list of more items from the same category is shown below the player (if any exist). Turn off to hide this block entirely.</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_show_related.toggle">
+        <source>Show &quot;You might also like&quot; row</source>
       </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_media">
         <source>Media Files</source>

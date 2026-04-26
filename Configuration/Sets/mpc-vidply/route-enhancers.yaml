@@ -1,0 +1,18 @@
+routeEnhancers:
+  # Rewrites /path/to/detail-page?media=<uid> to /path/to/detail-page/<slug>
+  # and back. The `media` variable uses {@see Mpc\MpcVidply\Routing\Aspect\VidPlyMediaRouteAspect}
+  # (registered in ext_localconf.php): for records with an empty `slug` it yields
+  # no path segment so TYPO3 keeps `?media=<uid>&cHash=…` on the detail page URL.
+  #
+  # Admins can additionally scope this to specific detail pages by overriding
+  # the enhancer in their site config.yaml and adding `limitToPages: [<uid>]`.
+  VidPlyDetail:
+    type: Simple
+    routePath: '/{media}'
+    requirements:
+      media: '[a-zA-Z0-9\-]+'
+    aspects:
+      media:
+        type: MpcVidplyMediaRoute
+        tableName: tx_mpcvidply_media
+        routeFieldName: slug

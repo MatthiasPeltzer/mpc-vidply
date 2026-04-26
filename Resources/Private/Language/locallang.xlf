@@ -84,6 +84,54 @@
       <trans-unit id="privacy.youtube.policy_link">
         <source>Google's privacy policy</source>
       </trans-unit>
+      <trans-unit id="listview.empty">
+        <source>No media rows have been configured yet.</source>
+      </trans-unit>
+      <trans-unit id="listview.row.untitled">
+        <source>Selection</source>
+      </trans-unit>
+      <trans-unit id="listview.row.all">
+        <source>Show all</source>
+      </trans-unit>
+      <trans-unit id="listview.shelf.prev">
+        <source>Previous items</source>
+      </trans-unit>
+      <trans-unit id="listview.shelf.next">
+        <source>Next items</source>
+      </trans-unit>
+      <trans-unit id="listview.sort.label">
+        <source>Sort by</source>
+      </trans-unit>
+      <trans-unit id="listview.pagination.nav">
+        <source>Pagination</source>
+      </trans-unit>
+      <trans-unit id="listview.pagination.nav_aria">
+        <source>Pagination, page {0} of {1}</source>
+      </trans-unit>
+      <trans-unit id="listview.pagination.previous">
+        <source>Previous</source>
+      </trans-unit>
+      <trans-unit id="listview.pagination.next">
+        <source>Next</source>
+      </trans-unit>
+      <trans-unit id="listview.pagination.page_of">
+        <source>Page {0} of {1}</source>
+      </trans-unit>
+      <trans-unit id="detail.duration">
+        <source>Duration</source>
+      </trans-unit>
+      <trans-unit id="detail.categories">
+        <source>Categories</source>
+      </trans-unit>
+      <trans-unit id="detail.related">
+        <source>You might also like</source>
+      </trans-unit>
+      <trans-unit id="detail.not_found.title">
+        <source>Media not found</source>
+      </trans-unit>
+      <trans-unit id="detail.not_found.description">
+        <source>The requested media is no longer available.</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>

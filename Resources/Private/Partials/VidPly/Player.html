@@ -1,0 +1,60 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+
+<f:variable name="wrapperClasses" value="{f:if(condition: vidply.useCssIcons, then: 'vidply-wrapper vidply-use-css-icons', else: 'vidply-wrapper')}" />
+<f:if condition="{vidply.privacyPlayIconUrl} || {vidply.privacyPlayButtonPosition} != 'center'">
+    <f:asset.css href="EXT:mpc_vidply/Resources/Public/Css/vidply-overrides.min.css" identifier="vidplyOverridesCSS"/>
+</f:if>
+
+<f:if condition="{vidply.useCssIcons}">
+    <f:asset.css href="EXT:mpc_vidply/Resources/Public/Css/vidply-icons.min.css" identifier="vidplyIconsCSS"/>
+</f:if>
+
+<div class="{wrapperClasses}"
+     id="{vidply.uniqueId}-wrapper"
+     role="region"
+     aria-label="{f:if(condition: data.header, then: data.header, else: 'Media player')}"
+     <f:if condition="{vidply.privacyPlayIconUrl}">data-vidply-play-icon="{vidply.privacyPlayIconUrl}"</f:if>
+     data-vidply-play-position="{vidply.privacyPlayButtonPosition}"
+     <f:if condition="{vidply.privacyPlayIconInlineSvg}">data-vidply-play-inline-svg="1"</f:if>
+     <f:if condition="{vidply.themeSyncEnabled}">data-vidply-theme-sync="1"</f:if>
+     <f:if condition="!{vidply.privacyPlayIconInlineSvg} && {vidply.privacyPlayIconUrl}">style="--mpc-vidply-play-overlay-icon: url('{vidply.privacyPlayIconUrl}');"</f:if>>
+    <f:if condition="{vidply.privacyPlayIconInlineSvg}">
+        <template class="mpc-vidply-play-inline-svg">
+            <f:format.raw>{vidply.privacyPlayIconInlineSvg}</f:format.raw>
+        </template>
+    </f:if>
+    <f:switch expression="{vidply.renderMode}">
+        <f:case value="privacy">
+            <f:render partial="VidPly/PrivacyLayer" arguments="{
+                service: vidply.serviceType,
+                videoUrl: vidply.videoUrl,
+                poster: vidply.poster,
+                title: data.header,
+                uniqueId: vidply.uniqueId,
+                privacySettings: vidply.privacySettings,
+                playIconUrl: vidply.privacyPlayIconUrl,
+                playIconInlineSvg: vidply.privacyPlayIconInlineSvg,
+                playButtonPosition: vidply.privacyPlayButtonPosition
+            }" />
+        </f:case>
+        <f:case value="mixedPlaylist">
+            <f:render partial="VidPly/MixedPlaylistPlayer" arguments="{_all}" />
+        </f:case>
+        <f:case value="audio">
+            <f:render partial="VidPly/AudioPlayer" arguments="{_all}" />
+        </f:case>
+        <f:case value="video">
+            <f:render partial="VidPly/VideoPlayer" arguments="{_all}" />
+        </f:case>
+    </f:switch>
+
+    <f:render partial="VidPly/Assets" arguments="{
+        needsPrivacyLayer: vidply.needsPrivacyLayer,
+        needsVidPlay: vidply.needsVidPlay,
+        needsPlaylist: vidply.needsPlaylist,
+        needsHLS: vidply.needsHLS,
+        needsDASH: vidply.needsDASH
+    }" />
+</div>
+
+</html>

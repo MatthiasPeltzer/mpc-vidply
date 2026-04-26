@@ -78,6 +78,12 @@
       <trans-unit id="tx_mpcvidply_media.description">
         <source>Description</source>
       </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.long_description">
+        <source>Long description</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.long_description.description">
+        <source>Full text for the detail page; supports rich text (headings, links, lists).</source>
+      </trans-unit>
       <trans-unit id="tx_mpcvidply_media.duration">
         <source>Duration (seconds)</source>
       </trans-unit>
@@ -153,8 +159,107 @@
       <trans-unit id="tx_mpcvidply_media.sign_language_display_mode.pip">
         <source>Picture-in-Picture (overlay)</source>
       </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.slug">
+        <source>URL Segment / Slug</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.slug.description">
+        <source>SEO-friendly URL segment used on the detail page. Will be auto-generated from the title unless overridden. Must be unique per site.</source>
+      </trans-unit>
       <trans-unit id="tx_mpcvidply_media.title">
         <source>Title</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row">
+        <source>VidPly Listview Row</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.tabs.selection">
+        <source>Selection</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.headline">
+        <source>Row Headline</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.headline_link">
+        <source>"Show all" Link (optional)</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.headline_link.description">
+        <source>Optional link rendered beside the headline. Typically points to an archive or category page.</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.layout">
+        <source>Layout</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.layout.shelf">
+        <source>Horizontal shelf (scrollable)</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.layout.grid">
+        <source>Responsive grid</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.card_style">
+        <source>Card style</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.card_style.poster">
+        <source>Poster (16:9)</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.card_style.poster_compact">
+        <source>Compact (3:4)</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.card_style.landscape">
+        <source>Landscape (wide)</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.limit_items">
+        <source>Max items</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.limit_items.description">
+        <source>Maximum number of items rendered in this row (1–200).</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.enable_pagination">
+        <source>Client-side pagination</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.enable_pagination.description">
+        <source>Only for layout &quot;Responsive grid&quot;. Horizontal shelves use scrolling instead; pagination is not available for them. When enabled, long rows are split into pages in the browser (default 12 per page, configurable). Turn off to always show the full set up to the max items limit above.</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.enable_pagination.toggle">
+        <source>Enabled</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.pagination_per_page">
+        <source>Items per page</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.pagination_per_page.description">
+        <source>Grid layout only. How many items are visible on each “page” when pagination is active (1–200). Must be less than the total number of items for pagination to appear.</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.sort_by">
+        <source>Sort order</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.sort_by.sorting">
+        <source>Manual sorting</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.sort_by.crdate_desc">
+        <source>Newest first</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.sort_by.title_asc">
+        <source>Title A–Z</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.selection_mode">
+        <source>Selection mode</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.selection_mode.manual">
+        <source>Manual (pick individual records)</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.selection_mode.category">
+        <source>Automatic (by category)</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.media_items">
+        <source>Media items</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.media_items.description">
+        <source>Hand-pick the media records to display in this row.</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.media_items.add">
+        <source>Create media record</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.categories">
+        <source>Categories</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.categories.description">
+        <source>Media records assigned to any of these categories will be rendered in this row.</source>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_privacy_settings.soundcloud_button_label">
         <source>Button Label (optional)</source>

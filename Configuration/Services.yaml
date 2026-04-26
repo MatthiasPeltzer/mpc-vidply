@@ -18,6 +18,33 @@ services:
   Mpc\MpcVidply\DataProcessing\VidPlyProcessor:
     public: true
 
+  Mpc\MpcVidply\DataProcessing\ListviewProcessor:
+    public: true
+
+  Mpc\MpcVidply\DataProcessing\DetailProcessor:
+    public: true
+
+  # Page-level DataProcessor rewriting the breadcrumb on detail views; resolved
+  # via the service container when referenced from TypoScript.
+  Mpc\MpcVidply\DataProcessing\DetailBreadcrumbProcessor:
+    public: true
+
+  # Page title provider; TYPO3 resolves it via makeInstance(), marking it public
+  # ensures autowired dependencies (DetailRequestResolver) are available.
+  Mpc\MpcVidply\PageTitle\VidPlyDetailPageTitleProvider:
+    public: true
+
+  Mpc\MpcVidply\Service\DetailRequestResolver:
+    public: true
+
+  # Preview renderers are resolved by TYPO3 core via the service container when
+  # registered on a CE type's `previewRenderer` entry.
+  Mpc\MpcVidply\Backend\Preview\VidPlyPreviewRenderer:
+    public: true
+
+  Mpc\MpcVidply\Backend\Preview\ListviewPreviewRenderer:
+    public: true
+
   Mpc\MpcVidply\EventListener\RegisterOnlineMediaIconsEventListener:
     tags:
       - name: event.listener

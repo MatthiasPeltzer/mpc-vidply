@@ -1,0 +1,27 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+
+<f:layout name="Default" />
+
+<f:section name="Main">
+    <f:asset.css href="EXT:mpc_vidply/Resources/Public/Css/listview.min.css" identifier="vidplyListviewCSS"/>
+    <f:asset.script identifier="vidplyListviewJs" src="EXT:mpc_vidply/Resources/Public/JavaScript/Listview.min.js" type="module"/>
+
+    <div class="mpc-vidply-listview" id="mpc-vidply-listview-{listview.uid}">
+        <f:if condition="{listview.rows}">
+            <f:then>
+                <f:for each="{listview.rows}" as="row">
+                    <f:render partial="Listview/Row" arguments="{row: row}" />
+                </f:for>
+            </f:then>
+            <f:else>
+                <p class="mpc-vidply-listview-empty">
+                    <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:listview.empty">
+                        No media rows have been configured yet.
+                    </f:translate>
+                </p>
+            </f:else>
+        </f:if>
+    </div>
+</f:section>
+
+</html>

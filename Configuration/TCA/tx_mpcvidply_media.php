@@ -170,7 +170,7 @@ return [
     ],
     'palettes' => [
         'metadata' => [
-            'showitem' => 'title,--linebreak--,artist,--linebreak--,description,--linebreak--,duration,audio_description_duration',
+            'showitem' => 'title,slug,--linebreak--,artist,--linebreak--,description,--linebreak--,long_description,--linebreak--,duration,audio_description_duration',
         ],
         'ui' => [
             'showitem' => 'hide_speed_button,allow_download,enable_floating_player',
@@ -309,6 +309,24 @@ return [
                 'required' => true,
             ],
         ],
+        'slug' => [
+            'exclude' => true,
+            'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.slug',
+            'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.slug.description',
+            'config' => [
+                'type' => 'slug',
+                'generatorOptions' => [
+                    'fields' => ['title'],
+                    'fieldSeparator' => '-',
+                    'replacements' => [
+                        '/' => '-',
+                    ],
+                ],
+                'fallbackCharacter' => '-',
+                'eval' => 'uniqueInSite',
+                'default' => '',
+            ],
+        ],
         'artist' => [
             'exclude' => true,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.artist',
@@ -327,6 +345,17 @@ return [
                 'rows' => 5,
                 'cols' => 50,
                 'eval' => 'trim',
+            ],
+        ],
+        'long_description' => [
+            'exclude' => true,
+            'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.long_description',
+            'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.long_description.description',
+            'config' => [
+                'type' => 'text',
+                'rows' => 20,
+                'cols' => 80,
+                'enableRichtext' => true,
             ],
         ],
         'duration' => [
