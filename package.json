@@ -9,10 +9,12 @@
   "scripts": {
     "minify:playlist": "terser Resources/Public/JavaScript/PlaylistInit.js --compress --mangle --module --output Resources/Public/JavaScript/PlaylistInit.min.js",
     "minify:privacy": "terser Resources/Public/JavaScript/PrivacyLayer.js --compress --mangle --output Resources/Public/JavaScript/PrivacyLayer.min.js",
+    "minify:listview": "terser Resources/Public/JavaScript/Listview.js --compress --mangle --module --output Resources/Public/JavaScript/Listview.min.js",
     "minify:css:privacy": "cleancss -o Resources/Public/Css/privacy-layer.min.css Resources/Public/Css/privacy-layer.css",
     "minify:css:overrides": "cleancss -o Resources/Public/Css/vidply-overrides.min.css Resources/Public/Css/vidply-overrides.css",
     "minify:css:icons": "cleancss -o Resources/Public/Css/vidply-icons.min.css Resources/Public/Css/vidply-icons.css",
-    "minify:css": "npm run minify:css:privacy && npm run minify:css:overrides && npm run minify:css:icons",
-    "minify": "npm run minify:playlist && npm run minify:privacy && npm run minify:css"
+    "minify:css:listview": "cleancss -o Resources/Public/Css/listview.min.css Resources/Public/Css/listview.css",
+    "minify:css": "npm run minify:css:privacy && npm run minify:css:overrides && npm run minify:css:icons && npm run minify:css:listview",
+    "minify": "npm run minify:playlist && npm run minify:privacy && npm run minify:listview && npm run minify:css"
   }
 }

@@ -92,14 +92,44 @@ class VidPlyProcessor implements DataProcessorInterface
     ): array {
         $data = $processedData['data'];
         $request = $cObj->getRequest();
+
+        $languageId = $this->resolveLanguageId($request, $data);
+        $contentUid = (int)$data['uid'];
+        $l10nParent = (int)($data['l18n_parent'] ?? $data['l10n_parent'] ?? 0);
+        // MM uid_local: try translated CE first, then default (see MediaRepository::findByContentUid)
+        $mediaRecords = $this->mediaRepository->findByContentUid(
+            $contentUid,
+            $languageId,
+            $l10nParent > 0 ? $l10nParent : 0
+        );
+
+        $processedData['vidply'] = $this->assembleForMediaRecords($mediaRecords, $data, $request, $languageId);
+
+        return $processedData;
+    }
+
+    /**
+     * Build a full "vidply" template data array for a pre-resolved list of media records.
+     *
+     * This lets other data processors (e.g. a detail page resolver) reuse the entire
+     * player assembly pipeline without requiring a tt_content MM relation.
+     *
+     * @param list<array<string, mixed>> $mediaRecords
+     * @param array<string, mixed>       $data          The owning content element / pseudo-record
+     * @param ?int                       $languageIdOverride  When null, resolved from request
+     * @return array<string, mixed>
+     */
+    public function assembleForMediaRecords(
+        array $mediaRecords,
+        array $data,
+        ServerRequestInterface $request,
+        ?int $languageIdOverride = null
+    ): array {
         $this->resetCaches();
 
         $playerOptions = $this->buildPlayerOptions($data);
-        $languageId = $this->resolveLanguageId($request, $data);
-        $contentUid = (int)$data['uid'];
-        $l10nParent = (int)($data['l10n_parent'] ?? 0);
-        $lookupUid = $l10nParent > 0 ? $l10nParent : $contentUid;
-        $mediaRecords = $this->mediaRepository->findByContentUid($lookupUid, $languageId);
+        $languageId = $languageIdOverride ?? $this->resolveLanguageId($request, $data);
+
         $this->prefetchRelatedFiles($mediaRecords);
 
         $siteDefaultLanguageCode = $this->resolveSiteDefaultLanguageCode($request);
@@ -123,13 +153,11 @@ class VidPlyProcessor implements DataProcessorInterface
         $renderMode = $this->determineRenderMode($serviceType, $trackResult, $resolvedMediaType);
         $assetFlags = $this->resolveAssetFlags($serviceType, $trackResult);
 
-        $processedData['vidply'] = $this->assembleTemplateData(
+        return $this->assembleTemplateData(
             $data, $playerOptions, $trackResult, $singleTrackData,
             $playlistData, $serviceType, $privacySettings, $uiConfig,
             $resolvedMediaType, $renderMode, $assetFlags
         );
-
-        return $processedData;
     }
 
     // -----------------------------------------------------------------------

@@ -1,0 +1,96 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+
+<f:if condition="{row.cardsCount} > 0">
+    <section class="mpc-vidply-listview-section mpc-vidply-listview-section--{row.layout}"
+             aria-labelledby="{row.domId}-heading"
+             data-mpc-vidply-default-sort="{row.sortBy}">
+        <header class="mpc-vidply-listview-section__header">
+            <h2 id="{row.domId}-heading" class="mpc-vidply-listview-section__title">
+                <f:if condition="{row.headline}">
+                    <f:then>{row.headline}</f:then>
+                    <f:else>
+                        <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:listview.row.untitled">
+                            Selection
+                        </f:translate>
+                    </f:else>
+                </f:if>
+            </h2>
+            <div class="mpc-vidply-listview-section__header-actions">
+                <f:if condition="{row.cardsCount} > 1">
+                    <f:then>
+                        <div class="mpc-vidply-listview-section__sort">
+                            <label for="{row.domId}-sort" class="mpc-vidply-listview-section__sort-label" id="{row.domId}-sort-label">
+                                <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:listview.sort.label">
+                                    Sort
+                                </f:translate>
+                            </label>
+                            <select id="{row.domId}-sort" class="mpc-vidply-listview-section__sort-select"
+                                    data-mpc-vidply-row-sort
+                                    name="mpc-vidply-listview-sort[{row.uid}]"
+                                    aria-labelledby="{row.domId}-sort-label">
+                                <option value="sorting">
+                                    <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_listview_row.sort_by.sorting" />
+                                </option>
+                                <option value="crdate_desc">
+                                    <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_listview_row.sort_by.crdate_desc" />
+                                </option>
+                                <option value="title_asc">
+                                    <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_listview_row.sort_by.title_asc" />
+                                </option>
+                            </select>
+                        </div>
+                    </f:then>
+                </f:if>
+                <f:if condition="{row.headlineLink}">
+                    <a class="mpc-vidply-listview-section__more" href="{row.headlineLink}">
+                        <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:listview.row.all">
+                            Show all
+                        </f:translate>
+                        <span class="mpc-vidply-listview-section__more-arrow" aria-hidden="true">&rarr;</span>
+                    </a>
+                </f:if>
+            </div>
+        </header>
+
+        <f:if condition="{row.paginationActive}">
+            <f:then>
+                <f:variable name="pagerLblPrev">
+                    <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:listview.pagination.previous" />
+                </f:variable>
+                <f:variable name="pagerLblNext">
+                    <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:listview.pagination.next" />
+                </f:variable>
+                <f:variable name="pagerLblPageOf">
+                    <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:listview.pagination.page_of" />
+                </f:variable>
+                <f:variable name="pagerNavAriaTpl">
+                    <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:listview.pagination.nav_aria" />
+                </f:variable>
+                <f:variable name="pagerNavAria">
+                    <f:translate
+                        key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:listview.pagination.nav_aria"
+                        arguments="{0: 1, 1: row.paginationTotalPages}" />
+                </f:variable>
+                <div class="mpc-vidply-listview-paginate"
+                     data-mpc-vidply-paginate="1"
+                     data-mpc-vidply-per-page="{row.paginationPerPage}"
+                     data-mpc-pager-lbl-prev="{pagerLblPrev -> f:format.htmlspecialchars()}"
+                     data-mpc-pager-lbl-next="{pagerLblNext -> f:format.htmlspecialchars()}"
+                     data-mpc-pager-lbl-pageof="{pagerLblPageOf -> f:format.htmlspecialchars()}"
+                     data-mpc-pager-lbl-nav-aria="{pagerNavAriaTpl -> f:format.htmlspecialchars()}">
+                    <f:render partial="Listview/RowListBody" arguments="{row: row}" />
+                    <nav class="mpc-vidply-listview-paginate__nav"
+                         data-mpc-vidply-pager-nav
+                         aria-live="polite"
+                         aria-label="{pagerNavAria -> f:format.htmlspecialchars()}"
+                    ></nav>
+                </div>
+            </f:then>
+            <f:else>
+                <f:render partial="Listview/RowListBody" arguments="{row: row}" />
+            </f:else>
+        </f:if>
+    </section>
+</f:if>
+
+</html>

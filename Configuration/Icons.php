@@ -10,5 +10,13 @@ return [
         'provider' => SvgIconProvider::class,
         'source' => 'EXT:mpc_vidply/Resources/Public/Icons/Extension.svg',
     ],
+    'mpc_vidply-listview' => [
+        'provider' => SvgIconProvider::class,
+        'source' => 'EXT:mpc_vidply/Resources/Public/Icons/Extension.svg',
+    ],
+    'mpc_vidply-detail' => [
+        'provider' => SvgIconProvider::class,
+        'source' => 'EXT:mpc_vidply/Resources/Public/Icons/Extension.svg',
+    ],
 ];
 

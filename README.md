@@ -17,6 +17,7 @@ Universal, Accessible Video & Audio Player for TYPO3. Includes support for HTML5
 - **Modern Player** - Responsive, Picture-in-Picture, quality switching, playback speed
 - **TypeScript Codebase** - The bundled VidPly player is now authored in strict TypeScript with shipped `.d.ts` declarations
 - **Conditional Asset Loading** - Only loads JavaScript needed for your media types
+- **Listview & Detail Page** — Add a **VidPly Listview** content element for one or more browsable rows (horizontal shelf or responsive grid), optional per-row **browser pagination** and **sort** control, category chips on cards, and links to a **VidPly Detail** page with short + **long (RTE) description**, categories, and slug or `?media=` URLs; connected translations follow the default-language row configuration (see [`Documentation/Listview.md`](Documentation/Listview.md))
 
 ## Quick Start
 
@@ -149,6 +150,7 @@ Modular template partials:
 ## Documentation
 
 - [Editors Guide](Documentation/Editors-Guide.md) - How to use VidPly for content editors
+- [Listview & Detail](Documentation/Listview.md) - Mediathek-style overview, detail page, routing, pagination, i18n behaviour
 - [Developers Quickstart](Documentation/Developers-Quickstart.md) - Quick reference for developers
 - [AssetLoading.md](Documentation/AssetLoading.md) - Conditional asset loading optimization
 - [Partials.md](Documentation/Partials.md) - Template structure and customization

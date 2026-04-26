@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Mpc\MpcVidply\Backend\Preview\ListviewPreviewRenderer;
 use Mpc\MpcVidply\Backend\Preview\VidPlyPreviewRenderer;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
@@ -9,6 +10,8 @@ defined('TYPO3') or die();
 
 // Register the content element
 $GLOBALS['TCA']['tt_content']['ctrl']['typeicon_classes']['mpc_vidply'] = 'mpc_vidply-plugin';
+$GLOBALS['TCA']['tt_content']['ctrl']['typeicon_classes']['mpc_vidply_listview'] = 'mpc_vidply-listview';
+$GLOBALS['TCA']['tt_content']['ctrl']['typeicon_classes']['mpc_vidply_detail'] = 'mpc_vidply-detail';
 
 // Add the CType to the select list
 ExtensionManagementUtility::addTcaSelectItem(
@@ -18,8 +21,32 @@ ExtensionManagementUtility::addTcaSelectItem(
         'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:content_element.title',
         'value' => 'mpc_vidply',
         'icon' => 'mpc_vidply-plugin',
-        'group' => 'default',
+        'group' => 'plugins',
         'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:content_element.description',
+    ]
+);
+
+ExtensionManagementUtility::addTcaSelectItem(
+    'tt_content',
+    'CType',
+    [
+        'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:content_element.listview.title',
+        'value' => 'mpc_vidply_listview',
+        'icon' => 'mpc_vidply-listview',
+        'group' => 'plugins',
+        'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:content_element.listview.description',
+    ]
+);
+
+ExtensionManagementUtility::addTcaSelectItem(
+    'tt_content',
+    'CType',
+    [
+        'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:content_element.detail.title',
+        'value' => 'mpc_vidply_detail',
+        'icon' => 'mpc_vidply-detail',
+        'group' => 'plugins',
+        'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:content_element.detail.description',
     ]
 );
 
@@ -120,8 +147,68 @@ $vidplyFields = [
         ],
     ],
 
+    // Detail content element: "You might also like" row (same category)
+    'tx_mpcvidply_show_related' => [
+        'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_show_related',
+        'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_show_related.description',
+        'displayCond' => 'FIELD:CType:=:mpc_vidply_detail',
+        'l10n_mode' => 'exclude',
+        'config' => [
+            'type' => 'check',
+            'renderType' => 'checkboxToggle',
+            'items' => [
+                [
+                    'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_show_related.toggle',
+                    'value' => 1,
+                ],
+            ],
+            'default' => 1,
+        ],
+    ],
+
     // Note: Play button icon and position are configured site-wide via Extension Configuration only
     // (Admin Tools → Settings → Extension Configuration → mpc_vidply)
+];
+
+// Additional fields used by the Listview / Detail content elements
+$vidplyFields['tx_mpcvidply_listview_rows'] = [
+    'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_listview_rows',
+    'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_listview_rows.description',
+    'config' => [
+        'type' => 'inline',
+        'foreign_table' => 'tx_mpcvidply_listview_row',
+        'foreign_field' => 'parentid',
+        'foreign_table_field' => 'parenttable',
+        'foreign_match_fields' => [
+            'parentfield' => 'tx_mpcvidply_listview_rows',
+        ],
+        'maxitems' => 50,
+        'appearance' => [
+            'collapseAll' => true,
+            'expandSingle' => true,
+            'levelLinksPosition' => 'both',
+            'showSynchronizationLink' => true,
+            'showAllLocalizationLink' => true,
+            'showPossibleLocalizationRecords' => true,
+            'useSortable' => true,
+        ],
+        'behaviour' => [
+            'allowLanguageSynchronization' => true,
+        ],
+    ],
+];
+
+$vidplyFields['tx_mpcvidply_detail_page'] = [
+    'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_detail_page',
+    'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_detail_page.description',
+    'l10n_mode' => 'exclude',
+    'config' => [
+        'type' => 'group',
+        'allowed' => 'pages',
+        'size' => 1,
+        'maxitems' => 1,
+        'minitems' => 0,
+    ],
 ];
 
 // Add fields to TCA
@@ -157,6 +244,61 @@ $GLOBALS['TCA']['tt_content']['types']['mpc_vidply'] = [
         --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:extended,
     ',
     'previewRenderer' => VidPlyPreviewRenderer::class,
+];
+
+// Listview content element (Mediathek style — multiple "shelves" of media cards)
+$GLOBALS['TCA']['tt_content']['types']['mpc_vidply_listview'] = [
+    'showitem' => '
+        --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,
+            --palette--;;general,
+            --palette--;;header,
+            subheader,
+        --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tabs.listview_rows,
+            tx_mpcvidply_listview_rows,
+        --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tabs.listview_settings,
+            tx_mpcvidply_detail_page,
+        --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:appearance,
+            --palette--;;appearance,
+            --palette--;;frames,
+            --palette--;;appearanceLinks,
+        --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:language,
+            --palette--;;language,
+        --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access,
+            --palette--;;hidden,
+            --palette--;;access,
+        --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:notes,
+            rowDescription,
+        --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:extended,
+    ',
+    'previewRenderer' => ListviewPreviewRenderer::class,
+];
+
+// Detail content element — placed on a detail page; resolves media by ?media=<uid|slug>
+$GLOBALS['TCA']['tt_content']['types']['mpc_vidply_detail'] = [
+    'showitem' => '
+        --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,
+            --palette--;;general,
+            --palette--;;header,
+            subheader,
+        --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tabs.settings,
+            tx_mpcvidply_options,
+            tx_mpcvidply_volume,
+            tx_mpcvidply_playback_speed,
+            tx_mpcvidply_language,
+            tx_mpcvidply_show_related,
+        --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:appearance,
+            --palette--;;appearance,
+            --palette--;;frames,
+            --palette--;;appearanceLinks,
+        --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:language,
+            --palette--;;language,
+        --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access,
+            --palette--;;hidden,
+            --palette--;;access,
+        --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:notes,
+            rowDescription,
+        --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:extended,
+    ',
 ];
 
 

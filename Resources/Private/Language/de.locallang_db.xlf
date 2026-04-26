@@ -103,6 +103,14 @@
         <source>Description</source>
         <target>Beschreibung</target>
       </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.long_description">
+        <source>Long description</source>
+        <target>Langbeschreibung</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.long_description.description">
+        <source>Full text for the detail page; supports rich text (headings, links, lists).</source>
+        <target>Volltext für die Detailseite; Rich Text (Überschriften, Verweise, Listen) möglich.</target>
+      </trans-unit>
       <trans-unit id="tx_mpcvidply_media.duration">
         <source>Duration (seconds)</source>
         <target>Dauer (Sekunden)</target>
@@ -203,9 +211,141 @@
         <source>Picture-in-Picture (overlay)</source>
         <target>Bild-im-Bild (Overlay)</target>
       </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.slug">
+        <source>URL Segment / Slug</source>
+        <target>URL-Segment / Slug</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.slug.description">
+        <source>SEO-friendly URL segment used on the detail page. Will be auto-generated from the title unless overridden. Must be unique per site.</source>
+        <target>SEO-freundliches URL-Segment für die Detailseite. Wird automatisch aus dem Titel generiert, sofern nicht überschrieben. Muss pro Site eindeutig sein.</target>
+      </trans-unit>
       <trans-unit id="tx_mpcvidply_media.title">
         <source>Title</source>
         <target>Titel</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row">
+        <source>VidPly Listview Row</source>
+        <target>VidPly Listview-Reihe</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.tabs.selection">
+        <source>Selection</source>
+        <target>Auswahl</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.headline">
+        <source>Row Headline</source>
+        <target>Reihen-Überschrift</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.headline_link">
+        <source>"Show all" Link (optional)</source>
+        <target>"Alle anzeigen"-Link (optional)</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.headline_link.description">
+        <source>Optional link rendered beside the headline. Typically points to an archive or category page.</source>
+        <target>Optionaler Link neben der Überschrift. Zeigt typischerweise auf eine Archiv- oder Kategorieseite.</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.layout">
+        <source>Layout</source>
+        <target>Layout</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.layout.shelf">
+        <source>Horizontal shelf (scrollable)</source>
+        <target>Horizontale Reihe (scrollbar)</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.layout.grid">
+        <source>Responsive grid</source>
+        <target>Responsives Raster</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.card_style">
+        <source>Card style</source>
+        <target>Karten-Stil</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.card_style.poster">
+        <source>Poster (16:9)</source>
+        <target>Poster (16:9)</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.card_style.poster_compact">
+        <source>Compact (3:4)</source>
+        <target>Kompakt (3:4)</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.card_style.landscape">
+        <source>Landscape (wide)</source>
+        <target>Querformat (breit)</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.limit_items">
+        <source>Max items</source>
+        <target>Maximale Anzahl</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.limit_items.description">
+        <source>Maximum number of items rendered in this row (1–200).</source>
+        <target>Maximale Anzahl der in dieser Reihe gerenderten Einträge (1–200).</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.enable_pagination">
+        <source>Client-side pagination</source>
+        <target>Seiten (Paginierung im Browser)</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.enable_pagination.description">
+        <source>Only for layout &quot;Responsive grid&quot;. Horizontal shelves use scrolling instead; pagination is not available for them. When enabled, long rows are split into pages in the browser (default 12 per page, configurable). Turn off to always show the full set up to the max items limit above.</source>
+        <target>Nur bei Layout „Responsives Raster“. Die horizontale Leiste nutzt dagegen Scrolling; Paginierung ist dafür nicht vorgesehen. Wenn aktiviert, werden lange Raster-Reihen im Browser in Seiten aufgeteilt (Standard 12 pro Seite, einstellbar). Wenn deaktiviert, werden bis zur maximalen Anzahl o. g. alle Einträge auf einmal gezeigt.</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.enable_pagination.toggle">
+        <source>Enabled</source>
+        <target>Aktiv</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.pagination_per_page">
+        <source>Items per page</source>
+        <target>Einträge pro Seite</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.pagination_per_page.description">
+        <source>Grid layout only. How many items are visible on each “page” when pagination is active (1–200). Must be less than the total number of items for pagination to appear.</source>
+        <target>Nur Raster-Layout. Wie viele Einträge pro „Seite“ sichtbar sind, wenn die Paginierung aktiv ist (1–200). Es muss insgesamt mehr geben, sonst erscheint keine Paginierung.</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.sort_by">
+        <source>Sort order</source>
+        <target>Sortierung</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.sort_by.sorting">
+        <source>Manual sorting</source>
+        <target>Manuelle Sortierung</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.sort_by.crdate_desc">
+        <source>Newest first</source>
+        <target>Neueste zuerst</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.sort_by.title_asc">
+        <source>Title A–Z</source>
+        <target>Titel A–Z</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.selection_mode">
+        <source>Selection mode</source>
+        <target>Auswahlmodus</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.selection_mode.manual">
+        <source>Manual (pick individual records)</source>
+        <target>Manuell (einzelne Datensätze auswählen)</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.selection_mode.category">
+        <source>Automatic (by category)</source>
+        <target>Automatisch (nach Kategorie)</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.media_items">
+        <source>Media items</source>
+        <target>Medien-Datensätze</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.media_items.description">
+        <source>Hand-pick the media records to display in this row.</source>
+        <target>Wählen Sie die Medien-Datensätze aus, die in dieser Reihe angezeigt werden sollen.</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.media_items.add">
+        <source>Create media record</source>
+        <target>Medien-Datensatz anlegen</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.categories">
+        <source>Categories</source>
+        <target>Kategorien</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.categories.description">
+        <source>Media records assigned to any of these categories will be rendered in this row.</source>
+        <target>Medien-Datensätze, die einer dieser Kategorien zugewiesen sind, werden in dieser Reihe angezeigt.</target>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_privacy_settings.soundcloud_button_label">
         <source>Button Label (optional)</source>

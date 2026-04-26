@@ -14,3 +14,51 @@ tt_content.mpc_vidply {
         10 = Mpc\MpcVidply\DataProcessing\VidPlyProcessor
     }
 }
+
+# Listview content element — renders multiple "shelves" of media cards
+tt_content.mpc_vidply_listview =< lib.contentElement
+tt_content.mpc_vidply_listview {
+    templateName = Listview
+
+    dataProcessing {
+        10 = Mpc\MpcVidply\DataProcessing\ListviewProcessor
+    }
+}
+
+# Detail content element — resolves ?media=<uid|slug> and renders the full player + metadata
+tt_content.mpc_vidply_detail =< lib.contentElement
+tt_content.mpc_vidply_detail {
+    templateName = Detail
+
+    dataProcessing {
+        10 = Mpc\MpcVidply\DataProcessing\DetailProcessor
+    }
+}
+
+# Breadcrumb (merged into mp-core `page.10.dataProcessing.70`): by default
+# TYPO3 HMENU omits any page with "Hide in menu" from the rootline. If the
+# VidPly detail page is not in the menu, that segment (and a consistent path
+# to the parent, e.g. "Mediathek") vanishes. Include those pages in the
+# breadcrumb only — main navigation is unchanged.
+page.10.dataProcessing.70.includeNotInMenu = 1
+
+# Override the breadcrumb's current-item title with the resolved media title on
+# detail pages. Runs AFTER the breadcrumb MenuProcessor configured by mp-core
+# at priority 70; the key 71 keeps us right next to the upstream processor
+# without interfering with other page-level data processors.
+page.10.dataProcessing.71 = Mpc\MpcVidply\DataProcessing\DetailBreadcrumbProcessor
+page.10.dataProcessing.71 {
+    as = breadcrumb
+    titleAs = vidplyDetailTitle
+}
+
+# Register a PageTitleProvider so detail views show the media title in <title>.
+# TYPO3 14's PageTitleProviderManager reads providers from TypoScript
+# (config.pageTitleProviders), not from $GLOBALS['TYPO3_CONF_VARS']. Ordered
+# before the default 'record' provider so the media title wins whenever the
+# current request resolves to a detail view; otherwise the provider returns an
+# empty string and the next provider (record / SEO) wins.
+config.pageTitleProviders.mpcVidplyDetail {
+    provider = Mpc\MpcVidply\PageTitle\VidPlyDetailPageTitleProvider
+    before = record
+}

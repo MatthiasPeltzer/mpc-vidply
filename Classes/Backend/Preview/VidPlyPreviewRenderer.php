@@ -49,22 +49,19 @@ final class VidPlyPreviewRenderer extends StandardContentPreviewRenderer impleme
         }
 
         $contentUid = (int)($record['uid'] ?? 0);
-        $l10nParent = (int)($record['l10n_parent'] ?? 0);
-        $lookupUid = $l10nParent > 0 ? $l10nParent : $contentUid;
+        $l10nSource = (int)($record['l18n_parent'] ?? $record['l10n_parent'] ?? 0);
         $html = '';
         $lang = $this->getLanguageService();
 
-        $mediaItems = $this->getMediaItems($lookupUid);
+        $mediaItems = $this->getMediaItems($contentUid, $l10nSource);
 
         if ($mediaItems === []) {
             $noMedia = htmlspecialchars($lang->sL(self::LLL . 'preview.no_media') ?: 'No media items selected');
             $noMediaHint = htmlspecialchars($lang->sL(self::LLL . 'preview.no_media.hint') ?: 'Please add media items to this VidPly element');
-            $html .= '<div class="callout callout-warning" style="margin-top: 10px;">';
-            $html .= '<div class="callout-body">';
+            $html .= '<div class="callout callout-warning w-100 mt-2"><div class="callout-body">';
             $html .= '<strong>' . $noMedia . '</strong><br>';
-            $html .= '<small>' . $noMediaHint . '</small>';
-            $html .= '</div>';
-            $html .= '</div>';
+            $html .= '<small class="text-muted">' . $noMediaHint . '</small>';
+            $html .= '</div></div>';
             return $html;
         }
 
@@ -76,15 +73,17 @@ final class VidPlyPreviewRenderer extends StandardContentPreviewRenderer impleme
 
         $untitledLabel = $lang->sL(self::LLL . 'preview.untitled') ?: 'Untitled';
 
-        $html .= '<div class="mpc-vidply-preview-items" style="margin-top: 10px;">';
+        $html .= '<div class="mpc-vidply-preview-items w-100 mt-2">';
 
         if (count($mediaItems) > 1) {
             $playlistLabel = sprintf(
                 $lang->sL(self::LLL . 'preview.playlist_count') ?: 'Playlist with %d items',
                 count($mediaItems)
             );
-            $html .= '<strong style="font-size: 14px; display: block; margin-bottom: 8px;">' . htmlspecialchars($playlistLabel) . '</strong>';
+            $html .= '<div class="d-block w-100 small fw-bold mb-2">' . htmlspecialchars($playlistLabel) . '</div>';
         }
+
+        $html .= '<div class="d-flex flex-wrap gap-2 align-items-stretch w-100">';
 
         $posterAltFormat = $lang->sL(self::LLL . 'preview.poster_alt') ?: 'Poster for "%s"';
         $iconAltLabel = $lang->sL(self::LLL . 'preview.icon_alt') ?: 'VidPly item';
@@ -97,34 +96,39 @@ final class VidPlyPreviewRenderer extends StandardContentPreviewRenderer impleme
                 $itemTitle = $untitledLabel;
             }
 
-            $html .= '<div class="callout callout-default" style="margin: 5px 0; padding: 8px; display: flex; align-items: center; gap: 10px;">';
+            $html .= '<div class="callout callout-default d-flex align-items-center gap-2 p-2 min-w-0" '
+                . 'style="flex:1 1 13.75rem;max-width:100%;">';
 
             if ($posterUrl) {
                 $posterAlt = sprintf($posterAltFormat, $itemTitle);
-                $html .= '<div style="flex-shrink: 0;">';
-                $html .= '<img src="' . htmlspecialchars($posterUrl) . '" alt="' . htmlspecialchars($posterAlt) . '" style="width: 60px; height: 60px; object-fit: cover; border-radius: var(--typo3-border-radius); border: 1px solid var(--typo3-border-color);" />';
+                $html .= '<div class="flex-shrink-0">';
+                $html .= '<img class="rounded object-fit-cover border" src="' . htmlspecialchars($posterUrl) . '" alt="'
+                    . htmlspecialchars($posterAlt) . '" width="60" height="60" style="width:3.75rem;height:3.75rem;" />';
                 $html .= '</div>';
             } else {
                 $fallbackAbsPath = GeneralUtility::getFileAbsFileName('EXT:mpc_vidply/Resources/Public/Icons/Extension.svg');
                 $fallbackUrl = $fallbackAbsPath ? PathUtility::getAbsoluteWebPath($fallbackAbsPath) : '';
 
-                $html .= '<div style="flex-shrink: 0;">';
+                $html .= '<div class="flex-shrink-0">';
                 if ($fallbackUrl !== '') {
-                    $html .= '<img src="' . htmlspecialchars($fallbackUrl) . '" alt="" role="presentation" style="width: 60px; height: 60px; object-fit: contain; border-radius: var(--typo3-border-radius); border: 1px solid var(--typo3-border-color); background: var(--typo3-surface-base);" />';
+                    $html .= '<img class="rounded border bg-light object-fit-contain" src="'
+                        . htmlspecialchars($fallbackUrl) . '" alt="" role="presentation" width="60" height="60" '
+                        . 'style="width:3.75rem;height:3.75rem;" />';
                 } else {
-                    $html .= '<div role="img" aria-label="' . htmlspecialchars($iconAltLabel) . '" style="width: 60px; height: 60px; background: var(--typo3-surface-base); border: 1px solid var(--typo3-border-color); border-radius: var(--typo3-border-radius);"></div>';
+                    $html .= '<div class="rounded border bg-light" role="img" aria-label="'
+                        . htmlspecialchars($iconAltLabel) . '" style="width:3.75rem;height:3.75rem;"></div>';
                 }
                 $html .= '</div>';
             }
 
-            $html .= '<div style="flex: 1; min-width: 0;">';
-            $html .= '<strong>' . htmlspecialchars($mediaItem['title'] ?? $untitledLabel) . '</strong>';
+            $html .= '<div class="flex-grow-1 min-w-0">';
+            $html .= '<strong class="d-inline">' . htmlspecialchars($mediaItem['title'] ?? $untitledLabel) . '</strong>';
 
             if (($mediaItem['artist'] ?? '') !== '') {
-                $html .= ' <span style="color: var(--typo3-text-color-secondary);">– ' . htmlspecialchars($mediaItem['artist']) . '</span>';
+                $html .= ' <span class="text-body-secondary">– ' . htmlspecialchars($mediaItem['artist']) . '</span>';
             }
 
-            $html .= ' <span class="badge badge-info" style="margin-left: 5px;">';
+            $html .= ' <span class="badge text-bg-info align-middle ms-1">';
             $badgeLabel = $this->getExternalTypeLabel($mediaUid, $lang)
                 ?? strtoupper((string)($mediaItem['media_type'] ?? 'video'));
             $html .= htmlspecialchars($badgeLabel);
@@ -134,7 +138,7 @@ final class VidPlyPreviewRenderer extends StandardContentPreviewRenderer impleme
             $html .= '</div>';
         }
 
-        $html .= '</div>';
+        $html .= '</div></div>';
 
         return $html;
     }
@@ -194,7 +198,28 @@ final class VidPlyPreviewRenderer extends StandardContentPreviewRenderer impleme
         }
     }
 
-    private function getMediaItems(int $contentUid): array
+    /**
+     * @param int $fallbackContentUid `tt_content.l18n_parent` when $contentUid is a localized CE (same as FE MM lookup)
+     * @return list<array<string, mixed>>
+     */
+    private function getMediaItems(int $contentUid, int $fallbackContentUid = 0): array
+    {
+        if ($fallbackContentUid > 0 && $fallbackContentUid !== $contentUid) {
+            $rows = $this->fetchMediaRowsForContentUid($fallbackContentUid);
+            if ($rows === []) {
+                $rows = $this->fetchMediaRowsForContentUid($contentUid);
+            }
+        } else {
+            $rows = $this->fetchMediaRowsForContentUid($contentUid);
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function fetchMediaRowsForContentUid(int $contentUid): array
     {
         if ($contentUid === 0) {
             return [];

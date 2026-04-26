@@ -25,7 +25,7 @@ mpc_vidply/
 │   ├── Backend/
 │   │   ├── Form/FieldWizard/     # MediaTypeFilterWizard
 │   │   └── Preview/              # VidPlyPreviewRenderer
-│   └── DataProcessing/           # VidPlyProcessor
+│   └── DataProcessing/           # VidPly, Listview, Detail processors
 ├── Configuration/
 │   ├── Sets/mpc-vidply/          # Site Set (TYPO3 13.4+)
 │   ├── TCA/
@@ -189,6 +189,18 @@ tt_content.mpc_vidply {
 {playerOptions}        <!-- Decoded options array -->
 {privacySettings}      <!-- Privacy layer settings per service -->
 ```
+
+### Listview & detail (Mediathek-style CEs)
+
+- **`ListviewProcessor`** — `mpc_vidply_listview`; builds `listview.rows` with
+  cards, pagination flags, sort defaults, etc. See
+  `Documentation/Listview.md` (routing, i18n, editor fields).
+- **`DetailProcessor`** — `mpc_vidply_detail`; builds `detail.*` and player
+  data for the detail page. Template: `Detail.html` + `Listview` CSS when
+  shared. The related shelf is loaded only if `tt_content.tx_mpcvidply_show_related`
+  is enabled (default `1`); when off, `detail.related` is empty.
+
+**Templates / partials:** `Templates/Listview.html`, `Partials/Listview/*`.
 
 ---
 

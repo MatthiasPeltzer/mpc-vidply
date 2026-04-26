@@ -1,0 +1,53 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+
+<video
+    id="{vidply.uniqueId}"
+    aria-label="{f:if(condition: data.header, then: data.header, else: 'Video player')}"
+    <f:if condition="{vidply.privacyPlayIconUrl}">data-vidply-play-icon="{vidply.privacyPlayIconUrl}"</f:if>
+    data-vidply-play-position="{vidply.privacyPlayButtonPosition}"
+    <f:if condition="{vidply.playlistData}">
+        <f:then>
+            data-vidply-options='{f:format.json(value: vidply.options)}'
+            data-playlist='{f:format.json(value: vidply.playlistData.tracks)}'
+            data-playlist-auto-advance="{f:if(condition: vidply.playlistData.options.autoAdvance, then: 'true', else: 'false')}"
+            data-playlist-auto-play-first="{f:if(condition: vidply.options.autoplay, then: 'true', else: 'false')}"
+            data-playlist-loop="{f:if(condition: vidply.playlistData.options.loop, then: 'true', else: 'false')}"
+            data-playlist-show-panel="{f:if(condition: vidply.playlistData.options.showPanel, then: 'true', else: 'false')}"
+            <f:if condition="{vidply.hasExternalMedia}">
+                data-playlist-has-external="true"
+                data-playlist-external-services='{f:format.json(value: vidply.externalServiceTypes)}'
+            </f:if>
+        </f:then>
+        <f:else>
+            data-vidply-init
+            data-vidply-options='{f:format.json(value: vidply.options)}'
+            <f:if condition="{vidply.videoUrl}">data-vidply-src="{vidply.videoUrl}"</f:if>
+        </f:else>
+    </f:if>
+    preload="{vidply.options.preload}"
+    <f:if condition="{vidply.poster}">poster="{vidply.poster}"</f:if>
+    <f:if condition="{vidply.downloadUrl}">data-vidply-download-url="{vidply.downloadUrl}"</f:if>
+>
+    <f:render partial="VidPly/VideoSources" arguments="{
+        videoUrl: vidply.videoUrl,
+        playlistData: vidply.playlistData,
+        sources: vidply.sources,
+        mediaFiles: vidply.mediaFiles
+    }" />
+    <f:render partial="VidPly/Tracks" arguments="{
+        captions: vidply.captions,
+        chapters: vidply.chapters,
+        languageSelection: vidply.languageSelection
+    }" />
+</video>
+<f:render partial="VidPly/MetadataScripts" arguments="{
+    uniqueId: vidply.uniqueId,
+    audioDescriptionTracks: vidply.audioDescriptionTracks,
+    audioDescriptionTracksJson: vidply.audioDescriptionTracksJson,
+    audioDescription: vidply.audioDescription,
+    audioDescriptionJson: vidply.audioDescriptionJson,
+    signLanguage: vidply.signLanguage,
+    signLanguageJson: vidply.signLanguageJson
+}" />
+
+</html>

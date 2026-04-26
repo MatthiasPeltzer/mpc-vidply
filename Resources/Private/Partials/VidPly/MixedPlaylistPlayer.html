@@ -1,0 +1,21 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+
+<div
+    id="{vidply.uniqueId}"
+    role="region"
+    aria-label="{f:if(condition: data.header, then: data.header, else: 'Media playlist')}"
+    <f:if condition="{vidply.privacyPlayIconUrl}">data-vidply-play-icon="{vidply.privacyPlayIconUrl}"</f:if>
+    data-vidply-play-position="{vidply.privacyPlayButtonPosition}"
+    data-vidply-options='{f:format.json(value: vidply.options)}'
+    data-playlist='{f:format.json(value: vidply.playlistData.tracks)}'
+    data-playlist-auto-advance="{f:if(condition: vidply.playlistData.options.autoAdvance, then: 'true', else: 'false')}"
+    data-playlist-auto-play-first="{f:if(condition: vidply.options.autoplay, then: 'true', else: 'false')}"
+    data-playlist-loop="{f:if(condition: vidply.playlistData.options.loop, then: 'true', else: 'false')}"
+    data-playlist-show-panel="{f:if(condition: vidply.playlistData.options.showPanel, then: 'true', else: 'false')}"
+    data-playlist-has-external="true"
+    data-playlist-external-services='{f:format.json(value: vidply.externalServiceTypes)}'
+    data-playlist-privacy-settings='{f:format.json(value: vidply.privacySettings)}'
+    data-vidply-media-type="{vidply.mediaType}"
+></div>
+
+</html>

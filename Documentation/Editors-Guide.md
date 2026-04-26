@@ -131,9 +131,25 @@ Every media record has a **metadata palette**:
 |-------|-------------|----------|
 | **Title** | Display name in player/playlist | Yes |
 | **Artist** | Creator name (shown in playlist) | No |
-| **Description** | Text description | No |
+| **Description** | Short text (list cards, player context) | No |
+| **Long description** | Rich text (CKEditor); shown on the **VidPly Detail** page below the short description | No |
 | **Duration** | Length in seconds (for display) | No |
 | **Poster** | Thumbnail image | Recommended |
+
+### VidPly Listview & detail page (overview)
+
+To build an **Mediathek-style** overview: add a **VidPly Listview**
+content element, pick a **detail** page, and add one or more **Listview
+rows** (shelf or grid, manual or category-based selection). Optional: turn on
+**client-side pagination** and set **items per page** per row, use the
+in-browser **Sort** control on the public site, and keep shelf definitions on
+the default language when the site is translated. See
+[`Listview.md`](Listview.md) for step-by-step setup, URLs, and administrator
+notes.
+
+**VidPly Detail** (the content element on the media detail page) has a
+**Related content** option under *Settings* (on by default). Turn it off if you
+do not want the “You might also like” row below the player.
 
 ---
 
