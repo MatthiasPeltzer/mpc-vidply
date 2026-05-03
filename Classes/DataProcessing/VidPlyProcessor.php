@@ -313,14 +313,20 @@ class VidPlyProcessor implements DataProcessorInterface
             $playerOptions['speedButton'] = false;
         }
 
-        // MSE-based streams (DASH via dash.js, HLS via hls.js) rely on attaching
-        // the MediaSource during renderer init. Deferring attachSource to the
-        // first play() click triggers a race in dash.js where the manifest
-        // resolves while media.play() has already started, causing
-        // "SourceBuffer has been removed" errors. Force eager load for these
-        // streams so MSE is fully wired up before playback is requested.
+        // MSE-based streams (DASH via dash.js, HLS via hls.js) handle
+        // "no preload before play" entirely inside their renderers and do
+        // not need the player-level `deferLoad` flag:
+        //   - HLS: always calls loadSource() at init (manifest only) and
+        //     defers segment startLoad() until play(); pause() calls
+        //     stopLoad() to halt further fragment fetches.
+        //   - DASH: always calls attachSource() at init, but configures
+        //     dash.js with `streaming.scheduling.scheduleWhilePaused: false`
+        //     so only the MPD is fetched until the user clicks play.
+        // Both keep the seekbar/duration usable before play. Accessibility
+        // toggles for MSE streams don't require an active playback session
+        // (they switch alternate tracks at the manifest level), so we lift
+        // that gating here as well.
         if ($this->hasMseStream($trackResult['tracks'])) {
-            $playerOptions['deferLoad'] = false;
             $playerOptions['requirePlaybackForAccessibilityToggles'] = false;
         }
 
