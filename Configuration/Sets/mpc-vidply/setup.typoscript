@@ -60,5 +60,5 @@ page.10.dataProcessing.71 {
 # empty string and the next provider (record / SEO) wins.
 config.pageTitleProviders.mpcVidplyDetail {
     provider = Mpc\MpcVidply\PageTitle\VidPlyDetailPageTitleProvider
-    before = record
+    before = record, seo
 }
