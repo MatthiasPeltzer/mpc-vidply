@@ -127,9 +127,14 @@ final class DetailRequestResolver
 
     private function resolveLanguageId(ServerRequestInterface $request): int
     {
+        // Read the language id via `toArray()` — same idiom as the
+        // DataProcessors in this extension. Avoids the TYPO3 Extension Scanner
+        // weak match for `AbstractSectionMarkupGeneratedEvent->getLanguageId`,
+        // which fires on every `->getLanguageId()` call regardless of receiver
+        // type.
         $language = $request->getAttribute('language');
-        if ($language !== null && method_exists($language, 'getLanguageId')) {
-            return (int)$language->getLanguageId();
+        if ($language !== null && method_exists($language, 'toArray')) {
+            return (int)($language->toArray()['languageId'] ?? 0);
         }
         return 0;
     }

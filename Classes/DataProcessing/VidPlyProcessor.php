@@ -944,20 +944,24 @@ class VidPlyProcessor implements DataProcessorInterface
     /**
      * Resolve the site's default two-letter language code for use as a fallback
      * for <track srclang> and audio-description/sign-language `lang` fields.
+     *
+     * `SiteLanguage::getTwoLetterIsoCode()` was removed in TYPO3 13 (Breaking
+     * #100963), so we read `Locale::getLanguageCode()` instead, which has been
+     * available since TYPO3 12 and works identically on 13.4 and 14.x.
      */
     private function resolveSiteDefaultLanguageCode(ServerRequestInterface $request): string
     {
         $site = $request->getAttribute('site');
         if ($site !== null && method_exists($site, 'getDefaultLanguage')) {
             try {
-                $defaultLanguage = $site->getDefaultLanguage();
-                $code = strtolower((string)$defaultLanguage->getTwoLetterIsoCode());
+                $locale = $site->getDefaultLanguage()->getLocale();
+                $code = strtolower($locale->getLanguageCode());
                 if ($code !== '') {
                     return $code;
                 }
-                $locale = (string)$defaultLanguage->getLocale();
-                if ($locale !== '') {
-                    return strtolower(explode('_', explode('-', $locale)[0])[0]);
+                $localeName = (string)$locale;
+                if ($localeName !== '') {
+                    return strtolower(explode('_', explode('-', $localeName)[0])[0]);
                 }
             } catch (\Throwable) {
             }
@@ -1384,7 +1388,16 @@ class VidPlyProcessor implements DataProcessorInterface
     // -----------------------------------------------------------------------
 
     /**
-     * TYPO3 14+: System Resource API. TYPO3 13: PathUtility (deprecated in 14, removed in 15).
+     * Resolve a public web path for an `EXT:`/`Resources/Public/...` resource.
+     *
+     * TYPO3 14+ exposes the System Resource API (`SystemResourceFactory` +
+     * `SystemResourcePublisherInterface`); on those versions we always use it.
+     * TYPO3 13.4 has neither, so we must fall back to
+     * `PathUtility::getPublicResourceWebPath()`. That static method is marked
+     * `@deprecated` in 14 (#107537) but still functional, and it's the only
+     * supported way on 13.x — the `class_exists()` guard above ensures it is
+     * never invoked when the new API is available, so `// @extensionScannerIgnoreLine`
+     * is correct here.
      */
     private function resolvePublicResourceWebPath(string $resourcePath): string
     {
@@ -1403,6 +1416,7 @@ class VidPlyProcessor implements DataProcessorInterface
             }
         }
 
+        // @extensionScannerIgnoreLine
         return PathUtility::getPublicResourceWebPath($resourcePath);
     }
 

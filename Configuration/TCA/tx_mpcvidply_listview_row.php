@@ -12,6 +12,10 @@ return [
         'crdate' => 'crdate',
         'delete' => 'deleted',
         'sortby' => 'sorting',
+        // Required because this table is used as an inline (IRRE) child of
+        // the workspace-aware tt_content table. TYPO3's DB analyzer will add
+        // the t3ver_* columns automatically.
+        'versioningWS' => true,
         'enablecolumns' => [
             'disabled' => 'hidden',
         ],
