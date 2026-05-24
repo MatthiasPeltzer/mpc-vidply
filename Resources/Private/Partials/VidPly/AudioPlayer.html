@@ -3,6 +3,7 @@
 <audio
     id="{vidply.uniqueId}"
     aria-label="{f:if(condition: data.header, then: data.header, else: 'Audio player')}"
+    controls
     <f:if condition="{vidply.privacyPlayIconUrl}">data-vidply-play-icon="{vidply.privacyPlayIconUrl}"</f:if>
     data-vidply-play-position="{vidply.privacyPlayButtonPosition}"
     <f:if condition="{vidply.playlistData}">
