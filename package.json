@@ -4,7 +4,7 @@
   "type": "module",
   "devDependencies": {
     "clean-css-cli": "^5.6.3",
-    "terser": "^5.47.1"
+    "terser": "^5.48.0"
   },
   "scripts": {
     "minify:playlist": "terser Resources/Public/JavaScript/PlaylistInit.js --compress --mangle --module --output Resources/Public/JavaScript/PlaylistInit.min.js",
@@ -15,6 +15,6 @@
     "minify:css:icons": "cleancss -o Resources/Public/Css/vidply-icons.min.css Resources/Public/Css/vidply-icons.css",
     "minify:css:listview": "cleancss -o Resources/Public/Css/listview.min.css Resources/Public/Css/listview.css",
     "minify:css": "npm run minify:css:privacy && npm run minify:css:overrides && npm run minify:css:icons && npm run minify:css:listview",
-    "minify": "npm run minify:playlist && npm run minify:privacy && npm run minify:listview && npm run minify:css"
+    "build": "npm run minify:playlist && npm run minify:privacy && npm run minify:listview && npm run minify:css"
   }
 }
