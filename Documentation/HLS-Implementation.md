@@ -8,18 +8,18 @@
 
 | Browser | Implementation | Status |
 |---|---|---|
-| Chrome / Edge | hls.js (loaded from CDN on demand) | Working |
-| Firefox | hls.js | Working |
-| Desktop macOS Safari | hls.js (for parity with Chrome/Firefox: full quality menu, advanced caption styling) | Working |
+| Chrome / Edge | hls.js **1.6.16** (vendored locally) | Working |
+| Firefox | hls.js **1.6.16** | Working |
+| Desktop macOS Safari | hls.js **1.6.16** (for parity with Chrome/Firefox: full quality menu, advanced caption styling) | Working |
 | iOS / iPadOS Safari | Native HLS (`<video>` MSE is unavailable on iOS) — VidPly bridges native `TextTrack` API into the captions / transcript / quality UI | Working |
 
 ### DASH
 
 | Browser | Implementation | Status |
 |---|---|---|
-| Chrome / Edge | dash.js | Working |
-| Firefox | dash.js | Working |
-| Safari | dash.js | Working |
+| Chrome / Edge | dash.js **5.2.0** (modern UMD) | Working |
+| Firefox | dash.js **5.2.0** | Working |
+| Safari | dash.js **5.2.0** | Working |
 
 ## Technical Setup
 
@@ -27,13 +27,19 @@
 
 #### 1. hls.js Library
 
-Loaded from CDN on demand by `mpc-vidply` (only when an `.m3u8` source is detected by the `VidPlyProcessor`):
+Loaded locally by `mpc-vidply` via `Resources/Private/Partials/VidPly/Assets.html` when an `.m3u8` source is detected by the `VidPlyProcessor`:
 
-```typoscript
-page.includeJSFooter {
-    hlsjs = https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js
-    hlsjs.external = 1
-}
+| | |
+|---|---|
+| **Vendored file** | `Resources/Public/JavaScript/hls.min.js` |
+| **Pinned version** | **hls.js 1.6.16** (release build) |
+
+> The vendored file is the published **1.6.16** release, not a local `master`-branch checkout of hls.js. When upgrading, copy the release artifact (npm / GitHub tag) into `Resources/Public/JavaScript/hls.min.js`.
+
+VidPly's CDN fallback (used only when hls.js is not already on the page, e.g. standalone embeds):
+
+```
+https://cdn.jsdelivr.net/npm/hls.js@1.6.16/dist/hls.min.js
 ```
 
 #### 2. VidPly HLS Renderer
@@ -65,13 +71,17 @@ The renderer listens for `Hls.Events.SUBTITLE_FRAG_PROCESSED` and re-emits a gen
 
 #### 1. dash.js Library
 
-Loaded from CDN on demand by `mpc-vidply` (only when an `.mpd` source is detected):
+Loaded locally by `mpc-vidply` via `Resources/Private/Partials/VidPly/Assets.html` when an `.mpd` source is detected:
 
-```typoscript
-page.includeJSFooter {
-    dashjs = https://cdn.jsdelivr.net/npm/dashjs@latest/dist/dash.all.min.js
-    dashjs.external = 1
-}
+| | |
+|---|---|
+| **Vendored file** | `Resources/Public/JavaScript/dash.all.min.js` |
+| **Pinned version** | **dash.js 5.2.0** (modern UMD build) |
+
+VidPly's CDN fallback (used only when dash.js is not already on the page):
+
+```
+https://cdn.jsdelivr.net/npm/dashjs@5.2.0/dist/modern/umd/dash.all.min.js
 ```
 
 #### 2. VidPly DASH Renderer
@@ -96,7 +106,7 @@ Required CSP directives (shared by HLS and DASH):
 'media-src'       => ['blob:', 'data:', 'https:'],
 'worker-src'      => ['blob:'],
 'connect-src'     => ['blob:', 'data:', 'https:'],
-'script-src-elem' => ['https://cdn.jsdelivr.net'],
+'script-src-elem' => ["'self'", 'https://cdn.jsdelivr.net'],
 ```
 
 Why these are needed:
@@ -105,7 +115,8 @@ Why these are needed:
 - `media-src 'data:'` — some HLS variants embed init segments / WebVTT inline as `data:` URIs.
 - `worker-src 'blob:'` — `hls.js` / `dash.js` spawn workers from `blob:` URLs for demuxing.
 - `connect-src 'https:'` — fetching segments and manifests from arbitrary CDNs.
-- `script-src-elem 'https://cdn.jsdelivr.net'` — loading `hls.min.js` / `dash.all.min.js` from jsdelivr.
+- `script-src-elem 'self'` — vendored `hls.min.js` / `dash.all.min.js` from the extension.
+- `script-src-elem 'https://cdn.jsdelivr.net'` — only required if you rely on VidPly's CDN fallback instead of the vendored files.
 
 ## Usage
 
@@ -176,7 +187,7 @@ ddev typo3 cache:flush
 
 - **Adaptive bitrate** — Automatically adjusts quality (HLS and DASH)
 - **Buffer optimization** — Smooth playback
-- **CDN delivery** — Fast library loading via jsdelivr
+- **CDN delivery** — Standalone VidPly embeds can load pinned releases from jsDelivr; `mpc-vidply` ships **hls.js 1.6.16** and **dash.js 5.2.0** locally
 - **Minimal overhead** — `hls.js` / `dash.js` only load when an `.m3u8` / `.mpd` source is actually used
 - **Conditional loading** — `hls.js` and `dash.js` are loaded independently based on detected source formats by the `VidPlyProcessor`
 - **Native HLS on iOS** — Avoids the cost of running `hls.js` on devices where it cannot run anyway, while still keeping the full VidPly UI through the native `TextTrack` bridge
