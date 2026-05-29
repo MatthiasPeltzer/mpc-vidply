@@ -11,8 +11,8 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 | `needsPrivacyLayer` | PrivacyLayer.js + privacy-layer.css | YouTube, Vimeo, or SoundCloud present |
 | `needsVidPlay` | VidPly core (`vidply/vidply.esm.min.js` + code-split chunks; compiled from TypeScript, includes the buffering spinner, the optional download button and the SoundCloud renderer) | Video or audio media (not external services) |
 | `needsPlaylist` | PlaylistInit.js | 2+ media items OR native player |
-| `needsHLS` | hls.js | HLS source (.m3u8) detected in media files |
-| `needsDASH` | dash.js | DASH source (.mpd) detected in media files |
+| `needsHLS` | hls.js **1.6.16** (`hls.min.js`) | HLS source (.m3u8) detected in media files |
+| `needsDASH` | dash.js **5.2.0** (`dash.all.min.js`, modern UMD) | DASH source (.mpd) detected in media files |
 
 **CSS always loads** — `vidply.min.css` is lightweight and always included for consistent styling. It also contains the styles for the centered buffering spinner (`.vidply-loading` / `.vidply-buffering`) and the download button.
 
@@ -98,7 +98,7 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 
 **Before optimization:**
 - All JavaScript files loaded on every page with VidPly
-- Total: ~530KB (including hls.js from CDN)
+- Total: ~530KB (including vendored hls.js 1.6.16)
 
 **After optimization:**
 - Single YouTube / Vimeo / SoundCloud: ~7KB (PrivacyLayer.js + privacy-layer.css)
@@ -167,14 +167,14 @@ foreach ($tracks as $track) {
     <f:asset.script identifier="vidPlyPrivacy" src="..." type="module"/>
 </f:if>
 
-<!-- HLS.js - only for HLS streams -->
+<!-- HLS.js 1.6.16 - only for HLS streams -->
 <f:if condition="{needsHLS}">
-    <f:asset.script identifier="vidPlyHLS" src="https://cdn.jsdelivr.net/..." />
+    <f:asset.script identifier="vidPlyHLS" src="EXT:mpc_vidply/Resources/Public/JavaScript/hls.min.js" defer="true"/>
 </f:if>
 
-<!-- dash.js - only for DASH streams -->
+<!-- dash.js 5.2.0 (modern UMD) - only for DASH streams -->
 <f:if condition="{needsDASH}">
-    <f:asset.script identifier="vidPlyDASH" src="https://cdn.jsdelivr.net/..." />
+    <f:asset.script identifier="vidPlyDASH" src="EXT:mpc_vidply/Resources/Public/JavaScript/dash.all.min.js" defer="true"/>
 </f:if>
 
 <!-- VidPly Core - only for native player -->
