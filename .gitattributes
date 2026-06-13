@@ -1,3 +1,28 @@
+# Enforce Unix newlines
+* text=auto eol=lf
+
+# Binary assets (do not normalize line endings)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.otf binary
+*.zip binary
+*.gz binary
+*.tar binary
+*.pdf binary
+*.mp4 binary
+*.webm binary
+*.mp3 binary
+*.wav binary
+*.map binary
+
 # Export configuration for GitHub releases and Packagist
 # Only exclude non-essential development files from archives
 
@@ -5,4 +30,3 @@
 /.github export-ignore
 /.gitignore export-ignore
 /.gitattributes export-ignore
-
