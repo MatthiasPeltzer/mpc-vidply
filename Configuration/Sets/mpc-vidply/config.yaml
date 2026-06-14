@@ -1,5 +1,2 @@
 name: mpc/mpc-vidply
 label: MPC VidPly Player
-dependencies:
-  - typo3/fluid-styled-content
-

@@ -503,6 +503,58 @@
         <source>URL to the privacy policy page (e.g., "https://policies.google.com/privacy")</source>
         <target>URL zur Datenschutzrichtlinien-Seite (z.B. "https://policies.google.com/privacy")</target>
       </trans-unit>
+      <trans-unit id="header_layout.0">
+        <source>Default</source>
+        <target>Standard</target>
+      </trans-unit>
+      <trans-unit id="header_layout.1">
+        <source>H1</source>
+        <target>H1</target>
+      </trans-unit>
+      <trans-unit id="header_layout.2">
+        <source>H2 - Default</source>
+        <target>H2 - Standard</target>
+      </trans-unit>
+      <trans-unit id="header_layout.3">
+        <source>H3</source>
+        <target>H3</target>
+      </trans-unit>
+      <trans-unit id="header_layout.4">
+        <source>H4</source>
+        <target>H4</target>
+      </trans-unit>
+      <trans-unit id="header_layout.5">
+        <source>H5</source>
+        <target>H5</target>
+      </trans-unit>
+      <trans-unit id="header_layout.6">
+        <source>H6</source>
+        <target>H6</target>
+      </trans-unit>
+      <trans-unit id="header_layout.7">
+        <source>H1 - Hidden (SR only)</source>
+        <target>H1 - Versteckt (nur SR)</target>
+      </trans-unit>
+      <trans-unit id="header_layout.8">
+        <source>H2 - Hidden (SR only)</source>
+        <target>H2 - Versteckt (nur SR)</target>
+      </trans-unit>
+      <trans-unit id="header_layout.9">
+        <source>H3 - Hidden (SR only)</source>
+        <target>H3 - Versteckt (nur SR)</target>
+      </trans-unit>
+      <trans-unit id="header_layout.10">
+        <source>H4 - Hidden (SR only)</source>
+        <target>H4 - Versteckt (nur SR)</target>
+      </trans-unit>
+      <trans-unit id="header_layout.11">
+        <source>H5 - Hidden (SR only)</source>
+        <target>H5 - Versteckt (nur SR)</target>
+      </trans-unit>
+      <trans-unit id="header_layout.12">
+        <source>H6 - Hidden (SR only)</source>
+        <target>H6 - Versteckt (nur SR)</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

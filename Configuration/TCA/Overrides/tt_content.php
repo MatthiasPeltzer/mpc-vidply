@@ -219,8 +219,7 @@ $GLOBALS['TCA']['tt_content']['types']['mpc_vidply'] = [
     'showitem' => '
         --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,
             --palette--;;general,
-            --palette--;;header,
-            subheader,
+            --palette--;;headers,
         --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tabs.media,
             tx_mpcvidply_media_items,
         --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tabs.settings,
@@ -251,8 +250,7 @@ $GLOBALS['TCA']['tt_content']['types']['mpc_vidply_listview'] = [
     'showitem' => '
         --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,
             --palette--;;general,
-            --palette--;;header,
-            subheader,
+            --palette--;;headers,
         --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tabs.listview_rows,
             tx_mpcvidply_listview_rows,
         --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tabs.listview_settings,
@@ -278,8 +276,7 @@ $GLOBALS['TCA']['tt_content']['types']['mpc_vidply_detail'] = [
     'showitem' => '
         --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,
             --palette--;;general,
-            --palette--;;header,
-            subheader,
+            --palette--;;headers,
         --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tabs.settings,
             tx_mpcvidply_options,
             tx_mpcvidply_volume,

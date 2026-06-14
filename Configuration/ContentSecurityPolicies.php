@@ -42,13 +42,8 @@ return Map::fromEntries([
             SourceScheme::blob
         ),
 
-        // blob: + https for fetch/XHR (HLS segment loading)
-        new Mutation(
-            MutationMode::Extend,
-            Directive::ConnectSrc,
-            SourceScheme::blob,
-            SourceScheme::https
-        ),
+        // connect-src (blob:, https:) is applied via PolicyMutatedEvent so it
+        // survives themes that Set connect-src to 'self' after this file runs.
 
         // blob: for object-src (Firefox blob URL handling)
         new Mutation(

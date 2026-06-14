@@ -1,3 +1,4 @@
 # VidPly Player Setup TypoScript (Legacy)
+@import 'EXT:mpc_vidply/Configuration/TypoScript/Helper/ContentElement.typoscript'
 @import 'EXT:mpc_vidply/Configuration/Sets/mpc-vidply/setup.typoscript'
 
