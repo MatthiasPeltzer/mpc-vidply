@@ -223,11 +223,41 @@ Conclusion
 
 **Tab: Accessibility → Audio Description**
 
-For blind and low-vision users, add a video with narrated descriptions:
+VidPly supports two spoken audio-description workflows plus text descriptions in the transcript.
 
-1. Click "Add audio description"
-2. Upload an alternative video with audio description track
-3. Users can toggle between standard and described video
+#### Option A — Described video (recommended)
+
+For blind and low-vision users, add a video with narrated descriptions already mixed into the audio:
+
+1. Click **Add audio description**
+2. Upload an alternative **MP4 or WebM** with embedded narration
+3. Users toggle between standard and described video via the AD button
+
+Optionally set **Audio Description Duration** when the described version is longer than the original.
+
+#### Option B — VTT speech (extended AD, no described video)
+
+When you do not have a described video file:
+
+1. Under **Captions**, upload a WebVTT file and set track kind to **Descriptions**
+2. Leave **Audio Description** empty (or set mode explicitly — see below)
+3. With **Audio Description Mode** set to **Automatic** or **Descriptions VTT speech**, VidPly pauses the video at each description cue, speaks the text via the browser’s speech synthesis, then resumes playback
+
+Text description cues remain visible in the **transcript panel** for users who prefer reading. This path requires browser `speechSynthesis` support; voice quality varies by browser.
+
+#### Audio Description Mode
+
+**Tab: Accessibility → Audio Description Mode**
+
+| Mode | Behavior |
+|------|----------|
+| **Automatic** (default) | Use described video if uploaded; otherwise VTT speech if a Descriptions VTT exists |
+| **Described video only** | Swap to described MP4/WebM only; ignore VTT speech |
+| **Descriptions VTT speech** | Speak descriptions VTT cues only; do not swap video |
+
+#### Alternate caption/chapter files for described video
+
+When using described video swap, you can attach an **Audio Description Version** VTT per caption or chapter file reference (`tx_desc_src_file`). Those alternate files load when AD mode is active.
 
 ---
 
