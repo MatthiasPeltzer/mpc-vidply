@@ -102,9 +102,30 @@ Media library records with types: `video`, `audio`, `youtube`, `vimeo`, `soundcl
 | `poster` | file | Thumbnail image |
 | `captions` | file | VTT caption files |
 | `chapters` | file | VTT chapter files |
-| `audio_description` | file | AD video track |
+| `audio_description` | file | Described video (MP4/WebM) for source swap |
+| `audio_description_mode` | select | `auto`, `swap`, or `vtt_speech` — see Audio Description modes below |
+| `audio_description_duration` | int | Described version duration in seconds (playlist UI) |
 | `sign_language` | file | Sign language overlay |
 | `enable_transcript` | bool | Show transcript panel |
+
+**Audio description — player option mapping**
+
+`VidPlyProcessor` maps media fields to VidPly `data-vidply-options`:
+
+| Media field | Player option |
+|-------------|---------------|
+| `audio_description` (first file) | `audioDescriptionSrc` |
+| `audio_description_mode` | `audioDescriptionMode` (`auto` \| `swap` \| `vtt_speech`) |
+| `audio_description_duration` | `audioDescriptionDuration` |
+| Captions with `tx_track_kind = descriptions` | `<track kind="descriptions">` |
+
+**Fallback hierarchy** when `audioDescriptionMode` is `auto`:
+
+1. Described video swap if `audio_description` is set
+2. Else VTT speech if a descriptions VTT track exists
+3. Else AD button hidden (no spoken AD)
+
+The AD button is enabled when either a described video or a descriptions VTT track is present.
 
 ### `tx_mpcvidply_content_media_mm`
 

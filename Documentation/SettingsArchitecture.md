@@ -61,7 +61,8 @@ Available for YouTube, Vimeo, and SoundCloud. Supports multilingual content via 
 | Captions | WebVTT caption files |
 | Chapters | WebVTT chapter markers |
 | Enable Transcript | Per-track transcript flag |
-| Audio Description | Alternative audio track |
+| Audio Description | Described video (MP4/WebM swap) or VTT speech via `audio_description_mode` |
+| Audio Description Mode | `auto` \| `swap` \| `vtt_speech` — delivery path for spoken AD |
 | Sign Language | Sign language overlay video |
 
 ## Best Practices
