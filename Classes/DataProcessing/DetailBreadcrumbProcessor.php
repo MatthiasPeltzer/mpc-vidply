@@ -13,8 +13,7 @@ use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
  * Page-level DataProcessor that rewrites the breadcrumb "current" item so it
  * reflects the resolved media title on a VidPly detail page.
  *
- * Must run AFTER the breadcrumb MenuProcessor (mp-core uses priority 70, so
- * wire this processor at priority 71 or later).
+ * Must run after the breadcrumb MenuProcessor (priority 70; see setup.typoscript).
  *
  * Configuration:
  *   - `as` (string, default: "breadcrumb"): key under which MenuProcessor

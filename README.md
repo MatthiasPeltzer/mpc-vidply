@@ -177,10 +177,12 @@ Modular template partials:
 
 ## Requirements
 
-- **TYPO3**: 13.4+ or 14.x
+- **TYPO3**: 13.4+ or 14.x (Core, Fluid, Extbase)
 - **PHP**: 8.2+ (8.3 recommended)
 - **Composer**: Required
 - **Browsers**: Chrome 90+, Firefox 88+, Safari 14+
+
+`fluid_styled_content` is optional. VidPly registers its own frontend content-rendering TypoScript (`lib.mpcVidplyContentElement`) and ships a compatible Default layout for `tt_content` headers and frame classes.
 
 ## License
 

@@ -1,0 +1,13 @@
+# Self-contained content element renderer (no fluid_styled_content required)
+lib.mpcVidplyContentElement = FLUIDTEMPLATE
+lib.mpcVidplyContentElement {
+    templateRootPaths.0 = EXT:mpc_vidply/Resources/Private/Templates/
+    partialRootPaths.0 = EXT:mpc_vidply/Resources/Private/Partials/
+    layoutRootPaths.0 = EXT:mpc_vidply/Resources/Private/Layouts/
+    settings {
+        defaultHeaderType = 2
+    }
+    dataProcessing {
+        1770716912 = record-transformation
+    }
+}

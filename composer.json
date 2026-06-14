@@ -17,8 +17,10 @@
     "php": "^8.2",
     "typo3/cms-core": "^13.4 || ^14.3",
     "typo3/cms-fluid": "^13.4 || ^14.3",
-    "typo3/cms-extbase": "^13.4 || ^14.3",
-    "typo3/cms-fluid-styled-content": "^13.4 || ^14.3"
+    "typo3/cms-extbase": "^13.4 || ^14.3"
+  },
+  "suggest": {
+    "typo3/cms-fluid-styled-content": "Optional: use site-package layoutRootPaths overrides for themed frame/header partials"
   },
   "autoload": {
     "psr-4": {

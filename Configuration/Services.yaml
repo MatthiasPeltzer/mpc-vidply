@@ -50,3 +50,9 @@ services:
       - name: event.listener
         identifier: 'mpc/mpc-vidply/register-online-media-icons'
         event: TYPO3\CMS\Core\Core\Event\BootCompletedEvent
+
+  Mpc\MpcVidply\EventListener\StreamingContentSecurityPolicyEventListener:
+    tags:
+      - name: event.listener
+        identifier: 'mpc/mpc-vidply/streaming-content-security-policy'
+        event: TYPO3\CMS\Core\Security\ContentSecurityPolicy\Event\PolicyMutatedEvent

@@ -1,12 +1,8 @@
 # VidPly Player Setup TypoScript
-lib.contentElement {
-    templateRootPaths.200 = EXT:mpc_vidply/Resources/Private/Templates/
-    partialRootPaths.200 = EXT:mpc_vidply/Resources/Private/Partials/
-    layoutRootPaths.200 = EXT:mpc_vidply/Resources/Private/Layouts/
-}
+@import 'EXT:mpc_vidply/Configuration/TypoScript/Helper/ContentElement.typoscript'
 
 # Configure VidPly content element
-tt_content.mpc_vidply =< lib.contentElement
+tt_content.mpc_vidply =< lib.mpcVidplyContentElement
 tt_content.mpc_vidply {
     templateName = VidPly
     
@@ -16,7 +12,7 @@ tt_content.mpc_vidply {
 }
 
 # Listview content element — renders multiple "shelves" of media cards
-tt_content.mpc_vidply_listview =< lib.contentElement
+tt_content.mpc_vidply_listview =< lib.mpcVidplyContentElement
 tt_content.mpc_vidply_listview {
     templateName = Listview
 
@@ -26,7 +22,7 @@ tt_content.mpc_vidply_listview {
 }
 
 # Detail content element — resolves ?media=<uid|slug> and renders the full player + metadata
-tt_content.mpc_vidply_detail =< lib.contentElement
+tt_content.mpc_vidply_detail =< lib.mpcVidplyContentElement
 tt_content.mpc_vidply_detail {
     templateName = Detail
 
@@ -35,17 +31,17 @@ tt_content.mpc_vidply_detail {
     }
 }
 
-# Breadcrumb (merged into mp-core `page.10.dataProcessing.70`): by default
-# TYPO3 HMENU omits any page with "Hide in menu" from the rootline. If the
-# VidPly detail page is not in the menu, that segment (and a consistent path
-# to the parent, e.g. "Mediathek") vanishes. Include those pages in the
-# breadcrumb only — main navigation is unchanged.
-page.10.dataProcessing.70.includeNotInMenu = 1
+# Breadcrumb: include detail pages that are hidden from the main menu in the rootline trail.
+# Also registers the breadcrumb MenuProcessor when the site template has not defined one yet.
+page.10.dataProcessing.70 = TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
+page.10.dataProcessing.70 {
+    as = breadcrumb
+    special = rootline
+    includeNotInMenu = 1
+}
 
 # Override the breadcrumb's current-item title with the resolved media title on
-# detail pages. Runs AFTER the breadcrumb MenuProcessor configured by mp-core
-# at priority 70; the key 71 keeps us right next to the upstream processor
-# without interfering with other page-level data processors.
+# detail pages. Runs after the breadcrumb MenuProcessor at priority 70.
 page.10.dataProcessing.71 = Mpc\MpcVidply\DataProcessing\DetailBreadcrumbProcessor
 page.10.dataProcessing.71 {
     as = breadcrumb

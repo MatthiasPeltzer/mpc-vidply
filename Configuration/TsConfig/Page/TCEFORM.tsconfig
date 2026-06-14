@@ -1,0 +1,27 @@
+# Extra header_layout options (H6 and screen-reader-only variants) for VidPly content elements.
+TCEFORM.tt_content.header_layout {
+  addItems {
+    6 = LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:header_layout.6
+    7 = LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:header_layout.7
+    8 = LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:header_layout.8
+    9 = LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:header_layout.9
+    10 = LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:header_layout.10
+    11 = LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:header_layout.11
+    12 = LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:header_layout.12
+  }
+}
+
+# "Header inside" applies to text/media composites — not VidPly player elements.
+TCEFORM.tt_content.tx_header_inside {
+  types {
+    mpc_vidply {
+      disabled = 1
+    }
+    mpc_vidply_listview {
+      disabled = 1
+    }
+    mpc_vidply_detail {
+      disabled = 1
+    }
+  }
+}

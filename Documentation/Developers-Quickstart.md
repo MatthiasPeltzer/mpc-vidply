@@ -15,6 +15,15 @@ Then:
 2. **Include Site Set** → Site Management → Sites → Your Site → Sets → Add `mpc/mpc-vidply`
 3. **Clear Caches**
 
+**Requirements:** TYPO3 Core, Fluid, and Extbase only — `fluid_styled_content` is **not** required. The extension ships its own `lib.mpcVidplyContentElement` renderer and Default layout (frame wrapper + `tt_content` header/subheader).
+
+**Optional theming:** If your site package or `fluid_styled_content` ships custom frame/header partials, you can point VidPly at them:
+
+```typoscript
+lib.mpcVidplyContentElement.layoutRootPaths.10 = {$styles.templates.layoutRootPath}
+lib.mpcVidplyContentElement.partialRootPaths.10 = {$styles.templates.partialRootPath}
+```
+
 ---
 
 ## 📁 Directory Structure
@@ -33,6 +42,7 @@ mpc_vidply/
 │   │   └── Overrides/
 │   │       └── tt_content.php    # Content element TCA
 │   ├── TypoScript/
+│   │   └── Helper/ContentElement.typoscript  # lib.mpcVidplyContentElement
 │   ├── ContentSecurityPolicies.php
 │   ├── Icons.php
 │   ├── JavaScriptModules.php
@@ -41,6 +51,7 @@ mpc_vidply/
 │   ├── Private/
 │   │   ├── Language/             # XLF translations (en, de)
 │   │   ├── Partials/VidPly/      # Modular template partials
+│   │   ├── Layouts/              # Default content element layout
 │   │   └── Templates/            # Main VidPly.html template
 │   └── Public/
 │       ├── Css/vidply.min.css
@@ -170,7 +181,7 @@ Processes media items for frontend rendering.
 **TypoScript:**
 
 ```typoscript
-tt_content.mpc_vidply =< lib.contentElement
+tt_content.mpc_vidply =< lib.mpcVidplyContentElement
 tt_content.mpc_vidply {
     templateName = VidPly
     dataProcessing {

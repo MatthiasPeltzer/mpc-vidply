@@ -378,6 +378,45 @@
       <trans-unit id="tx_mpcvidply_privacy_settings.youtube_policy_link.description">
         <source>URL to the privacy policy page (e.g., "https://policies.google.com/privacy")</source>
       </trans-unit>
+      <trans-unit id="header_layout.0">
+        <source>Default</source>
+      </trans-unit>
+      <trans-unit id="header_layout.1">
+        <source>H1</source>
+      </trans-unit>
+      <trans-unit id="header_layout.2">
+        <source>H2 - Default</source>
+      </trans-unit>
+      <trans-unit id="header_layout.3">
+        <source>H3</source>
+      </trans-unit>
+      <trans-unit id="header_layout.4">
+        <source>H4</source>
+      </trans-unit>
+      <trans-unit id="header_layout.5">
+        <source>H5</source>
+      </trans-unit>
+      <trans-unit id="header_layout.6">
+        <source>H6</source>
+      </trans-unit>
+      <trans-unit id="header_layout.7">
+        <source>H1 - Hidden (SR only)</source>
+      </trans-unit>
+      <trans-unit id="header_layout.8">
+        <source>H2 - Hidden (SR only)</source>
+      </trans-unit>
+      <trans-unit id="header_layout.9">
+        <source>H3 - Hidden (SR only)</source>
+      </trans-unit>
+      <trans-unit id="header_layout.10">
+        <source>H4 - Hidden (SR only)</source>
+      </trans-unit>
+      <trans-unit id="header_layout.11">
+        <source>H5 - Hidden (SR only)</source>
+      </trans-unit>
+      <trans-unit id="header_layout.12">
+        <source>H6 - Hidden (SR only)</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>

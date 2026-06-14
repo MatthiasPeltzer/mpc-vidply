@@ -921,8 +921,7 @@ function setupPrivacyInterception(playlist, element, wrapperElement, tracks, aut
 
 /**
  * Theme Synchronization System
- * Allows VidPly players to sync with page-level theme switches (e.g., header dark/light mode toggle)
- * Compatible with mp_core theme.js which uses data-bs-theme attribute
+ * Allows VidPly players to sync with page-level theme switches (e.g. header dark/light mode toggle)
  */
 
 // Detect current page theme from common conventions
@@ -930,15 +929,14 @@ function detectPageTheme() {
     const html = document.documentElement;
     const body = document.body;
     
-    // Priority 1: Check data-bs-theme attribute (Bootstrap / mp_core convention)
+    // Priority 1: Check data-bs-theme attribute (Bootstrap convention)
     const bsTheme = html.getAttribute('data-bs-theme');
     if (bsTheme === 'light') return 'light';
     if (bsTheme === 'dark') return 'dark';
     
-    // Priority 2: Check #themeSwitch checkbox (mp_core: checked = dark, unchecked = light)
+    // Priority 2: Check #themeSwitch checkbox (checked = dark, unchecked = light)
     const themeSwitch = document.getElementById('themeSwitch');
     if (themeSwitch && themeSwitch.type === 'checkbox') {
-        // mp_core convention: checked = dark mode, unchecked = light mode
         return themeSwitch.checked ? 'dark' : 'light';
     }
     
@@ -1033,7 +1031,7 @@ function setupThemeSync() {
     const initialTheme = detectPageTheme();
     setTimeout(() => applyThemeToAllPlayers(initialTheme), 200);
     
-    // Primary method: Observe data-bs-theme attribute on <html> (mp_core sets this)
+    // Primary method: Observe data-bs-theme attribute on <html>
     const observer = new MutationObserver((mutations) => {
         for (const mutation of mutations) {
             if (mutation.attributeName === 'data-bs-theme') {
@@ -1049,7 +1047,7 @@ function setupThemeSync() {
         applyThemeToAllPlayers(newTheme);
     });
     
-    // Observe html element for data-bs-theme changes (mp_core)
+    // Observe html element for data-bs-theme changes
     observer.observe(html, {
         attributes: true,
         attributeFilter: ['data-bs-theme', 'class', 'data-theme']
@@ -1062,10 +1060,10 @@ function setupThemeSync() {
     });
     
     // Fallback: Listen for checkbox change events directly
-    // (mp_core's setTheme() changes checkbox programmatically, but we catch it via data-bs-theme observer)
+    // Fallback: observe #themeSwitch when data-bs-theme is not used
     if (themeSwitch && themeSwitch.type === 'checkbox') {
         themeSwitch.addEventListener('change', () => {
-            // mp_core convention: checked = dark, unchecked = light
+            // checked = dark, unchecked = light
             const theme = themeSwitch.checked ? 'dark' : 'light';
             applyThemeToAllPlayers(theme);
         });
