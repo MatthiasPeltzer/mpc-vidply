@@ -535,6 +535,24 @@ class VidPlyProcessor implements DataProcessorInterface
             $optionOverrides['audioDescriptionButton'] = true;
         }
 
+        $audioDescriptionMode = (string)($firstTrack['audioDescriptionMode'] ?? 'auto');
+        if (in_array($audioDescriptionMode, ['auto', 'swap', 'vtt_speech'], true)) {
+            $optionOverrides['audioDescriptionMode'] = $audioDescriptionMode;
+        }
+
+        $hasDescriptionsTrack = false;
+        if (!empty($firstTrack['tracks'])) {
+            foreach ($firstTrack['tracks'] as $textTrack) {
+                if (($textTrack['kind'] ?? '') === 'descriptions') {
+                    $hasDescriptionsTrack = true;
+                    break;
+                }
+            }
+        }
+        if (!empty($firstTrack['audioDescriptionSrc']) || $hasDescriptionsTrack) {
+            $optionOverrides['audioDescriptionButton'] = true;
+        }
+
         if (!empty($firstTrack['signLanguageSrc'])) {
             $result['signLanguage'][] = [
                 'src' => $firstTrack['signLanguageSrc'],
@@ -1192,6 +1210,10 @@ class VidPlyProcessor implements DataProcessorInterface
         }
         if (!empty($mediaRecord['audio_description_duration'])) {
             $track['audioDescriptionDuration'] = (int)$mediaRecord['audio_description_duration'];
+        }
+        $audioDescriptionMode = (string)($mediaRecord['audio_description_mode'] ?? 'auto');
+        if (in_array($audioDescriptionMode, ['auto', 'swap', 'vtt_speech'], true)) {
+            $track['audioDescriptionMode'] = $audioDescriptionMode;
         }
         if (!empty($mediaRecord['description'])) {
             $track['description'] = $mediaRecord['description'];

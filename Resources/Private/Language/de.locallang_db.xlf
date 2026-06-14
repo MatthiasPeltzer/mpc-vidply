@@ -75,6 +75,26 @@
         <source>Duration of the audio-described version in seconds (typically longer than the original)</source>
         <target>Dauer der audiobeschriebenen Version in Sekunden (typischerweise länger als das Original)</target>
       </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.audio_description_mode">
+        <source>Audio Description Mode</source>
+        <target>Audiodeskriptions-Modus</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.audio_description_mode.description">
+        <source>Automatic uses a described video when available, otherwise speaks descriptions VTT cues. Video swap only replaces the media file. VTT speech reads descriptions tracks aloud and pauses the video.</source>
+        <target>Automatisch nutzt eine beschriebene Videodatei, falls vorhanden, sonst werden Descriptions-VTT-Spuren vorgelesen. „Nur beschriebenes Video“ tauscht die Mediendatei. „Descriptions-VTT-Sprache“ liest Descriptions-Spuren vor und pausiert das Video.</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.audio_description_mode.auto">
+        <source>Automatic</source>
+        <target>Automatisch</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.audio_description_mode.swap">
+        <source>Described video only</source>
+        <target>Nur beschriebenes Video</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.audio_description_mode.vtt_speech">
+        <source>Descriptions VTT speech</source>
+        <target>Descriptions-VTT-Sprache</target>
+      </trans-unit>
       <trans-unit id="tx_mpcvidply_media.captions">
         <source>Captions / Subtitles (VTT)</source>
         <target>Untertitel / Captions (VTT)</target>

@@ -33,6 +33,7 @@ CREATE TABLE tx_mpcvidply_media (
 	long_description mediumtext,
 	duration int DEFAULT '0' NOT NULL,
 	audio_description_duration int DEFAULT '0' NOT NULL,
+	audio_description_mode varchar(20) DEFAULT 'auto' NOT NULL,
 	
 	# Poster/Thumbnail
 	poster int unsigned DEFAULT '0' NOT NULL,

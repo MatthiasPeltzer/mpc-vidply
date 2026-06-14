@@ -54,6 +54,7 @@ return [
                     enable_transcript,
                 --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tabs.accessibility,
                     audio_description,
+                    audio_description_mode,
                     sign_language,
                     sign_language_display_mode,
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:categories,
@@ -383,6 +384,30 @@ return [
                 'default' => 0,
                 'range' => [
                     'lower' => 0,
+                ],
+            ],
+        ],
+        'audio_description_mode' => [
+            'exclude' => true,
+            'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.audio_description_mode',
+            'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.audio_description_mode.description',
+            'config' => [
+                'type' => 'select',
+                'renderType' => 'selectSingle',
+                'default' => 'auto',
+                'items' => [
+                    [
+                        'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.audio_description_mode.auto',
+                        'value' => 'auto',
+                    ],
+                    [
+                        'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.audio_description_mode.swap',
+                        'value' => 'swap',
+                    ],
+                    [
+                        'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.audio_description_mode.vtt_speech',
+                        'value' => 'vtt_speech',
+                    ],
                 ],
             ],
         ],

@@ -57,6 +57,21 @@
       <trans-unit id="tx_mpcvidply_media.audio_description_duration.description">
         <source>Duration of the audio-described version in seconds (typically longer than the original)</source>
       </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.audio_description_mode">
+        <source>Audio Description Mode</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.audio_description_mode.description">
+        <source>Automatic uses a described video when available, otherwise speaks descriptions VTT cues. Video swap only replaces the media file. VTT speech reads descriptions tracks aloud and pauses the video.</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.audio_description_mode.auto">
+        <source>Automatic</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.audio_description_mode.swap">
+        <source>Described video only</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.audio_description_mode.vtt_speech">
+        <source>Descriptions VTT speech</source>
+      </trans-unit>
       <trans-unit id="tx_mpcvidply_media.captions">
         <source>Captions / Subtitles (VTT)</source>
       </trans-unit>
