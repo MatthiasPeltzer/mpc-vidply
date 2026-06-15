@@ -44,7 +44,7 @@ defined('TYPO3') || die();
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:sys_file_reference.tx_desc_src_file.description',
             'config' => [
                 'type' => 'file',
-                'allowed' => 'vtt',
+                'allowed' => 'vtt,srt',
                 'maxitems' => 1,
                 'appearance' => [
                     'createNewRelationLinkTitle' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:sys_file_reference.tx_desc_src_file.add',

@@ -10,6 +10,7 @@ services:
     resource: '../Classes/*'
     exclude:
       - '../Classes/Enums/*'
+      - '../Classes/Dto/*'
       - '../Classes/OnlineMedia/Helpers/ExternalMediaDomainValidationTrait.php'
 
   # DataProcessors are instantiated via GeneralUtility::makeInstance() from
@@ -37,6 +38,14 @@ services:
   Mpc\MpcVidply\Service\DetailRequestResolver:
     public: true
 
+  # DataHandler hooks are instantiated via GeneralUtility::makeInstance(); public
+  # services are resolved from the container with autowired dependencies.
+  Mpc\MpcVidply\Hooks\SrtCaptionConversionHook:
+    public: true
+
+  Mpc\MpcVidply\Service\SrtCaptionMigrationService:
+    public: true
+
   # Preview renderers are resolved by TYPO3 core via the service container when
   # registered on a CE type's `previewRenderer` entry.
   Mpc\MpcVidply\Backend\Preview\VidPlyPreviewRenderer:
@@ -56,3 +65,9 @@ services:
       - name: event.listener
         identifier: 'mpc/mpc-vidply/streaming-content-security-policy'
         event: TYPO3\CMS\Core\Security\ContentSecurityPolicy\Event\PolicyMutatedEvent
+
+  Mpc\MpcVidply\Command\ConvertSrtCaptionsCommand:
+    tags:
+      - name: 'console.command'
+        command: 'mpc-vidply:convert-srt-to-vtt'
+        description: 'Convert VidPly-linked SRT subtitle files to WebVTT'
