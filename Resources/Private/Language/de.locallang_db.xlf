@@ -12,8 +12,8 @@
         <target>Audiodeskriptions-Version auswählen</target>
       </trans-unit>
       <trans-unit id="sys_file_reference.tx_desc_src_file.description">
-        <source>Alternative VTT file to use when audio description mode is enabled. This file is used instead of the main track when the user activates audio description.</source>
-        <target>Alternative VTT-Datei, die verwendet wird, wenn der Audiodeskriptionsmodus aktiviert ist. Diese Datei ersetzt die Hauptspur, wenn der Benutzer die Audiodeskription aktiviert.</target>
+        <source>Alternative WebVTT or SubRip file to use when audio description mode is enabled. SRT files are converted automatically to WebVTT when you save the media record. This file is used instead of the main track when the user activates audio description.</source>
+        <target>Alternative WebVTT- oder SubRip-Datei, die verwendet wird, wenn der Audiodeskriptionsmodus aktiviert ist. SRT-Dateien werden beim Speichern des Medien-Datensatzes automatisch in WebVTT umgewandelt. Diese Datei ersetzt die Hauptspur, wenn der Benutzer die Audiodeskription aktiviert.</target>
       </trans-unit>
       <trans-unit id="sys_file_reference.tx_lang_code">
         <source>Language Code</source>
@@ -96,24 +96,24 @@
         <target>Descriptions-VTT-Sprache</target>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.captions">
-        <source>Captions / Subtitles (VTT)</source>
-        <target>Untertitel / Captions (VTT)</target>
+        <source>Captions / Subtitles (VTT / SRT)</source>
+        <target>Untertitel / Captions (VTT / SRT)</target>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.captions.description">
-        <source>Optional VTT files for captions or subtitles. For DASH/HLS streams, embedded subtitle tracks are used automatically; adding files here overrides or supplements the embedded tracks.</source>
-        <target>Optionale VTT-Dateien für Untertitel. Bei DASH-/HLS-Streams werden eingebettete Untertitelspuren automatisch verwendet; hier hinzugefügte Dateien überschreiben oder ergänzen die eingebetteten Spuren.</target>
+        <source>Optional WebVTT or SubRip files for captions or subtitles. SRT files are converted automatically to WebVTT when you save the media record. For DASH/HLS streams, embedded subtitle tracks are used automatically; adding files here overrides or supplements the embedded tracks.</source>
+        <target>Optionale WebVTT- oder SubRip-Dateien für Untertitel. SRT-Dateien werden beim Speichern des Medien-Datensatzes automatisch in WebVTT umgewandelt. Bei DASH-/HLS-Streams werden eingebettete Untertitelspuren automatisch verwendet; hier hinzugefügte Dateien überschreiben oder ergänzen die eingebetteten Spuren.</target>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.captions.add">
         <source>Add caption file</source>
         <target>Untertitel-Datei hinzufügen</target>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.chapters">
-        <source>Chapters (VTT)</source>
-        <target>Kapitel (VTT)</target>
+        <source>Chapters (VTT / SRT)</source>
+        <target>Kapitel (VTT / SRT)</target>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.chapters.description">
-        <source>Optional VTT files for chapter markers. For DASH/HLS streams, chapter metadata from the manifest is used automatically; adding files here overrides or supplements the embedded chapters.</source>
-        <target>Optionale VTT-Dateien für Kapitelmarken. Bei DASH-/HLS-Streams werden Kapitel-Metadaten aus dem Manifest automatisch verwendet; hier hinzugefügte Dateien überschreiben oder ergänzen die eingebetteten Kapitel.</target>
+        <source>Optional WebVTT or SubRip files for chapter markers. SRT files are converted automatically to WebVTT when you save the media record. For DASH/HLS streams, chapter metadata from the manifest is used automatically; adding files here overrides or supplements the embedded chapters.</source>
+        <target>Optionale WebVTT- oder SubRip-Dateien für Kapitelmarken. SRT-Dateien werden beim Speichern des Medien-Datensatzes automatisch in WebVTT umgewandelt. Bei DASH-/HLS-Streams werden Kapitel-Metadaten aus dem Manifest automatisch verwendet; hier hinzugefügte Dateien überschreiben oder ergänzen die eingebetteten Kapitel.</target>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.chapters.add">
         <source>Add chapter file</source>

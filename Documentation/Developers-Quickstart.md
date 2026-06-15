@@ -100,8 +100,8 @@ Media library records with types: `video`, `audio`, `youtube`, `vimeo`, `soundcl
 | `title` | string | Display title |
 | `artist` | string | Creator name |
 | `poster` | file | Thumbnail image |
-| `captions` | file | VTT caption files |
-| `chapters` | file | VTT chapter files |
+| `captions` | file | WebVTT / SubRip caption files (SRT auto-converts to VTT on save) |
+| `chapters` | file | WebVTT / SubRip chapter files (SRT auto-converts to VTT on save) |
 | `audio_description` | file | Described video (MP4/WebM) for source swap |
 | `audio_description_mode` | select | `auto`, `swap`, or `vtt_speech` — see Audio Description modes below |
 | `audio_description_duration` | int | Described version duration in seconds (playlist UI) |
@@ -126,6 +126,18 @@ Media library records with types: `video`, `audio`, `youtube`, `vimeo`, `soundcl
 3. Else AD button hidden (no spoken AD)
 
 The AD button is enabled when either a described video or a descriptions VTT track is present.
+
+### SRT → WebVTT conversion
+
+VidPly playback and transcripts require **WebVTT**. The extension accepts **SubRip (`.srt`)** uploads for captions, chapters, and audio-description alternate tracks (`tx_desc_src_file`).
+
+| Trigger | Behavior |
+|---------|----------|
+| Save `tx_mpcvidply_media` in the backend | Linked `.srt` files are converted in place to `.vtt`; editors receive a flash message |
+| Upgrade wizard (no shell) | **Admin Tools → Upgrade → Upgrade Wizards → VidPly: Convert SRT caption files to WebVTT** |
+| CLI (optional, DDEV/CI) | `vendor/bin/typo3 mpc-vidply:convert-srt-to-vtt [--dry-run] [--limit=N]` |
+
+Implementation: `SrtToVttConverter`, `SrtCaptionMigrationService`, `SrtCaptionConversionHook`, `ConvertSrtCaptionsUpgradeWizard`.
 
 ### `tx_mpcvidply_content_media_mm`
 

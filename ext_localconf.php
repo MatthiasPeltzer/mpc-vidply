@@ -7,6 +7,7 @@ use Mpc\MpcVidply\OnlineMedia\Helpers\ExternalVideoHelper;
 use Mpc\MpcVidply\OnlineMedia\Helpers\DashHelper;
 use Mpc\MpcVidply\OnlineMedia\Helpers\HlsHelper;
 use Mpc\MpcVidply\OnlineMedia\Helpers\SoundCloudHelper;
+use Mpc\MpcVidply\Hooks\SrtCaptionConversionHook;
 use Mpc\MpcVidply\Hooks\VidPlyPlaylistTranslationSync;
 use Mpc\MpcVidply\Routing\Aspect\VidPlyMediaRouteAspect;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
@@ -18,6 +19,7 @@ defined('TYPO3') or die('Access denied.');
 $GLOBALS['TYPO3_CONF_VARS']['FE']['contentRenderingTemplates'][] = 'mpc_vidply/Configuration/TypoScript/';
 
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = VidPlyPlaylistTranslationSync::class;
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = SrtCaptionConversionHook::class;
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processCmdmapClass'][] = VidPlyPlaylistTranslationSync::class;
 
 // Custom route aspect for `route-enhancers.yaml` (slug optional → query fallback).
@@ -73,6 +75,12 @@ $mediaExt = GeneralUtility::trimExplode(',', (string)($GLOBALS['TYPO3_CONF_VARS'
 if (!in_array('soundcloud', $mediaExt, true)) {
     $mediaExt[] = 'soundcloud';
     $GLOBALS['TYPO3_CONF_VARS']['SYS']['mediafile_ext'] = implode(',', $mediaExt);
+}
+
+$textFileExt = GeneralUtility::trimExplode(',', (string)($GLOBALS['TYPO3_CONF_VARS']['SYS']['textfile_ext'] ?? ''), true);
+if (!in_array('vtt', $textFileExt, true)) {
+    $textFileExt[] = 'vtt';
+    $GLOBALS['TYPO3_CONF_VARS']['SYS']['textfile_ext'] = implode(',', $textFileExt);
 }
 
 

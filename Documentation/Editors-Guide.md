@@ -169,15 +169,20 @@ VidPly provides WCAG 2.2 AA accessibility support.
 
 **Tab: Captions**
 
-Add WebVTT (.vtt) files for viewers who need captions (including many deaf and hard-of-hearing users):
+Add WebVTT (`.vtt`) or SubRip (`.srt`) files for viewers who need captions (including many deaf and hard-of-hearing users):
 
 1. Click "Add captions file"
-2. Upload your `.vtt` file
+2. Upload your `.vtt` or `.srt` file
 3. Set **Track kind**: Captions or Subtitles
 4. Set **Language name**: e.g., "English", "Deutsch"
 5. Set **Language code**: e.g., "en", "de"
+6. **Save the media record** — SRT files are converted automatically to WebVTT; you will see a backend notification when conversion succeeds
 
-**Multiple languages:** Add multiple VTT files for each language.
+**Multiple languages:** Add multiple caption files for each language.
+
+**SRT uploads:** SubRip (`.srt`) is accepted for convenience. VidPly stores WebVTT internally because browsers and the transcript feature require it. The original SRT file is replaced on save.
+
+**Legacy SRT files already in the file storage:** Ask a site administrator to run the one-time upgrade wizard **Admin Tools → Upgrade → Upgrade Wizards → VidPly: Convert SRT caption files to WebVTT** (no command line required).
 
 **VTT Example:**
 ```
@@ -199,7 +204,7 @@ Today we'll learn about VidPly.
 Add chapter markers for easy navigation:
 
 1. Click "Add chapters file"
-2. Upload your chapters `.vtt` file
+2. Upload your chapters `.vtt` or `.srt` file (SRT is converted to WebVTT when you save the media record)
 3. Set **Track kind**: Chapters
 4. Set language info
 
@@ -483,7 +488,7 @@ Ensure your VTT files:
 | Add video | List → New VidPly Media → Video → Upload / add streaming URL |
 | Add audio | List → New VidPly Media → Audio → Upload / add streaming URL |
 | Add YouTube | List → New VidPly Media → YouTube → Paste URL |
-| Add captions | Edit media → Captions tab → Add VTT |
+| Add captions | Edit media → Captions tab → Add VTT or SRT (SRT auto-converts on save) |
 | Create playlist | VidPly Player → Select 2+ items |
 | Configure privacy layer | List → Privacy Layer Settings → Create record |
 | Enable privacy | Automatic for YouTube/Vimeo/SoundCloud |
