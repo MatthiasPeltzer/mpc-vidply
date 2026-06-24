@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.7] - 2026-06-24
+
+### Fixed
+- Re-added the nonce (`nonceProxy`) to the `script-src-elem` and `style-src-elem`
+  CSP mutations. Extending these `-elem` directives materialises them in the
+  final policy, where they override `script-src`/`style-src` for inline
+  `<script>`/`<style>` elements. Since mp-core attaches the nonce only to
+  `script-src`/`style-src`, nonce'd inline blocks (site-config colours, web
+  fonts, theme bootstrap, structured data) were being blocked by
+  `style-src-elem`/`script-src-elem` on pages that include VidPly.
+
 ## [1.2.6] - 2026-06-24
 
 ### Security
@@ -499,6 +510,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.7]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.6...v1.2.7
 [1.2.6]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.5...v1.2.6
 [1.2.5]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.4...v1.2.5
 [1.2.4]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.3...v1.2.4
