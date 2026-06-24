@@ -131,4 +131,43 @@ final class SrtToVttConverterTest extends TestCase
         self::assertStringContainsString('Second', $result->vtt);
         self::assertStringEndsWith("\n", $result->vtt);
     }
+
+    #[Test]
+    public function keepsMultiLineCueText(): void
+    {
+        $srt = "1\n00:00:01,000 --> 00:00:04,000\nFirst line\nSecond line\n";
+
+        $result = $this->subject->convert($srt);
+
+        self::assertTrue($result->success);
+        self::assertStringContainsString("First line\nSecond line", $result->vtt);
+    }
+
+    #[Test]
+    public function parsesCrlfBlockSeparators(): void
+    {
+        $srt = "1\r\n00:00:01,000 --> 00:00:02,000\r\nFirst\r\n\r\n"
+            . "2\r\n00:00:03,000 --> 00:00:04,000\r\nSecond\r\n";
+
+        $result = $this->subject->convert($srt);
+
+        self::assertTrue($result->success);
+        self::assertStringContainsString('00:00:01.000 --> 00:00:02.000', $result->vtt);
+        self::assertStringContainsString('First', $result->vtt);
+        self::assertStringContainsString('Second', $result->vtt);
+    }
+
+    #[Test]
+    public function convertsLatin1EncodedInputToUtf8(): void
+    {
+        // "Grüße" encoded as ISO-8859-1 (ü = 0xFC, ß = 0xDF).
+        $latin1Text = "Gr\xFC\xDFe";
+        $srt = "1\n00:00:01,000 --> 00:00:02,000\n" . $latin1Text . "\n";
+
+        $result = $this->subject->convert($srt);
+
+        self::assertTrue($result->success);
+        self::assertTrue(mb_check_encoding($result->vtt, 'UTF-8'));
+        self::assertStringContainsString('Grüße', $result->vtt);
+    }
 }

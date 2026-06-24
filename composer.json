@@ -37,12 +37,22 @@
       "Mpc\\MpcVidply\\Tests\\": "Tests/"
     }
   },
+  "config": {
+    "vendor-dir": ".Build/vendor",
+    "bin-dir": ".Build/bin",
+    "allow-plugins": {
+      "typo3/class-alias-loader": true,
+      "typo3/cms-composer-installers": true
+    }
+  },
   "scripts": {
-    "test:unit": "phpunit --colors=always -c phpunit.xml.dist"
+    "test:unit": "phpunit --colors=always -c phpunit.xml.dist",
+    "test:functional": "phpunit --colors=always -c Build/FunctionalTests.xml"
   },
   "extra": {
     "typo3/cms": {
-      "extension-key": "mpc_vidply"
+      "extension-key": "mpc_vidply",
+      "web-dir": ".Build/Public"
     }
   }
 }

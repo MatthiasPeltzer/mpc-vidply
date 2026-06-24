@@ -484,6 +484,53 @@ $GLOBALS['TYPO3_CONF_VARS']['FE']['debug'] = true;
 
 ---
 
+## 🧪 Automated Tests
+
+The extension ships a PHPUnit suite built on `typo3/testing-framework`:
+
+- **Unit tests** (`Tests/Unit/`, config `phpunit.xml.dist`) — fast, no database.
+- **Functional tests** (`Tests/Functional/`, config `Build/FunctionalTests.xml`) — exercise the database/FAL code (repository, services, processors) against a real database.
+
+### Setup (once)
+
+Install the extension's own dev dependencies into a self-contained `.Build/` tree (kept out of the monorepo `vendor/`):
+
+```bash
+ddev composer install --working-dir=libs/mpc-vidply
+```
+
+Functional tests need permission to create throwaway `db_*` databases. Grant it once to the DDEV `db` user:
+
+```bash
+ddev exec 'mysql -uroot -proot -e "GRANT ALL ON \`db_%\`.* TO \`db\`@\`%\`; FLUSH PRIVILEGES;"'
+```
+
+### Run
+
+```bash
+# Unit tests
+ddev exec 'cd libs/mpc-vidply && .Build/bin/phpunit -c phpunit.xml.dist'
+
+# Functional tests (point typo3Database* at the DDEV `db` service)
+ddev exec 'cd libs/mpc-vidply && \
+  typo3DatabaseDriver=mysqli typo3DatabaseHost=db typo3DatabaseName=db \
+  typo3DatabaseUsername=db typo3DatabasePassword=db \
+  .Build/bin/phpunit -c Build/FunctionalTests.xml'
+```
+
+Composer shortcuts are also defined: `composer test:unit` and `composer test:functional`
+(the functional one still needs the `typo3Database*` env vars in front of it).
+
+### Coverage
+
+Enable a coverage driver (`ddev xdebug on`, or install pcov) and add a coverage flag:
+
+```bash
+ddev exec 'cd libs/mpc-vidply && XDEBUG_MODE=coverage .Build/bin/phpunit -c phpunit.xml.dist --coverage-text --coverage-html .Build/coverage'
+```
+
+---
+
 ## 📚 Documentation Index
 
 | File | Content |
