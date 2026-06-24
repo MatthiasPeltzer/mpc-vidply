@@ -5,6 +5,50 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.6] - 2026-06-24
+
+### Security
+- Hardened the Content Security Policy: dropped `style-src`/`style-src-elem`
+  `'unsafe-inline'` and removed the unused `cdn.jsdelivr.net` script origin
+  (hls.js/dash.js are vendored locally). Frontend templates no longer emit
+  inline `style` attributes; the poster background and custom play-icon are now
+  applied at runtime via `element.style`.
+
+### Fixed
+- `MediaRepository::findByCategories()` now groups by every selected column and
+  aggregates the manual sort position, so category listings work under MySQL/
+  MariaDB `ONLY_FULL_GROUP_BY` (previously failed with an SQL error).
+- Render the non-RTE media `description` on the detail view as escaped text with
+  preserved line breaks (`f:format.nl2br`) instead of `f:format.html`.
+- Corrected the source-detection guard in `PlaylistInit.js` so the `<source>`
+  child re-scan runs only when the stream type was not already determined.
+- Fixed the privacy-overlay button `aria-label` showing a literal `{0}`
+  placeholder: the server-rendered fallback now uses per-service translation
+  keys (`privacy.load_content.{youtube,vimeo,soundcloud}`) matching the
+  JS-rendered overlay, instead of a `{0}` placeholder that `f:translate` could
+  not substitute.
+
+### Accessibility
+- Moved the privacy-overlay headline out of the surrounding `<p>` into its own
+  element in both the server-rendered and JS-rendered overlays, fixing the
+  invalid `role="heading"` inside a paragraph.
+
+### Tests
+- Introduced a PHPUnit unit-test suite (`Tests/Unit`, `phpunit.xml.dist`) with
+  initial coverage for `SrtToVttConverter`, the external-media domain-validation
+  trait, and the CSS-URL/SVG sanitizers.
+- Expanded the unit suite to cover the `Dto/*` result objects, the `MediaType`/
+  `RenderMode` enums, all five OnlineMedia helpers (`transformUrlToFile()` URL
+  validation and `getMetaData()` parsing), the streaming CSP event listener, and
+  the pure decision/mapping helpers of `VidPlyProcessor`, plus more
+  `SrtToVttConverter` edge cases (CRLF, multi-line cues, ISO-8859-1 fallback).
+- Added a `typo3/testing-framework` functional suite (`Tests/Functional`,
+  `Build/FunctionalTests.xml`, `composer test:functional`) running against a real
+  database. Covers `MediaRepository` (MM ordering, language overlay, slug/uid,
+  categories, access conditions), `DetailRequestResolver`,
+  `PrivacySettingsService`, `SrtCaptionMigrationService` (FAL conversion),
+  `VidPlyProcessor` assembly, and the `ConvertSrtCaptions` command.
+
 ## [1.2.5] - 2026-06-22
 
 ### Added
@@ -455,7 +499,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[Unreleased]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.4...HEAD
+[1.2.6]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.5...v1.2.6
+[1.2.5]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.4...v1.2.5
 [1.2.4]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.3...v1.2.4
 [1.2.3]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.1...v1.2.2
