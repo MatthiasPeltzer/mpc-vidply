@@ -13,17 +13,17 @@
      data-vidply-privacy="{service}"
      data-vidply-url="{videoUrl}"
      data-vidply-id="{uniqueId}"
-     <f:if condition="{poster}">style="background-image: url('{poster}'); background-size: cover; background-position: center;"</f:if>>
+     <f:if condition="{poster}">data-vidply-poster="{poster}"</f:if>>
     
     <f:variable name="finalButtonLabel">
         <f:if condition="{buttonLabel}">
             <f:then>{buttonLabel}</f:then>
-            <f:else>{f:translate(key: 'privacy.load_content', arguments: {0: service}, extensionName: 'mpc_vidply')}</f:else>
+            <f:else><f:translate key="privacy.load_content.{service}" extensionName="mpc_vidply" default="{f:translate(key: 'privacy.load_content', extensionName: 'mpc_vidply')}" /></f:else>
         </f:if>
     </f:variable>
     <button class="vidply-privacy-button vidply-privacy-button--pos-{finalPlayButtonPosition}" 
             type="button"
-            aria-label="{finalButtonLabel}">
+            aria-label="{finalButtonLabel -> f:format.trim()}">
         <f:if condition="{playIconInlineSvg}">
             <f:then>
                 <f:format.raw>{playIconInlineSvg}</f:format.raw>
@@ -53,10 +53,10 @@
     </button>
     
     <div class="vidply-privacy-text">
+        <f:if condition="{headline}">
+            <p class="vidply-privacy-headline" role="heading" aria-level="2">{headline}</p>
+        </f:if>
         <p>
-            <f:if condition="{headline}">
-                <span class="vidply-privacy-headline" role="heading" aria-level="2">{headline}</span>
-            </f:if>
             {introText}
             <a href="{policyLink}" class="vidply-privacy-link" target="_blank" rel="noopener noreferrer">{linkText}<span class="vidply-sr-only"> (<f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:privacy.opens_new_window" default="opens in new window" />)</span></a>
             {outroText}

@@ -59,33 +59,36 @@ return Map::fromEntries([
             SourceScheme::blob
         ),
 
-        // Script origins for CDN and embed providers (no unsafe-inline)
+        // Script origins for embed providers (no unsafe-inline).
+        // hls.js / dash.js are vendored locally (see Assets.html), so no CDN
+        // origin is required here.
         new Mutation(
             MutationMode::Extend,
             Directive::ScriptSrc,
-            new UriValue('https://cdn.jsdelivr.net'),
             new UriValue('https://*.youtube.com'),
             new UriValue('https://*.youtube-nocookie.com'),
             new UriValue('https://*.vimeo.com'),
             new UriValue('https://*.soundcloud.com')
         ),
 
-        // Script element sources for hls.js CDN loading
+        // Script element sources for embed providers
         new Mutation(
             MutationMode::Extend,
             Directive::ScriptSrcElem,
-            new UriValue('https://cdn.jsdelivr.net'),
             new UriValue('https://*.youtube.com'),
             new UriValue('https://*.youtube-nocookie.com'),
             new UriValue('https://*.vimeo.com'),
             new UriValue('https://*.soundcloud.com')
         ),
 
-        // Inline styles required by third-party embed iframes
+        // Style origins for third-party embed providers. Deliberately no
+        // 'unsafe-inline': the extension no longer emits inline style attributes
+        // in its frontend templates (poster background and play-icon custom
+        // property are applied at runtime via element.style, which CSP does not
+        // govern). Embedded provider iframes are governed by their own CSP.
         new Mutation(
             MutationMode::Extend,
             Directive::StyleSrc,
-            SourceKeyword::unsafeInline,
             new UriValue('https://*.youtube.com'),
             new UriValue('https://*.youtube-nocookie.com'),
             new UriValue('https://*.vimeo.com'),
@@ -95,7 +98,6 @@ return Map::fromEntries([
         new Mutation(
             MutationMode::Extend,
             Directive::StyleSrcElem,
-            SourceKeyword::unsafeInline,
             new UriValue('https://*.youtube.com'),
             new UriValue('https://*.youtube-nocookie.com'),
             new UriValue('https://*.vimeo.com'),
