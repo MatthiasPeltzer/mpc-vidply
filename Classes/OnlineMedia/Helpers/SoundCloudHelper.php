@@ -136,6 +136,19 @@ final class SoundCloudHelper extends AbstractOnlineMediaHelper
     }
 
     /**
+     * Fetch oEmbed metadata for a SoundCloud URL.
+     *
+     * SSRF boundary: this is the only outbound request driven by user input and
+     * it is intentionally narrow. The request target is a fixed, hard-coded
+     * SoundCloud endpoint; the user-supplied $url is never used as the request
+     * host but only passed as a rawurlencode()'d query parameter. Callers reach
+     * this method exclusively after {@see transformUrlToFile()} has constrained
+     * $url to https/http on the soundcloud.com host family, and it only runs in
+     * the TYPO3 backend (FAL online-media import / preview generation), never
+     * from a frontend request. The thumbnail URL returned by oEmbed is
+     * additionally re-validated against the sndcdn.com/soundcloud.com host
+     * allow-list in {@see isSafeThumbnailUrl()} before it is fetched.
+     *
      * @return array<string,mixed>|null
      */
     private function getOEmbedData(string $url): ?array

@@ -1,5 +1,6 @@
 {
   "name": "mpc/mpc-vidply",
+  "title": "VidPly - Universal, Accessible Video & Audio Player",
   "description": "Universal, Accessible Video & Audio Player for TYPO3. Includes support for HTML5 video/audio, YouTube, Vimeo, SoundCloud, HLS and DASH streaming, playlists, captions, transcripts, sign language, and WCAG 2.2 AA accessibility compliance.",
   "homepage": "https://github.com/MatthiasPeltzer/mpc-vidply",
   "authors": [
@@ -19,6 +20,10 @@
     "typo3/cms-fluid": "^13.4 || ^14.3",
     "typo3/cms-extbase": "^13.4 || ^14.3"
   },
+  "require-dev": {
+    "phpunit/phpunit": "^10.5 || ^11.5",
+    "typo3/testing-framework": "^8.2 || ^9.0"
+  },
   "suggest": {
     "typo3/cms-fluid-styled-content": "Optional: use site-package layoutRootPaths overrides for themed frame/header partials"
   },
@@ -26,6 +31,14 @@
     "psr-4": {
       "Mpc\\MpcVidply\\": "Classes/"
     }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Mpc\\MpcVidply\\Tests\\": "Tests/"
+    }
+  },
+  "scripts": {
+    "test:unit": "phpunit --colors=always -c phpunit.xml.dist"
   },
   "extra": {
     "typo3/cms": {

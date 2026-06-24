@@ -18,6 +18,42 @@
     const KNOWN_SERVICES = new Set(['youtube', 'vimeo', 'soundcloud']);
     const initializedLayers = new WeakSet();
 
+    // Reject characters that could break out of a CSS url() context.
+    const CSS_URL_UNSAFE_CHARS = /["'()\\\s<>]|[\u0000-\u001f\u007f]/;
+
+    const isSafeUrl = (url) => {
+        try {
+            const parsed = new URL(url, window.location.origin);
+            return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+        } catch {
+            return false;
+        }
+    };
+
+    const sanitizeCssUrl = (url) => {
+        if (typeof url !== 'string') return null;
+        const trimmed = url.trim();
+        if (trimmed === '' || CSS_URL_UNSAFE_CHARS.test(trimmed)) return null;
+        if (!isSafeUrl(trimmed)) return null;
+        return trimmed;
+    };
+
+    /**
+     * Apply the poster as a background image at runtime.
+     *
+     * Previously emitted as an inline style attribute in PrivacyLayer.html;
+     * setting it via element.style here keeps the markup free of inline styles
+     * so the CSP no longer needs style-src 'unsafe-inline'. The URL is already
+     * sanitized server-side; we re-validate it client-side as defense in depth.
+     */
+    const applyPosterBackground = (layer) => {
+        const safe = sanitizeCssUrl(layer.getAttribute('data-vidply-poster'));
+        if (!safe) return;
+        layer.style.setProperty('background-image', `url("${safe}")`);
+        layer.style.setProperty('background-size', 'cover');
+        layer.style.setProperty('background-position', 'center');
+    };
+
     const URL_PATTERNS = {
         youtube: [
             /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\?\/]+)/,
@@ -180,6 +216,8 @@
         document.querySelectorAll('[data-vidply-privacy]').forEach(layer => {
             if (initializedLayers.has(layer)) return;
             initializedLayers.add(layer);
+
+            applyPosterBackground(layer);
 
             const button = layer.querySelector('.vidply-privacy-button');
             if (!button) return;

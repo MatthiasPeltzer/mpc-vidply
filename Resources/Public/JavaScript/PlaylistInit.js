@@ -298,6 +298,22 @@ function replaceVidplyPlayOverlaySvg(wrapperElement) {
     });
 }
 
+/**
+ * Apply the custom play-overlay icon as a CSS custom property at runtime.
+ *
+ * Previously emitted as an inline style attribute in Player.html; setting it
+ * via element.style here keeps the markup free of inline styles so the CSP no
+ * longer needs style-src 'unsafe-inline'. The wrapper carries the (already
+ * server-sanitized) URL in data-vidply-play-icon; we re-validate client-side.
+ */
+function applyWrapperPlayIconVar(wrapper) {
+    if (!wrapper || wrapper.hasAttribute('data-vidply-play-inline-svg')) return;
+    const safe = sanitizeCssUrl(wrapper.dataset.vidplyPlayIcon);
+    if (safe) {
+        wrapper.style.setProperty('--mpc-vidply-play-overlay-icon', `url("${safe}")`);
+    }
+}
+
 function observeVidplyOverlays(wrapperElement) {
     const wrapper = wrapperElement?.closest?.('.vidply-wrapper') || wrapperElement;
     if (!wrapper) return;
@@ -375,16 +391,16 @@ function createPrivacyOverlay(service, track, onConsent, privacySettings = null,
     const privacyText = document.createElement('div');
     privacyText.className = 'vidply-privacy-text';
 
-    const p = document.createElement('p');
     if (settings.headline) {
-        const headlineEl = document.createElement('span');
+        const headlineEl = document.createElement('p');
         headlineEl.className = 'vidply-privacy-headline';
         headlineEl.setAttribute('role', 'heading');
         headlineEl.setAttribute('aria-level', '2');
         headlineEl.textContent = settings.headline;
-        p.appendChild(headlineEl);
-        p.appendChild(document.createTextNode(' '));
+        privacyText.appendChild(headlineEl);
     }
+
+    const p = document.createElement('p');
     p.appendChild(document.createTextNode(settings.intro_text + ' '));
     const policyLink = document.createElement('a');
     policyLink.href = isSafeUrl(settings.policy_link) ? settings.policy_link : getPrivacyPolicyUrl(service);
@@ -492,7 +508,7 @@ function initializeSingleElement(element) {
             element.src = externalSrc;
         }
 
-        if (!isHLS || !isDASH) {
+        if (!isHLS && !isDASH) {
             const sourceEls = element.querySelectorAll('source');
             for (const s of sourceEls) {
                 const t = (s.type || '').toLowerCase();
@@ -1092,6 +1108,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize playlist elements
     document.querySelectorAll('[data-playlist]:not([data-vidply])').forEach(initializePlaylistElement);
+
+    // Apply the custom play-icon CSS variable (replaces the former inline style attribute)
+    document.querySelectorAll('.vidply-wrapper[data-vidply-play-icon]:not([data-vidply-play-inline-svg])').forEach(applyWrapperPlayIconVar);
 
     // Observe and replace main VidPly play overlays (big play icon) when inline SVG is available
     document.querySelectorAll('.vidply-wrapper[data-vidply-play-inline-svg]').forEach(observeVidplyOverlays);
