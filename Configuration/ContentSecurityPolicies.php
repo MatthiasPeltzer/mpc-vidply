@@ -71,10 +71,18 @@ return Map::fromEntries([
             new UriValue('https://*.soundcloud.com')
         ),
 
-        // Script element sources for embed providers
+        // Script element sources for embed providers.
+        // nonceProxy is required: extending script-src-elem materialises an
+        // explicit script-src-elem directive in the final policy, which the CSP
+        // spec uses INSTEAD OF script-src for inline <script> elements (no
+        // fallback once it is present). mp-core only attaches the nonce to
+        // script-src, so without re-adding nonceProxy here the nonce'd inline
+        // scripts (ThemeInit, structured data) would be blocked by
+        // script-src-elem.
         new Mutation(
             MutationMode::Extend,
             Directive::ScriptSrcElem,
+            SourceKeyword::nonceProxy,
             new UriValue('https://*.youtube.com'),
             new UriValue('https://*.youtube-nocookie.com'),
             new UriValue('https://*.vimeo.com'),
@@ -95,9 +103,18 @@ return Map::fromEntries([
             new UriValue('https://*.soundcloud.com')
         ),
 
+        // nonceProxy is required here for the same reason as script-src-elem:
+        // extending style-src-elem materialises an explicit style-src-elem
+        // directive that the CSP spec uses INSTEAD OF style-src for <style>
+        // elements. mp-core attaches the nonce only to style-src, so without
+        // re-adding nonceProxy the nonce'd inline <style> blocks (site-config
+        // colours in Styles.html, per-element background images in
+        // fluid_styled_content Container.html) would be blocked by
+        // style-src-elem.
         new Mutation(
             MutationMode::Extend,
             Directive::StyleSrcElem,
+            SourceKeyword::nonceProxy,
             new UriValue('https://*.youtube.com'),
             new UriValue('https://*.youtube-nocookie.com'),
             new UriValue('https://*.vimeo.com'),
