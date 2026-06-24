@@ -1,0 +1,7 @@
+"sys_category"
+,"uid","pid","sys_language_uid","l10n_parent","title","hidden","deleted"
+,50,1,0,0,"Documentaries",0,0
+"sys_category_record_mm"
+,"uid_local","uid_foreign","tablenames","fieldname","sorting","sorting_foreign"
+,50,6,"tx_mpcvidply_media","categories",1,1
+,50,7,"tx_mpcvidply_media","categories",1,2

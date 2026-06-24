@@ -518,7 +518,10 @@ final class MediaRepository
                 $qb->expr()->eq('media.sys_language_uid', $qb->createNamedParameter(0, Connection::PARAM_INT)),
                 ...$this->buildAccessConditionsForAlias($qb, 'media')
             )
-            ->groupBy('media.uid')
+            // Group by every selected, non-aggregated column so the query is valid
+            // under MySQL/MariaDB ONLY_FULL_GROUP_BY (a media record can match more
+            // than one of the requested categories, producing duplicate join rows).
+            ->groupBy('media.uid', 'media.sys_language_uid', 'media.l10n_parent', 'media.crdate', 'media.title')
             ->setMaxResults(max(1, $limit));
 
         switch ($sortBy) {
@@ -530,7 +533,12 @@ final class MediaRepository
                 break;
             case 'sorting':
             default:
-                $qb->orderBy('mm.sorting_foreign', 'ASC')
+                // mm.sorting_foreign is not part of the GROUP BY, so it must be
+                // aggregated; the lowest manual sort position wins per media record.
+                $qb->addSelectLiteral(
+                    'MIN(' . $qb->quoteIdentifier('mm.sorting_foreign') . ') AS ' . $qb->quoteIdentifier('mm_sorting')
+                );
+                $qb->orderBy('mm_sorting', 'ASC')
                     ->addOrderBy('media.crdate', 'DESC');
         }
 

@@ -23,3 +23,7 @@ npm-debug.log*
 /vendor/
 /var/
 
+# Standalone test build (composer install inside the extension)
+/.Build/
+composer.lock
+
