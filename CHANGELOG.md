@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.8] - 2026-06-27
+
+### Added
+- Updated the bundled VidPly player with an accessible keyboard-shortcuts help
+  overlay: a focus-trapped dialog (reachable via a control-bar help button and
+  the `?` shortcut) listing the active key bindings.
+- Updated the bundled VidPly player with Media Session API support: OS /
+  lock-screen / notification / headset controls and now-playing metadata.
+
+### Fixed
+- Updated the bundled VidPly player so that, on pages with multiple players,
+  the OS media controls drive the player that is actually playing instead of a
+  background instance (which made the controls appear but do nothing).
+
 ## [1.2.7] - 2026-06-24
 
 ### Fixed
@@ -510,6 +524,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.8]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.7...v1.2.8
 [1.2.7]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.6...v1.2.7
 [1.2.6]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.5...v1.2.6
 [1.2.5]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.4...v1.2.5
