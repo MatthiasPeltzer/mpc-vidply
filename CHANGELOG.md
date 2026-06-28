@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.10] - 2026-06-28
+
+### Added
+- Standalone `VideoObject` / `AudioObject` JSON-LD via mpc-vidply's own page header
+  partial (`headerData.2042`); works on any site without mp-core.
+- Optional mp-core integration: when mp-core is installed and structured data is
+  enabled, the video node is merged into mp-core's `@graph` instead of a second script.
+- `ItemList` JSON-LD when a page contains multiple distinct videos (several
+  `mpc_vidply` players and/or playlists); single-video pages keep one `VideoObject`.
+- Rich media schema fields: absolute `url`, `contentUrl`, `embedUrl`, `@id`,
+  long-description fallback, and `WebPage.mainEntity` (mp-core merge path).
+- `mpc_vidply_listview` shelves are now included in the structured data, deduplicated
+  together with inline players by default-language media UID. A shared
+  `ListviewMediaResolver` derives the same records for both the rendered cards and the
+  JSON-LD.
+
+### Changed
+- Video JSON-LD covers inline `mpc_vidply` players and routed `mpc_vidply_detail`
+  pages through a shared page-level resolver.
+- Gallery and list items now resolve their media URLs through a lightweight context
+  (`VidPlyProcessor::assembleStructuredDataContext()`) instead of assembling a full
+  player per item, reducing the cost of structured data on pages with many media.
+- Watch-URL resolution prefers a listview's configured detail page
+  (`tx_mpcvidply_detail_page`), then a detail element on the same page, then the
+  site-wide default; the on-page fallback fragment is now `#media-<uid>`.
+- Structured-data `tt_content` lookups now honour TYPO3 frontend visibility
+  restrictions (start/end time, access groups), matching the rest of the frontend.
+
+### Fixed
+- HLS/DASH manifests are no longer emitted as `contentUrl` (they are not progressive
+  files eligible for video rich results); the `embedUrl` still links the watch page.
+- When mp-core is loaded but produces no usable `@graph`, VidPly now falls back to a
+  standalone JSON-LD document instead of emitting nothing.
+
+### Tests
+- Added unit coverage for the JSON-LD merge/standalone-fallback logic, the lightweight
+  structured-data context guards, HLS `contentUrl` omission, and JSON encoding.
+
 ## [1.2.9] - 2026-06-27
 
 ### Fixed
@@ -529,6 +567,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.10]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.9...v1.2.10
 [1.2.9]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.8...v1.2.9
 [1.2.8]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.7...v1.2.8
 [1.2.7]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.6...v1.2.7
