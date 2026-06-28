@@ -58,3 +58,16 @@ config.pageTitleProviders.mpcVidplyDetail {
     provider = Mpc\MpcVidply\PageTitle\VidPlyDetailPageTitleProvider
     before = record, seo
 }
+
+# Standalone VideoObject / AudioObject JSON-LD (works without mp-core).
+page.headerData.2042 = FLUIDTEMPLATE
+page.headerData.2042 {
+    file = EXT:mpc_vidply/Resources/Private/Partials/Page/StructuredDataVideo.html
+    dataProcessing {
+        10 = Mpc\MpcVidply\DataProcessing\VidPlyStructuredDataProcessor
+        10 {
+            as = vidplyMediaJsonLd
+            mode = standalone
+        }
+    }
+}

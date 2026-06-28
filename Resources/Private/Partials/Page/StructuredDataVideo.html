@@ -1,0 +1,15 @@
+<html data-namespace-typo3-fluid="true" xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers">
+<f:comment><!--
+    Standalone VideoObject / AudioObject JSON-LD for pages with a VidPly player.
+    Emitted by mpc-vidply itself (headerData.2042). When mp-core is installed and
+    structured data is enabled, the same node is merged into mp-core's @graph instead
+    so this partial stays empty on those sites.
+--></f:comment>
+
+<f:if condition="{vidplyMediaJsonLd}">
+    <script type="application/ld+json" nonce="{f:security.nonce()}">
+        <f:format.raw>{vidplyMediaJsonLd}</f:format.raw>
+    </script>
+</f:if>
+
+</html>

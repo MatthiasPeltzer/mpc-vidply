@@ -48,10 +48,6 @@
                     </nav>
                 </f:if>
 
-                <f:if condition="{detail.jsonLd}">
-                    <script type="application/ld+json"><f:format.raw>{detail.jsonLd}</f:format.raw></script>
-                </f:if>
-
                 <f:if condition="{detail.related}">
                     <section class="mpc-vidply-listview-section mpc-vidply-listview-section--shelf mpc-vidply-detail__related"
                              aria-labelledby="mpc-vidply-detail-related-heading">

@@ -160,6 +160,55 @@ class VidPlyProcessor implements DataProcessorInterface
         );
     }
 
+    /**
+     * Resolve only the data needed for structured data (JSON-LD) output of a single
+     * media record: the first track's source URL(s) and an optional download URL.
+     *
+     * This deliberately skips the full player assembly (privacy layer, playlist,
+     * caption/chapter/sign-language enrichment, UI options) so gallery and list
+     * pages can build a {@see \Mpc\MpcVidply\Service\MediaObjectJsonLdBuilder}
+     * node per item without paying the cost of rendering a player for each one.
+     *
+     * @param list<array<string, mixed>> $mediaRecords
+     * @return array{tracks: list<array<string, mixed>>, downloadUrl: ?string}
+     */
+    public function assembleStructuredDataContext(array $mediaRecords, ServerRequestInterface $request): array
+    {
+        $empty = ['tracks' => [], 'downloadUrl' => null];
+
+        $this->resetCaches();
+
+        $firstRecord = $mediaRecords[0] ?? null;
+        if (!is_array($firstRecord)) {
+            return $empty;
+        }
+
+        $mediaUid = (int)($firstRecord['uid'] ?? 0);
+        $mediaType = MediaType::tryFrom((string)($firstRecord['media_type'] ?? ''));
+        if ($mediaUid <= 0 || $mediaType === null) {
+            return $empty;
+        }
+
+        // Only media_file references are required to resolve content/embed URLs.
+        $this->fileReferencesByMediaUid = $this->prefetchFileReferencesForMediaUids([$mediaUid], ['media_file']);
+
+        $sourceData = match ($mediaType) {
+            MediaType::YouTube, MediaType::Vimeo => $this->resolveEmbedSource($mediaUid, $mediaType),
+            MediaType::SoundCloud => $this->resolveSoundCloudSource($mediaUid),
+            MediaType::Video, MediaType::Audio => $this->resolveLocalMediaSource($mediaUid, $mediaType),
+        };
+        if ($sourceData === null) {
+            return $empty;
+        }
+
+        $track = array_merge($this->buildBaseTrackData($firstRecord), $sourceData);
+
+        return [
+            'tracks' => [$track],
+            'downloadUrl' => $this->resolveDownloadUrl($track),
+        ];
+    }
+
     // -----------------------------------------------------------------------
     // Decomposed phases of process()
     // -----------------------------------------------------------------------
