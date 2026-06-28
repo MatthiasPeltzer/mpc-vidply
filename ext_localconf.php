@@ -7,9 +7,14 @@ use Mpc\MpcVidply\OnlineMedia\Helpers\ExternalVideoHelper;
 use Mpc\MpcVidply\OnlineMedia\Helpers\DashHelper;
 use Mpc\MpcVidply\OnlineMedia\Helpers\HlsHelper;
 use Mpc\MpcVidply\OnlineMedia\Helpers\SoundCloudHelper;
+use Mpc\MpcVidply\Form\Element\MediaUrlImportElement;
+use Mpc\MpcVidply\Form\FormDataProvider\MediaUrlImportFormDataProvider;
+use Mpc\MpcVidply\Hooks\MediaUrlImportPosterPersistHook;
 use Mpc\MpcVidply\Hooks\SrtCaptionConversionHook;
 use Mpc\MpcVidply\Hooks\VidPlyPlaylistTranslationSync;
 use Mpc\MpcVidply\Routing\Aspect\VidPlyMediaRouteAspect;
+use TYPO3\CMS\Backend\Form\FormDataProvider\DatabaseRecordTypeValue;
+use TYPO3\CMS\Backend\Form\FormDataProvider\DatabaseRowDefaultAsReadonly;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -21,10 +26,26 @@ $GLOBALS['TYPO3_CONF_VARS']['FE']['contentRenderingTemplates'][] = 'mpc_vidply/C
 
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = VidPlyPlaylistTranslationSync::class;
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = SrtCaptionConversionHook::class;
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = MediaUrlImportPosterPersistHook::class;
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processCmdmapClass'][] = VidPlyPlaylistTranslationSync::class;
 
 // Custom route aspect for `route-enhancers.yaml` (slug optional → query fallback).
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['routing']['aspects']['MpcVidplyMediaRoute'] = VidPlyMediaRouteAspect::class;
+
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1740000001] = [
+    'nodeName' => 'vidplyMediaUrlImport',
+    'priority' => 40,
+    'class' => MediaUrlImportElement::class,
+];
+
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['formDataGroup']['tcaDatabaseRecord'][MediaUrlImportFormDataProvider::class] = [
+    'depends' => [
+        DatabaseRowDefaultAsReadonly::class,
+    ],
+    'before' => [
+        DatabaseRecordTypeValue::class,
+    ],
+];
 
 // Register custom Online Media helpers (Add media by URL)
 // Only register if the corresponding allow-list is configured to avoid advertising providers that would always reject URLs.

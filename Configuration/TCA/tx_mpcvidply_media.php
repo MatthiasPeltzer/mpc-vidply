@@ -43,6 +43,7 @@ return [
         'video' => [
             'showitem' => '
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,
+                    import_source_url,
                     media_type,
                     media_file,
                     --palette--;;metadata,
@@ -75,6 +76,7 @@ return [
         'audio' => [
             'showitem' => '
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,
+                    import_source_url,
                     media_type,
                     media_file,
                     --palette--;;metadata,
@@ -102,6 +104,7 @@ return [
         'youtube' => [
             'showitem' => '
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,
+                    import_source_url,
                     media_type,
                     media_file,
                     --palette--;;metadata,
@@ -125,6 +128,7 @@ return [
         'vimeo' => [
             'showitem' => '
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,
+                    import_source_url,
                     media_type,
                     media_file,
                     --palette--;;metadata,
@@ -148,6 +152,7 @@ return [
         'soundcloud' => [
             'showitem' => '
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,
+                    import_source_url,
                     media_type,
                     media_file,
                     --palette--;;metadata,
@@ -250,6 +255,15 @@ return [
                     'upper' => mktime(0, 0, 0, 1, 1, 2038),
                 ],
                 'searchable' => false,
+            ],
+        ],
+        'import_source_url' => [
+            'exclude' => false,
+            'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:mediaUrlImport.label',
+            'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:mediaUrlImport.description',
+            'config' => [
+                'type' => 'user',
+                'renderType' => 'vidplyMediaUrlImport',
             ],
         ],
         'media_type' => [

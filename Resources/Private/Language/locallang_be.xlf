@@ -252,6 +252,24 @@
       <trans-unit id="tx_mpcvidply_privacy_settings">
         <source>Privacy Layer Settings</source>
       </trans-unit>
+      <trans-unit id="mediaUrlImport.label">
+        <source>Import from URL</source>
+      </trans-unit>
+      <trans-unit id="mediaUrlImport.description">
+        <source>Paste a YouTube, Vimeo, SoundCloud, streaming, or allowlisted MP4/MP3 URL. VidPly detects the media type, imports the source, and pre-fills title, artist, and poster where available.</source>
+      </trans-unit>
+      <trans-unit id="mediaUrlImport.placeholder">
+        <source>https://…</source>
+      </trans-unit>
+      <trans-unit id="mediaUrlImport.import">
+        <source>Import</source>
+      </trans-unit>
+      <trans-unit id="mediaUrlImport.refreshMetadata">
+        <source>Refresh metadata</source>
+      </trans-unit>
+      <trans-unit id="mediaUrlImport.importSuccess">
+        <source>Imported %s. Review the fields below and save the record.</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>

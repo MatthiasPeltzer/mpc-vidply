@@ -16,6 +16,9 @@ use TYPO3\CMS\Core\Site\Entity\Site;
  */
 final class MediaObjectJsonLdBuilder
 {
+    public function __construct(
+        private readonly MediaUrlNormalizer $urlNormalizer = new MediaUrlNormalizer(),
+    ) {}
     /** @var list<string> */
     private const PROGRESSIVE_MIME_TYPES = [
         'video/mp4',
@@ -283,7 +286,7 @@ final class MediaObjectJsonLdBuilder
      */
     private function resolveYouTubeUrls(string $src, ?string $pageUrl): array
     {
-        $videoId = $this->extractYouTubeId($src);
+        $videoId = $this->urlNormalizer->extractYouTubeId($src);
         if ($videoId === null) {
             return ['contentUrl' => $src !== '' ? $src : null, 'embedUrl' => $pageUrl];
         }
@@ -299,7 +302,7 @@ final class MediaObjectJsonLdBuilder
      */
     private function resolveVimeoUrls(string $src, ?string $pageUrl): array
     {
-        $videoId = $this->extractVimeoId($src);
+        $videoId = $this->urlNormalizer->extractVimeoId($src);
         if ($videoId === null) {
             return ['contentUrl' => $src !== '' ? $src : null, 'embedUrl' => $pageUrl];
         }
@@ -381,44 +384,6 @@ final class MediaObjectJsonLdBuilder
         $src = trim((string)($track['src'] ?? ''));
         $type = (string)($track['type'] ?? '');
         if ($src !== '' && in_array($type, self::PROGRESSIVE_MIME_TYPES, true)) {
-            return $src;
-        }
-
-        return null;
-    }
-
-    private function extractYouTubeId(string $src): ?string
-    {
-        if ($src === '') {
-            return null;
-        }
-
-        if (preg_match(
-            '~(?:youtube\.com/(?:watch\?v=|embed/|v/|shorts/)|youtu\.be/)([A-Za-z0-9_-]{11})~',
-            $src,
-            $matches
-        ) === 1) {
-            return $matches[1];
-        }
-
-        if (preg_match('~^[A-Za-z0-9_-]{11}$~', $src) === 1) {
-            return $src;
-        }
-
-        return null;
-    }
-
-    private function extractVimeoId(string $src): ?string
-    {
-        if ($src === '') {
-            return null;
-        }
-
-        if (preg_match('~(?:vimeo\.com/(?:video/)?|player\.vimeo\.com/video/)(\d+)~', $src, $matches) === 1) {
-            return $matches[1];
-        }
-
-        if (preg_match('~^\d+$~', $src) === 1) {
             return $src;
         }
 

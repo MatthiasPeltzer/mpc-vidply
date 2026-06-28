@@ -32,8 +32,11 @@ lib.mpcVidplyContentElement.partialRootPaths.10 = {$styles.templates.partialRoot
 mpc_vidply/
 ├── Classes/
 │   ├── Backend/
-│   │   ├── Form/FieldWizard/     # MediaTypeFilterWizard
+│   │   ├── Controller/           # MediaImportAjaxController (URL import)
+│   │   ├── Form/Element/           # MediaUrlImportElement
 │   │   └── Preview/              # VidPlyPreviewRenderer
+│   ├── Form/FormDataProvider/    # MediaUrlImportFormDataProvider
+│   ├── Service/                  # MediaFromUrlService, MediaUrlNormalizer
 │   └── DataProcessing/           # VidPly, Listview, Detail processors
 ├── Configuration/
 │   ├── Sets/mpc-vidply/          # Site Set (TYPO3 13.4+)

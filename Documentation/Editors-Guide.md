@@ -38,6 +38,20 @@ Then, add a **VidPly Player** content element and select your media.
 
 Or use the "Create new record" button in the VidPly Player element.
 
+### Fastest way: Import from URL
+
+For YouTube, Vimeo, SoundCloud, streaming URLs (`.m3u8` / `.mpd`), and allowlisted external MP4/MP3 links:
+
+1. Create a new **VidPly Media** record (or open an existing one)
+2. At the top of the form, use **Import from URL**
+3. Paste the full media URL and click **Import**
+4. VidPly detects the media type, attaches the online-media file, and pre-fills **title**, **artist**, and **poster** when the provider returns them
+5. Review the fields, add captions if needed, then **Save**
+
+You no longer need to pick the media type before pasting the URL. The manual **Media type** dropdown and **Add media by URL** on the file field still work for power users.
+
+On existing records with a linked online-media file, use **Refresh metadata** to re-fetch oEmbed data without overwriting fields you already filled in manually.
+
 ### Media Types Explained
 
 #### Video
