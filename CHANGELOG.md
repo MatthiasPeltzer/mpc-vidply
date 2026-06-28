@@ -5,6 +5,48 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.11] - 2026-06-28
+
+### Added
+- **Import from URL** on VidPly Media records: paste a URL to auto-detect
+  `media_type`, create the FAL online-media reference, and pre-fill title, artist,
+  and poster from oEmbed/metadata where available.
+- **Refresh metadata** button on existing online-media records to re-fetch provider
+  metadata without overwriting manually edited fields.
+- Backend services `MediaUrlNormalizer`, `MediaFromUrlService`, and AJAX endpoints
+  `mpc_vidply_media_import_url` / `mpc_vidply_media_refresh_metadata`.
+
+### Fixed
+- Backend **Import from URL** applies the FAL reference, title, artist, and media type
+  immediately in the form instead of relying on a reload that breaks new inline
+  records (NEW… uid changes on save).
+- Metadata import merges oEmbed data with FAL file properties so title, artist,
+  description, duration, and poster populate the correct FormEngine fields (exact
+  field-name targeting via `data-item-name`).
+- Import no longer triggers an accidental FormEngine reload when setting `media_type`
+  on new inline records (which cleared title and other metadata before save).
+- YouTube imports enrich description and duration from watch-page metadata; poster
+  falls back to oEmbed `thumbnail_url` when TYPO3 preview download fails.
+- URL import creates poster FAL files via `createFile()` + `setContents()` in the
+  online-media storage folder (replacing temp-file `addFile()` that returned
+  `posterFileUid: 0` in the AJAX response).
+- SoundCloud URL import enriches **description** from oEmbed and **duration**
+  from the public track page when oEmbed does not expose length.
+- Poster file relations attach via TYPO3 file field `data-object-group` lookup and
+  insert only after the media file relation is in place.
+- Imported poster images persist to the `poster` FAL field on record save when
+  FormEngine could not attach them in the browser (separate from the online-media
+  preview thumbnail on `media_file`).
+- FAL inline object lookup scopes to the current media record panel and matches
+  `typo3-formengine-container-inline` file fields.
+- FormEngine session prefill resolves array-shaped `uid` values from FormEngine.
+- Backend **Import from URL** module self-initializes on load (no `invoke()`) and is
+  registered for FormEngine import maps (`backend.form` tag).
+
+### Changed
+- `MediaObjectJsonLdBuilder` reuses shared YouTube/Vimeo ID extraction from
+  `MediaUrlNormalizer`.
+
 ## [1.2.10] - 2026-06-28
 
 ### Added
@@ -567,6 +609,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.11]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.10...v1.2.11
 [1.2.10]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.9...v1.2.10
 [1.2.9]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.8...v1.2.9
 [1.2.8]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.7...v1.2.8
