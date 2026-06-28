@@ -25,6 +25,9 @@ services:
   Mpc\MpcVidply\DataProcessing\DetailProcessor:
     public: true
 
+  Mpc\MpcVidply\DataProcessing\VidPlyStructuredDataProcessor:
+    public: true
+
   # Page-level DataProcessor rewriting the breadcrumb on detail views; resolved
   # via the service container when referenced from TypoScript.
   Mpc\MpcVidply\DataProcessing\DetailBreadcrumbProcessor:

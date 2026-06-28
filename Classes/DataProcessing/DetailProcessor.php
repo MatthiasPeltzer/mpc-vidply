@@ -63,7 +63,6 @@ final class DetailProcessor implements DataProcessorInterface
                 'duration' => 0,
                 'durationFormatted' => '',
                 'categories' => [],
-                'jsonLd' => null,
                 'related' => [],
             ];
             $processedData['vidply'] = null;
@@ -72,12 +71,13 @@ final class DetailProcessor implements DataProcessorInterface
 
         // Delegate the full player assembly to the existing VidPlyProcessor so we inherit
         // every capability (privacy layer, playlist detection, HLS/DASH, etc.) without duplication.
-        $processedData['vidply'] = $this->vidPlyProcessor->assembleForMediaRecords(
+        $vidply = $this->vidPlyProcessor->assembleForMediaRecords(
             [$media],
             $data,
             $request,
             $languageId
         );
+        $processedData['vidply'] = $vidply;
 
         $detail = $this->assembleDetailData($media, $languageId);
         $showRelated = (int)($data['tx_mpcvidply_show_related'] ?? 1) === 1;
@@ -131,15 +131,6 @@ final class DetailProcessor implements DataProcessorInterface
             $categories = $this->fetchCategoriesForMedia($mediaUid, $languageId);
         }
 
-        $jsonLd = $this->buildJsonLd(
-            $title,
-            $description,
-            $duration,
-            $posterUrl,
-            $mediaType,
-            (int)($media['crdate'] ?? 0)
-        );
-
         return [
             'found' => true,
             'mediaUid' => $mediaUid,
@@ -154,7 +145,6 @@ final class DetailProcessor implements DataProcessorInterface
             'poster' => $posterUrl,
             'ogImage' => $posterUrl,
             'categories' => $categories,
-            'jsonLd' => $jsonLd,
         ];
     }
 
@@ -370,72 +360,6 @@ final class DetailProcessor implements DataProcessorInterface
             ],
             $rows
         );
-    }
-
-    /**
-     * Build a schema.org VideoObject / AudioObject JSON-LD blob.
-     * Returns the already-encoded JSON string so the template can embed it with <f:format.raw>.
-     */
-    private function buildJsonLd(
-        string $title,
-        string $description,
-        int $duration,
-        ?string $posterUrl,
-        string $mediaType,
-        int $uploadTimestamp
-    ): ?string {
-        if ($title === '') {
-            return null;
-        }
-
-        $isAudio = in_array($mediaType, ['audio', 'soundcloud'], true);
-        $data = [
-            '@context' => 'https://schema.org',
-            '@type' => $isAudio ? 'AudioObject' : 'VideoObject',
-            'name' => $title,
-        ];
-        if ($description !== '') {
-            $data['description'] = strip_tags($description);
-        }
-        if ($duration > 0) {
-            $data['duration'] = $this->toIsoDuration($duration);
-        }
-        if ($posterUrl !== null && $posterUrl !== '') {
-            $data['thumbnailUrl'] = $posterUrl;
-        }
-        if ($uploadTimestamp > 0) {
-            $data['uploadDate'] = gmdate('Y-m-d\TH:i:s\Z', $uploadTimestamp);
-        }
-
-        try {
-            return json_encode(
-                $data,
-                JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR
-            );
-        } catch (\Throwable) {
-            return null;
-        }
-    }
-
-    private function toIsoDuration(int $seconds): string
-    {
-        if ($seconds <= 0) {
-            return 'PT0S';
-        }
-        $hours = intdiv($seconds, 3600);
-        $minutes = intdiv($seconds % 3600, 60);
-        $secs = $seconds % 60;
-        $iso = 'PT';
-        if ($hours > 0) {
-            $iso .= $hours . 'H';
-        }
-        if ($minutes > 0) {
-            $iso .= $minutes . 'M';
-        }
-        if ($secs > 0 || ($hours === 0 && $minutes === 0)) {
-            $iso .= $secs . 'S';
-        }
-        return $iso;
     }
 
     private function formatDuration(int $seconds): string

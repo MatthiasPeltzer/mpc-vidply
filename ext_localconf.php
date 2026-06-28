@@ -11,6 +11,7 @@ use Mpc\MpcVidply\Hooks\SrtCaptionConversionHook;
 use Mpc\MpcVidply\Hooks\VidPlyPlaylistTranslationSync;
 use Mpc\MpcVidply\Routing\Aspect\VidPlyMediaRouteAspect;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 defined('TYPO3') or die('Access denied.');
@@ -81,6 +82,18 @@ $textFileExt = GeneralUtility::trimExplode(',', (string)($GLOBALS['TYPO3_CONF_VA
 if (!in_array('vtt', $textFileExt, true)) {
     $textFileExt[] = 'vtt';
     $GLOBALS['TYPO3_CONF_VARS']['SYS']['textfile_ext'] = implode(',', $textFileExt);
+}
+
+// Optional mp-core integration: merge VideoObject into mp-core's page @graph instead
+// of emitting a second JSON-LD script. Standalone output remains the default when
+// mp-core is not installed (see setup.typoscript headerData.2042).
+if (ExtensionManagementUtility::isLoaded('mp_core')) {
+    ExtensionManagementUtility::addTypoScriptSetup(<<<'TS'
+page.headerData.2041.dataProcessing.45 = Mpc\MpcVidply\DataProcessing\VidPlyStructuredDataProcessor
+page.headerData.2041.dataProcessing.45 {
+    mode = merge
+}
+TS);
 }
 
 

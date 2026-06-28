@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\DataProcessing;
 
-use Mpc\MpcVidply\Repository\MediaRepository;
+use Mpc\MpcVidply\Service\ListviewMediaResolver;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
@@ -21,21 +21,24 @@ use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
  * Resolves the content element's child `tx_mpcvidply_listview_row` records and, for each row,
  * builds a lightweight "card" list for the template. Each card carries enough information to
  * render a poster/title/duration tile that links to the detail page via a route-enhanced URL.
+ *
+ * Row/media resolution is delegated to {@see ListviewMediaResolver} so the structured-data
+ * builder ({@see \Mpc\MpcVidply\Service\VidPlyPageMediaResolver}) derives the same records.
  */
 final class ListviewProcessor implements DataProcessorInterface
 {
     private readonly ConnectionPool $connectionPool;
-    private readonly MediaRepository $mediaRepository;
     private readonly ResourceFactory $resourceFactory;
+    private readonly ListviewMediaResolver $mediaResolver;
 
     public function __construct(
         ?ConnectionPool $connectionPool = null,
-        ?MediaRepository $mediaRepository = null,
-        ?ResourceFactory $resourceFactory = null
+        ?ResourceFactory $resourceFactory = null,
+        ?ListviewMediaResolver $mediaResolver = null
     ) {
         $this->connectionPool = $connectionPool ?? GeneralUtility::makeInstance(ConnectionPool::class);
-        $this->mediaRepository = $mediaRepository ?? GeneralUtility::makeInstance(MediaRepository::class);
         $this->resourceFactory = $resourceFactory ?? GeneralUtility::makeInstance(ResourceFactory::class);
+        $this->mediaResolver = $mediaResolver ?? GeneralUtility::makeInstance(ListviewMediaResolver::class);
     }
 
     public function process(
@@ -54,7 +57,7 @@ final class ListviewProcessor implements DataProcessorInterface
 
         $detailPageUid = (int)($data['tx_mpcvidply_detail_page'] ?? 0);
 
-        $rows = $this->fetchRowsForContent($contentUid, $l10nParent, $languageId);
+        $rows = $this->mediaResolver->resolveRows($contentUid, $l10nParent, $languageId);
 
         $processedData['listview'] = [
             'uid' => $contentUid,
@@ -78,27 +81,9 @@ final class ListviewProcessor implements DataProcessorInterface
             }
 
             $selectionMode = (string)($row['selection_mode'] ?? 'manual');
-            $limit = max(1, (int)($row['limit_items'] ?? 12));
             $sortBy = (string)($row['sort_by'] ?? 'sorting');
 
-            if ($selectionMode === 'category') {
-                $categoryUids = $this->resolveCategoryUidsForRow($rowUid);
-                $mediaRecords = $this->mediaRepository->findByCategories($categoryUids, $languageId, $limit, $sortBy);
-            } else {
-                $mediaRecords = $this->mediaRepository->findByRowUid($rowUid, $languageId);
-                if ($sortBy === 'title_asc') {
-                    usort(
-                        $mediaRecords,
-                        static fn(array $a, array $b): int => strcasecmp((string)($a['title'] ?? ''), (string)($b['title'] ?? ''))
-                    );
-                } elseif ($sortBy === 'crdate_desc') {
-                    usort(
-                        $mediaRecords,
-                        static fn(array $a, array $b): int => (int)($b['crdate'] ?? 0) <=> (int)($a['crdate'] ?? 0)
-                    );
-                }
-                $mediaRecords = array_slice($mediaRecords, 0, $limit);
-            }
+            $mediaRecords = $this->mediaResolver->resolveMediaRecordsForRow($row, $languageId);
 
             $mediaUids = array_values(array_filter(
                 array_map(static fn(array $m): int => (int)($m['uid'] ?? 0), $mediaRecords),
@@ -420,106 +405,6 @@ final class ListviewProcessor implements DataProcessorInterface
         } catch (\Throwable) {
             return '';
         }
-    }
-
-    /**
-     * Load listview child rows for `parentid` = `tt_content.uid`.
-     *
-     * For a translated listview element (`l18n_parent` > 0), rows must follow
-     * the default-language content element, same as "Value of default language" for
-     * the playlist. Querying both current and source and **preferring** the current
-     * CE when it had *any* rows caused empty placeholder rows on the translation to
-     * override fully configured shelves on the default CE (0 items on FE).
-     *
-     * We therefore load by **translation source uid only** when it is set, and
-     * fall back to the current CE if no rows exist (legacy data attached only to the
-     * translation).
-     *
-     * @return list<array<string, mixed>>
-     */
-    private function fetchRowsForContent(int $contentUid, int $translationSourceUid, int $languageId): array
-    {
-        if ($contentUid <= 0) {
-            return [];
-        }
-
-        $parentIds = $translationSourceUid > 0 ? [$translationSourceUid] : [$contentUid];
-
-        $rows = $this->queryListviewRowsByParentIds($parentIds, $languageId);
-        if ($rows === [] && $translationSourceUid > 0) {
-            $rows = $this->queryListviewRowsByParentIds([$contentUid], $languageId);
-        }
-
-        if ($languageId <= 0) {
-            return array_values(array_filter(
-                $rows,
-                static fn(array $row): bool => (int)($row['sys_language_uid'] ?? 0) <= 0
-            ));
-        }
-
-        // Language overlay: prefer translated row, fall back to default row.
-        $byDefaultUid = [];
-        foreach ($rows as $row) {
-            $language = (int)($row['sys_language_uid'] ?? 0);
-            $uid = (int)($row['uid'] ?? 0);
-            $parent = (int)($row['l10n_parent'] ?? 0);
-            if ($language === 0 || $language === -1) {
-                $byDefaultUid[$uid] = $row;
-                continue;
-            }
-            if ($language === $languageId && $parent > 0) {
-                $byDefaultUid[$parent] = $row;
-            }
-        }
-        return array_values($byDefaultUid);
-    }
-
-    /**
-     * @param list<int> $parentIds
-     * @return list<array<string, mixed>>
-     */
-    private function queryListviewRowsByParentIds(array $parentIds, int $languageId): array
-    {
-        if ($parentIds === []) {
-            return [];
-        }
-        $qb = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_listview_row');
-        return $qb
-            ->select('*')
-            ->from('tx_mpcvidply_listview_row')
-            ->where(
-                $qb->expr()->in('parentid', $qb->createNamedParameter($parentIds, Connection::PARAM_INT_ARRAY)),
-                $qb->expr()->eq('parenttable', $qb->createNamedParameter('tt_content')),
-                $qb->expr()->eq('deleted', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-                $qb->expr()->eq('hidden', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-                $qb->expr()->in(
-                    'sys_language_uid',
-                    $qb->createNamedParameter([0, -1, $languageId], Connection::PARAM_INT_ARRAY)
-                )
-            )
-            ->orderBy('sorting', 'ASC')
-            ->executeQuery()
-            ->fetchAllAssociative();
-    }
-
-    /**
-     * @return list<int>
-     */
-    private function resolveCategoryUidsForRow(int $rowUid): array
-    {
-        $qb = $this->connectionPool->getQueryBuilderForTable('sys_category_record_mm');
-        $uids = $qb
-            ->select('uid_local')
-            ->from('sys_category_record_mm')
-            ->where(
-                $qb->expr()->eq('tablenames', $qb->createNamedParameter('tx_mpcvidply_listview_row')),
-                $qb->expr()->eq('fieldname', $qb->createNamedParameter('categories')),
-                $qb->expr()->eq('uid_foreign', $qb->createNamedParameter($rowUid, Connection::PARAM_INT))
-            )
-            ->executeQuery()
-            ->fetchFirstColumn();
-
-        return array_values(array_unique(array_map(static fn(int|string $v): int => (int)$v, $uids)));
     }
 
     /**

@@ -484,6 +484,44 @@ $GLOBALS['TYPO3_CONF_VARS']['FE']['debug'] = true;
 
 ---
 
+## 🔎 Structured data (JSON-LD)
+
+VidPly emits `schema.org` structured data for its media so pages are eligible for
+Google video/audio rich results. The output is built in the page `<head>`, not in
+the content element template.
+
+- **What is emitted**
+  - Detail views and single-media pages: one `VideoObject` (or `AudioObject` for
+    `audio`/`soundcloud`).
+  - Gallery pages with several distinct media: an `ItemList` of embedded
+    `VideoObject`/`AudioObject` nodes. Inline `mpc_vidply` players (including
+    playlists) and `mpc_vidply_listview` shelves are both included and deduplicated
+    by their default-language media UID.
+  - Fields map from the media record: `name`, `description`, `duration` (ISO 8601),
+    `thumbnailUrl`, `uploadDate`, plus `contentUrl`/`embedUrl` resolved per media type.
+
+- **`contentUrl` and adaptive streaming**: HLS/DASH manifests are not progressive
+  files, so no `contentUrl` is emitted for HLS/DASH-only sources (the `embedUrl`
+  still points at the watch page). Progressive MP4/WebM/MP3/OGG sources are used
+  when available.
+
+- **Watch URL resolution** (in priority order): the detail page configured on a
+  listview (`tx_mpcvidply_detail_page`), a `mpc_vidply_detail` element on the same
+  page, then the site-wide first detail page; otherwise a `#media-<uid>` fragment on
+  the current page.
+
+- **With and without mp-core**
+  - Standalone: a dedicated `<script type="application/ld+json">` is rendered from
+    `page.headerData` using a CSP nonce.
+  - With `mp_core` loaded: the node is merged into mp-core's `@graph` and linked via
+    `WebPage.mainEntity`, so only a single JSON-LD script is output. If mp-core
+    produces no usable `@graph`, VidPly falls back to a standalone document.
+
+- **Disabling**: set the site setting `structuredDataEnabled` to `false` to suppress
+  all VidPly JSON-LD for that site (defaults to enabled).
+
+---
+
 ## 🧪 Automated Tests
 
 The extension ships a PHPUnit suite built on `typo3/testing-framework`:

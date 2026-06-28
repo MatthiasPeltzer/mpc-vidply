@@ -201,5 +201,8 @@ properties for theming (see `listview.css` for the full list).
 - Poster images use native lazy loading (`loading="lazy"`,
   `decoding="async"`) and always have an `alt` text derived from the
   media title.
-- The detail template emits `schema.org` JSON-LD (`VideoObject` or
-  `AudioObject`) for SEO / rich-result eligibility.
+- `schema.org` JSON-LD (`VideoObject` / `AudioObject`, or an `ItemList`
+  on gallery pages) is emitted in the page `<head>` for SEO / rich-result
+  eligibility. Listview shelves are included automatically, linking each
+  card to the configured detail page. See the "Structured data (JSON-LD)"
+  section in [Developers-Quickstart.md](Developers-Quickstart.md).
