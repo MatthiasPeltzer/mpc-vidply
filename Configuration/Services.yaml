@@ -46,6 +46,12 @@ services:
   Mpc\MpcVidply\Hooks\SrtCaptionConversionHook:
     public: true
 
+  Mpc\MpcVidply\Hooks\MediaUrlImportPosterPersistHook:
+    public: true
+
+  Mpc\MpcVidply\Service\MediaUrlImportPosterService:
+    public: true
+
   Mpc\MpcVidply\Service\SrtCaptionMigrationService:
     public: true
 
