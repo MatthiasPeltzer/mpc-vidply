@@ -50,10 +50,12 @@ final class ListviewPreviewRenderer extends StandardContentPreviewRenderer
         // `tt_content` uses `l18n_parent` (not `l10n_parent`) as DB column.
         $contentUid = (int)($record['uid'] ?? 0);
         if ($contentUid > 0) {
+            // Comma-separated field list: TYPO3 13.4 getRecord() accepts string only;
+            // array support was added in TYPO3 14 (see BackendUtility::getRecord).
             $row = BackendUtility::getRecord(
                 'tt_content',
                 $contentUid,
-                ['uid', 'l18n_parent', 'sys_language_uid']
+                'uid,l18n_parent,sys_language_uid'
             );
             if (is_array($row)) {
                 $record = array_replace($record, $row);
