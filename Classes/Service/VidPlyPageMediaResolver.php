@@ -389,9 +389,7 @@ final class VidPlyPageMediaResolver
 
         $config = [
             'parameter' => $pageUid,
-            'queryParameters' => [
-                'media' => (string)$mediaUid,
-            ],
+            'additionalParams' => '&media=' . rawurlencode((string)$mediaUid),
             'forceAbsoluteUrl' => true,
             'returnLast' => 'url',
         ];

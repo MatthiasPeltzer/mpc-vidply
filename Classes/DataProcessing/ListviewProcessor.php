@@ -367,9 +367,7 @@ final class ListviewProcessor implements DataProcessorInterface
 
         $config = [
             'parameter' => $detailPageUid,
-            'queryParameters' => [
-                'media' => (string)$mediaUid,
-            ],
+            'additionalParams' => '&media=' . rawurlencode((string)$mediaUid),
             'forceAbsoluteUrl' => 0,
             'returnLast' => 'url',
         ];
