@@ -232,9 +232,7 @@ final class DetailProcessor implements DataProcessorInterface
         }
         $config = [
             'parameter' => $pageUid,
-            'queryParameters' => [
-                'media' => (string)$mediaUid,
-            ],
+            'additionalParams' => '&media=' . rawurlencode((string)$mediaUid),
             'returnLast' => 'url',
         ];
         if ($languageId > 0) {
