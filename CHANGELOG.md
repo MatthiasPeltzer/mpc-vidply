@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.14] - 2026-07-01
+
+### Added
+- Per-media toggle **Hide keyboard shortcuts help** on `tx_mpcvidply_media` to hide the
+  VidPly help button (`.vidply-help`) for a single item or per playlist track.
+
 ## [1.2.13] - 2026-06-30
 
 ### Fixed
@@ -621,6 +627,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.14]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.13...v1.2.14
 [1.2.13]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.12...v1.2.13
 [1.2.12]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.11...v1.2.12
 [1.2.11]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.10...v1.2.11

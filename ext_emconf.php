@@ -1,13 +1,13 @@
 <?php
 
 $EM_CONF['mpc_vidply'] = [
-    'title' => 'VidPly Player',
+    'title' => 'VidPly - Universal, Accessible Video & Audio Player',
     'description' => 'Universal, Accessible Video & Audio Player for TYPO3. Includes support for HTML5 video/audio, YouTube, Vimeo, SoundCloud, HLS and DASH streaming, playlists, captions, transcripts, sign language, and WCAG 2.2 AA accessibility compliance.',
     'category' => 'plugin',
     'author' => 'Matthias Peltzer',
     'author_email' => 'mail@mpeltzer.de',
     'state' => 'stable',
-    'version' => '1.2.13',
+    'version' => '1.2.14',
     'constraints' => [
         'depends' => [
             'typo3' => '13.4.0-14.3.99',
