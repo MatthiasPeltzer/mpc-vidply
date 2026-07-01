@@ -151,6 +151,14 @@
         <source>When enabled and the record is rendered as a single item, the playback speed control will be hidden.</source>
         <target>Wenn aktiviert und der Datensatz als Einzel-Element gerendert wird, wird die Wiedergabegeschwindigkeit ausgeblendet.</target>
       </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.hide_help_button">
+        <source>Hide keyboard shortcuts help</source>
+        <target>Tastaturkürzel-Hilfe ausblenden</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.hide_help_button.description">
+        <source>When enabled, the keyboard shortcuts help button is hidden for this media item. The ? shortcut still works when keyboard controls are enabled on the content element.</source>
+        <target>Wenn aktiviert, wird die Hilfe-Schaltfläche für Tastaturkürzel für dieses Medium ausgeblendet. Die ?-Taste funktioniert weiterhin, wenn Tastatursteuerung am Inhaltselement aktiviert ist.</target>
+      </trans-unit>
       <trans-unit id="tx_mpcvidply_media.allow_download">
         <source>Allow download</source>
         <target>Download erlauben</target>

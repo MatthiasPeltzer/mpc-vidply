@@ -179,7 +179,7 @@ return [
             'showitem' => 'title,slug,--linebreak--,artist,--linebreak--,description,--linebreak--,long_description,--linebreak--,duration,audio_description_duration',
         ],
         'ui' => [
-            'showitem' => 'hide_speed_button,allow_download,enable_floating_player',
+            'showitem' => 'hide_speed_button,hide_help_button,allow_download,enable_floating_player',
         ],
         'timeRestriction' => [
             'showitem' => 'starttime,endtime',
@@ -747,6 +747,20 @@ return [
             'exclude' => true,
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.hide_speed_button',
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.hide_speed_button.description',
+            'config' => [
+                'type' => 'check',
+                'renderType' => 'checkboxToggle',
+                'items' => [
+                    [
+                        'label' => '',
+                    ],
+                ],
+            ],
+        ],
+        'hide_help_button' => [
+            'exclude' => true,
+            'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.hide_help_button',
+            'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.hide_help_button.description',
             'config' => [
                 'type' => 'check',
                 'renderType' => 'checkboxToggle',

@@ -20,7 +20,7 @@ final class MediaRepository
         'uid', 'pid', 'sys_language_uid', 'l10n_parent', 'media_type', 'slug',
         'title', 'artist', 'description', 'long_description', 'duration', 'audio_description_duration',
         'audio_description_mode',
-        'hide_speed_button', 'allow_download', 'enable_floating_player',
+        'hide_speed_button', 'hide_help_button', 'allow_download', 'enable_floating_player',
         'enable_transcript', 'sign_language_display_mode', 'crdate', 'tstamp',
     ];
 

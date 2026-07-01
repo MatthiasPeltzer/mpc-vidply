@@ -114,6 +114,12 @@
       <trans-unit id="tx_mpcvidply_media.hide_speed_button.description">
         <source>When enabled and the record is rendered as a single item, the playback speed control will be hidden.</source>
       </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.hide_help_button">
+        <source>Hide keyboard shortcuts help</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.hide_help_button.description">
+        <source>When enabled, the keyboard shortcuts help button is hidden for this media item. The ? shortcut still works when keyboard controls are enabled on the content element.</source>
+      </trans-unit>
       <trans-unit id="tx_mpcvidply_media.allow_download">
         <source>Allow download</source>
       </trans-unit>

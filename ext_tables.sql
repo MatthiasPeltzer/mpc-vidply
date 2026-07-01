@@ -56,6 +56,7 @@ CREATE TABLE tx_mpcvidply_media (
 
 	# Per-media UI overrides
 	hide_speed_button tinyint unsigned DEFAULT '0' NOT NULL,
+	hide_help_button tinyint unsigned DEFAULT '0' NOT NULL,
 	allow_download tinyint unsigned DEFAULT '0' NOT NULL,
 	enable_floating_player tinyint unsigned DEFAULT '0' NOT NULL,
 	

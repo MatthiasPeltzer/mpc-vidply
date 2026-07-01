@@ -172,6 +172,7 @@ do not want the “You might also like” row below the player.
 - **Hide speed button**: Hides the playback speed control for this media item.
   - **Single item**: the speed control is hidden.
   - **Playlist**: the speed control is hidden **only while this item is the active track** (it can re-appear for other tracks).
+- **Hide keyboard shortcuts help**: Hides the help button (`.vidply-help`) in the control bar for this media item. Same single-item / per-track playlist behavior as the speed button. The `?` keyboard shortcut remains available when keyboard controls are enabled on the content element.
 - **Buffering spinner**: A centered loading spinner is shown automatically while the player is buffering — no configuration required. Works for local files, HLS and DASH streams.
 - **Download button** *(if exposed by your sitepackage / TCA override)*: Per-media toggle to show a download button in the control bar. For HLS / DASH sources, also configure an explicit download URL pointing to a single MP4 / MP3 / WebM file (manifests are not directly downloadable).
 

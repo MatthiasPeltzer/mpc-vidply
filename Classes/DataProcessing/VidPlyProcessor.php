@@ -362,6 +362,10 @@ class VidPlyProcessor implements DataProcessorInterface
             $playerOptions['speedButton'] = false;
         }
 
+        if (!$trackResult['isPlaylist'] && isset($mediaRecords[0]) && !empty($mediaRecords[0]['hide_help_button'])) {
+            $playerOptions['helpButton'] = false;
+        }
+
         // MSE-based streams (DASH via dash.js, HLS via hls.js) handle
         // "no preload before play" entirely inside their renderers and do
         // not need the player-level `deferLoad` flag:
@@ -1247,6 +1251,9 @@ class VidPlyProcessor implements DataProcessorInterface
 
         if (!empty($mediaRecord['hide_speed_button'])) {
             $track['hideSpeedButton'] = true;
+        }
+        if (!empty($mediaRecord['hide_help_button'])) {
+            $track['hideHelpButton'] = true;
         }
         if (!empty($mediaRecord['allow_download'])) {
             $track['allowDownload'] = true;
