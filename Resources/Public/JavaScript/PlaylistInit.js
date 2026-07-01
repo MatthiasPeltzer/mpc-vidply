@@ -610,7 +610,7 @@ function initializePlaylistElement(element) {
             element._vidplyPlaylist = playlist;
 
             /**
-             * Apply per-track UI overrides (e.g. hide speed button).
+             * Apply per-track UI overrides (e.g. hide speed / help buttons).
              * Updates the option and toggles the DOM element directly.
              */
             const applyPerTrackUi = (track) => {
@@ -620,6 +620,13 @@ function initializePlaylistElement(element) {
                 const speedBtn = player.controlBar?.controls?.speed;
                 if (speedBtn) {
                     speedBtn.style.display = hideSpeedButton ? 'none' : '';
+                }
+
+                const hideHelpButton = track.hideHelpButton === true;
+                player.options.helpButton = !hideHelpButton;
+                const helpBtn = player.controlBar?.controls?.help;
+                if (helpBtn) {
+                    helpBtn.style.display = hideHelpButton ? 'none' : '';
                 }
             };
 

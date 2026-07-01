@@ -235,4 +235,39 @@ final class VidPlyProcessorLogicTest extends TestCase
 
         self::assertSame("HelloWorld\tTabbed\nNewline", $this->invoke('stripControlChars', $input));
     }
+
+    #[Test]
+    public function applyTrackDependentOptionsHidesHelpButtonForSingleItem(): void
+    {
+        $playerOptions = ['speedButton' => true];
+        $trackResult = ['isPlaylist' => false, 'tracks' => [['title' => 'Test']]];
+        $mediaRecords = [['hide_help_button' => 1, 'media_type' => 'video']];
+
+        $this->invoke('applyTrackDependentOptions', $playerOptions, $trackResult, $mediaRecords);
+
+        self::assertFalse($playerOptions['helpButton']);
+    }
+
+    #[Test]
+    public function applyTrackDependentOptionsDoesNotHideHelpButtonForPlaylist(): void
+    {
+        $playerOptions = [];
+        $trackResult = ['isPlaylist' => true, 'tracks' => [['title' => 'A'], ['title' => 'B']]];
+        $mediaRecords = [['hide_help_button' => 1, 'media_type' => 'video']];
+
+        $this->invoke('applyTrackDependentOptions', $playerOptions, $trackResult, $mediaRecords);
+
+        self::assertArrayNotHasKey('helpButton', $playerOptions);
+    }
+
+    #[Test]
+    public function buildBaseTrackDataMapsHideHelpButtonFlag(): void
+    {
+        $track = $this->invoke('buildBaseTrackData', [
+            'title' => 'Example',
+            'hide_help_button' => 1,
+        ]);
+
+        self::assertTrue($track['hideHelpButton']);
+    }
 }
