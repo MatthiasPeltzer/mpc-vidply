@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
+## [1.2.15] - 2026-07-04
 - VidPly in Vue sliders/galleries: re-scan slide HTML after Swiper mounts (`window.VidPlyInit.scan`),
   listen for `mpc:dynamic-content:ready`, pause players on inactive slides, and catch up when
   the init script loads after Vue.
@@ -634,6 +634,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.15]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.14...v1.2.15
 [1.2.14]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.13...v1.2.14
 [1.2.13]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.12...v1.2.13
 [1.2.12]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.11...v1.2.12
