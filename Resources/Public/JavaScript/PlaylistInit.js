@@ -1101,28 +1101,101 @@ function setupThemeSync() {
     });
 }
 
-// Export theme functions for external use
+/**
+ * Scan a DOM subtree for VidPly elements and initialize any that are not ready yet.
+ * Used on DOMContentLoaded and after Vue/Swiper re-injects slide HTML via v-html.
+ *
+ * @param {ParentNode} [root=document]
+ * @param {{ includeDuplicateSlides?: boolean }} [options]
+ */
+function scanAndInitialize(root = document, options = {}) {
+    const scope = root instanceof Element || root instanceof Document ? root : document;
+    const includeDuplicateSlides = options.includeDuplicateSlides === true;
+    const shouldSkip = (element) => {
+        if (includeDuplicateSlides) {
+            return false;
+        }
+        return element.closest('.swiper-slide-duplicate') !== null;
+    };
+
+    scope.querySelectorAll('[data-vidply-init]:not([data-playlist])').forEach((element) => {
+        if (!shouldSkip(element)) {
+            initializeSingleElement(element);
+        }
+    });
+
+    scope.querySelectorAll('[data-playlist]:not([data-vidply])').forEach((element) => {
+        if (!shouldSkip(element)) {
+            initializePlaylistElement(element);
+        }
+    });
+
+    scope.querySelectorAll('.vidply-wrapper[data-vidply-play-icon]:not([data-vidply-play-inline-svg])').forEach(applyWrapperPlayIconVar);
+    scope.querySelectorAll('.vidply-wrapper[data-vidply-play-inline-svg]').forEach(observeVidplyOverlays);
+}
+
+/**
+ * Pause initialized players that live outside the given slide/container.
+ *
+ * @param {Element} container
+ */
+function pausePlayersOutside(container) {
+    if (!(container instanceof Element)) {
+        return;
+    }
+
+    getAlivePlayers().forEach((player) => {
+        const host = player?.element;
+        if (!host || container.contains(host)) {
+            return;
+        }
+
+        try {
+            player.pause?.();
+        } catch {
+            // Ignore pause errors during slide transitions.
+        }
+    });
+}
+
+function catchUpVueContainers() {
+    document.querySelectorAll('[data-container="vue"].swiper-vue-ready').forEach((root) => {
+        scanAndInitialize(root);
+    });
+}
+
+function runInitialSetup() {
+    scanAndInitialize(document);
+
+    if (isThemeSyncEnabled()) {
+        setupThemeSync();
+    }
+
+    catchUpVueContainers();
+}
+
+// Export theme and init helpers for external use (Vue sliders, galleries, …)
 window.VidPlyTheme = {
     setTheme: applyThemeToAllPlayers,
     getPlayers: () => getAlivePlayers(),
     detectPageTheme
 };
 
-// Initialize on DOM ready
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize single media elements
-    document.querySelectorAll('[data-vidply-init]:not([data-playlist])').forEach(initializeSingleElement);
+window.VidPlyInit = {
+    scan: scanAndInitialize,
+    pauseOutside: pausePlayersOutside
+};
 
-    // Initialize playlist elements
-    document.querySelectorAll('[data-playlist]:not([data-vidply])').forEach(initializePlaylistElement);
-
-    // Apply the custom play-icon CSS variable (replaces the former inline style attribute)
-    document.querySelectorAll('.vidply-wrapper[data-vidply-play-icon]:not([data-vidply-play-inline-svg])').forEach(applyWrapperPlayIconVar);
-
-    // Observe and replace main VidPly play overlays (big play icon) when inline SVG is available
-    document.querySelectorAll('.vidply-wrapper[data-vidply-play-inline-svg]').forEach(observeVidplyOverlays);
-    
-    if (isThemeSyncEnabled()) {
-        setupThemeSync();
+document.addEventListener('mpc:dynamic-content:ready', (event) => {
+    const root = event.detail?.root;
+    if (root instanceof Element) {
+        scanAndInitialize(root);
     }
 });
+
+// Initialize on DOM ready
+document.addEventListener('DOMContentLoaded', runInitialSetup);
+
+if (document.readyState !== 'loading') {
+    catchUpVueContainers();
+}

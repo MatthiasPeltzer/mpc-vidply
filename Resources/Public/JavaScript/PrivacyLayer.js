@@ -210,10 +210,14 @@
     }
 
     /**
-     * Initialize privacy layers
+     * Initialize privacy layers within a DOM subtree.
+     *
+     * @param {ParentNode} [root=document]
      */
-    function initPrivacyLayers() {
-        document.querySelectorAll('[data-vidply-privacy]').forEach(layer => {
+    function initPrivacyLayers(root = document) {
+        const scope = root instanceof Element || root instanceof Document ? root : document;
+
+        scope.querySelectorAll('[data-vidply-privacy]').forEach(layer => {
             if (initializedLayers.has(layer)) return;
             initializedLayers.add(layer);
 
@@ -231,11 +235,25 @@
         });
     }
 
+    window.VidPlyPrivacy = window.VidPlyPrivacy || {};
+    window.VidPlyPrivacy.scanLayers = initPrivacyLayers;
+
+    document.addEventListener('mpc:dynamic-content:ready', (event) => {
+        const root = event.detail?.root;
+        if (root instanceof Element) {
+            initPrivacyLayers(root);
+        }
+    });
+
     // Initialize when DOM is ready
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initPrivacyLayers);
+        document.addEventListener('DOMContentLoaded', () => initPrivacyLayers());
     } else {
         initPrivacyLayers();
     }
+
+    document.querySelectorAll('[data-container="vue"].swiper-vue-ready').forEach((root) => {
+        initPrivacyLayers(root);
+    });
 
 })();
