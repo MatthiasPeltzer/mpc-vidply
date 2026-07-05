@@ -13,4 +13,3 @@ defined('TYPO3') || die();
         'VidPly Player'
     );
 })();
-

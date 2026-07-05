@@ -19,4 +19,3 @@ return [
         'source' => 'EXT:mpc_vidply/Resources/Public/Icons/Extension.svg',
     ],
 ];
-

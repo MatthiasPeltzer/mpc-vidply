@@ -102,5 +102,3 @@ final class HlsHelper extends AbstractOnlineMediaHelper
     }
 
 }
-
-

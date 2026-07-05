@@ -12,4 +12,3 @@ return [
         '@mpc/mpc-vidply/Backend/media-url-import.js' => 'EXT:mpc_vidply/Resources/Public/JavaScript/Backend/media-url-import.js',
     ],
 ];
-

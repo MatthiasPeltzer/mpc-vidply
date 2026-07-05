@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-use Mpc\MpcVidply\OnlineMedia\Helpers\ExternalAudioHelper;
-use Mpc\MpcVidply\OnlineMedia\Helpers\ExternalVideoHelper;
-use Mpc\MpcVidply\OnlineMedia\Helpers\DashHelper;
-use Mpc\MpcVidply\OnlineMedia\Helpers\HlsHelper;
-use Mpc\MpcVidply\OnlineMedia\Helpers\SoundCloudHelper;
 use Mpc\MpcVidply\Form\Element\MediaUrlImportElement;
 use Mpc\MpcVidply\Form\FormDataProvider\MediaUrlImportFormDataProvider;
 use Mpc\MpcVidply\Hooks\MediaUrlImportPosterPersistHook;
 use Mpc\MpcVidply\Hooks\SrtCaptionConversionHook;
 use Mpc\MpcVidply\Hooks\VidPlyPlaylistTranslationSync;
+use Mpc\MpcVidply\OnlineMedia\Helpers\DashHelper;
+use Mpc\MpcVidply\OnlineMedia\Helpers\ExternalAudioHelper;
+use Mpc\MpcVidply\OnlineMedia\Helpers\ExternalVideoHelper;
+use Mpc\MpcVidply\OnlineMedia\Helpers\HlsHelper;
+use Mpc\MpcVidply\OnlineMedia\Helpers\SoundCloudHelper;
 use Mpc\MpcVidply\Routing\Aspect\VidPlyMediaRouteAspect;
 use TYPO3\CMS\Backend\Form\FormDataProvider\DatabaseRecordTypeValue;
 use TYPO3\CMS\Backend\Form\FormDataProvider\DatabaseRowDefaultAsReadonly;
@@ -116,5 +116,3 @@ page.headerData.2041.dataProcessing.45 {
 }
 TS);
 }
-
-

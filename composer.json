@@ -22,6 +22,7 @@
   },
   "require-dev": {
     "phpunit/phpunit": "^10.5 || ^11.5",
+    "typo3/coding-standards": "^0.8.0",
     "typo3/testing-framework": "^8.2 || ^9.0"
   },
   "suggest": {
@@ -47,7 +48,15 @@
   },
   "scripts": {
     "test:unit": "phpunit --colors=always -c phpunit.xml.dist",
-    "test:functional": "phpunit --colors=always -c Build/FunctionalTests.xml"
+    "test:functional": "phpunit --colors=always -c Build/FunctionalTests.xml",
+    "cs": [
+      "@putenv PHP_CS_FIXER_IGNORE_ENV=1",
+      "php .Build/bin/php-cs-fixer fix --dry-run -v --config .php-cs-fixer.dist.php"
+    ],
+    "cs:fix": [
+      "@putenv PHP_CS_FIXER_IGNORE_ENV=1",
+      "php .Build/bin/php-cs-fixer fix -v --config .php-cs-fixer.dist.php"
+    ]
   },
   "extra": {
     "typo3/cms": {

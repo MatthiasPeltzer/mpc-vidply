@@ -86,7 +86,7 @@ $vidplyFields = [
             ],
         ],
     ],
-    
+
     // Player Options
     'tx_mpcvidply_options' => [
         'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_options',
@@ -106,7 +106,7 @@ $vidplyFields = [
             'default' => 328,
         ],
     ],
-    
+
     // Playback Settings
     'tx_mpcvidply_volume' => [
         'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_volume',
@@ -128,7 +128,7 @@ $vidplyFields = [
             'range' => ['lower' => 0.25, 'upper' => 2.0],
         ],
     ],
-    
+
     // Localization
     'tx_mpcvidply_language' => [
         'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_language',
@@ -297,5 +297,3 @@ $GLOBALS['TCA']['tt_content']['types']['mpc_vidply_detail'] = [
         --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:extended,
     ',
 ];
-
-

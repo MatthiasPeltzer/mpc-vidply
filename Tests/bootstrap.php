@@ -10,7 +10,6 @@ declare(strict_types=1);
  * vendor directory via a Composer path repository. We therefore probe the
  * common Composer autoload locations and use the first one that exists.
  */
-
 $autoloadCandidates = [
     // Standalone: `composer install` inside the extension.
     __DIR__ . '/../vendor/autoload.php',

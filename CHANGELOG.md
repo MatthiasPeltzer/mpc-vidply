@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Adopt TYPO3 coding standards (`typo3/coding-standards`): `.php-cs-fixer.dist.php`, `.editorconfig`, and `composer cs` / `composer cs:fix` scripts.
+
 ## [1.2.15] - 2026-07-04
 - VidPly in Vue sliders/galleries: re-scan slide HTML after Swiper mounts (`window.VidPlyInit.scan`),
   listen for `mpc:dynamic-content:ready`, pause players on inactive slides, and catch up when

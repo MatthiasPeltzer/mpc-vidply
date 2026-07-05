@@ -11,8 +11,7 @@ final readonly class RegisterOnlineMediaIconsEventListener
 {
     public function __construct(
         private IconRegistry $iconRegistry
-    ) {
-    }
+    ) {}
 
     public function __invoke(BootCompletedEvent $event): void
     {
@@ -24,5 +23,3 @@ final readonly class RegisterOnlineMediaIconsEventListener
         $this->iconRegistry->registerFileExtension('dash', 'mimetypes-media-video');
     }
 }
-
-

@@ -12,22 +12,13 @@ indent_size = 4
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-# Settings for HTML files
-[*.html]
-indent_size = 2
-
-# TS/JS/MJS-Files
-[*.{ts,js,mjs}]
-indent_size = 2
-
-# CSS/SCSS-Files
-[*.{scss,css}]
+# TS/JS-Files
+[*.{ts,js}]
 indent_size = 2
 
 # JSON-Files
 [*.json]
-indent_style = space
-indent_size = 2
+indent_style = tab
 
 # ReST-Files
 [*.{rst,rst.txt}]
@@ -47,6 +38,15 @@ indent_size = 2
 indent_size = 2
 indent_style = tab
 
+#.eslintrc.json
+[.eslintrc.json]
+indent_size = 2
+indent_style = space
+
+# stylelint
+[.stylelintrc]
+indent_size = 2
+
 # package.json
 [package.json]
 indent_size = 2
@@ -57,7 +57,7 @@ indent_size = 2
 
 # XLF-Files
 [*.xlf]
-indent_size = 2
+indent_style = tab
 
 # SQL-Files
 [*.sql]
@@ -67,13 +67,3 @@ indent_size = 2
 # .htaccess
 [{_.htaccess,.htaccess}]
 indent_style = tab
-
-# Ignore paths
-[{devops/chart/Chart.lock,README.md,LICENSE,LICENSES/**,CHANGELOG.md,FACTSHEET.md,Documentation/html_output/MERGED.html,public/fileadmin/**,Resources/Public/**}]
-charset = unset
-end_of_line = unset
-insert_final_newline = unset
-trim_trailing_whitespace = unset
-indent_style = unset
-indent_size = unset
-max_line_length = unset

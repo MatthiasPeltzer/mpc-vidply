@@ -18,7 +18,7 @@ final class ExternalVideoHelperTest extends TestCase
 {
     private function createSubject(string $allowedVideoDomains = 'cdn.example.com'): ExternalVideoHelper
     {
-        $extensionConfiguration = $this->createStub(ExtensionConfiguration::class);
+        $extensionConfiguration = self::createStub(ExtensionConfiguration::class);
         $extensionConfiguration->method('get')->willReturn([
             'allowedVideoDomains' => $allowedVideoDomains,
         ]);

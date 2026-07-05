@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\Repository;
 
+use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Core\Context\Context;
 
 /**
  * Repository for VidPly media records with MM-relation resolution and language overlay.
@@ -83,7 +83,11 @@ final class MediaRepository
             : [];
 
         return $this->assembleOrderedResult(
-            $mmRelations, $referencedByUid, $defaultByUid, $translatedByParent, $languageId
+            $mmRelations,
+            $referencedByUid,
+            $defaultByUid,
+            $translatedByParent,
+            $languageId
         );
     }
 
@@ -261,8 +265,12 @@ final class MediaRepository
                 : (int)($referenced['l10n_parent'] ?? 0);
 
             $selected = $this->selectOverlayRecord(
-                $referenced, $referencedLanguageId, $defaultLanguageUid,
-                $defaultByUid, $translatedByParent, $languageId
+                $referenced,
+                $referencedLanguageId,
+                $defaultLanguageUid,
+                $defaultByUid,
+                $translatedByParent,
+                $languageId
             );
 
             if (is_array($selected)) {

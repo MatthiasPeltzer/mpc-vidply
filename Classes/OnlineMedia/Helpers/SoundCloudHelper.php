@@ -165,5 +165,3 @@ final class SoundCloudHelper extends AbstractOnlineMediaHelper
         return is_array($decoded) ? $decoded : null;
     }
 }
-
-

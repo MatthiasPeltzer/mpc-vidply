@@ -5,24 +5,24 @@ declare(strict_types=1);
 use TYPO3\CMS\Core\Information\Typo3Version;
 
 $ctrl = [
-        'title' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tx_mpcvidply_privacy_settings',
-        'label' => 'uid',
-        'label_userFunc' => \Mpc\MpcVidply\Tca\PrivacySettingsLabel::class . '->getLabel',
-        'tstamp' => 'tstamp',
-        'crdate' => 'crdate',
-        'delete' => 'deleted',
-        'rootLevel' => -1, // Allow on root level AND in page tree
-        'security' => [
-            // Global privacy configuration records are typically stored on the
-            // root level (pid=0) or on sysfolders, neither of which is a
-            // regular content page. Without this flag, TYPO3 would reject
-            // saving them on certain doktypes.
-            'ignorePageTypeRestriction' => true,
-        ],
-        'iconfile' => 'EXT:mpc_vidply/Resources/Public/Icons/Extension.svg',
-        'languageField' => 'sys_language_uid',
-        'transOrigPointerField' => 'l10n_parent',
-        'transOrigDiffSourceField' => 'l10n_diffsource',
+    'title' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tx_mpcvidply_privacy_settings',
+    'label' => 'uid',
+    'label_userFunc' => \Mpc\MpcVidply\Tca\PrivacySettingsLabel::class . '->getLabel',
+    'tstamp' => 'tstamp',
+    'crdate' => 'crdate',
+    'delete' => 'deleted',
+    'rootLevel' => -1, // Allow on root level AND in page tree
+    'security' => [
+        // Global privacy configuration records are typically stored on the
+        // root level (pid=0) or on sysfolders, neither of which is a
+        // regular content page. Without this flag, TYPO3 would reject
+        // saving them on certain doktypes.
+        'ignorePageTypeRestriction' => true,
+    ],
+    'iconfile' => 'EXT:mpc_vidply/Resources/Public/Icons/Extension.svg',
+    'languageField' => 'sys_language_uid',
+    'transOrigPointerField' => 'l10n_parent',
+    'transOrigDiffSourceField' => 'l10n_diffsource',
 ];
 
 // TYPO3 v13 still evaluates ctrl.searchFields, TYPO3 v14 removed it.
@@ -105,7 +105,7 @@ return [
                 ],
             ],
         ],
-        
+
         // YouTube Settings
         'youtube_headline' => [
             'exclude' => false,
@@ -183,7 +183,7 @@ return [
                 'eval' => 'trim',
             ],
         ],
-        
+
         // Vimeo Settings
         'vimeo_headline' => [
             'exclude' => false,
@@ -260,7 +260,7 @@ return [
                 'eval' => 'trim',
             ],
         ],
-        
+
         // SoundCloud Settings
         'soundcloud_headline' => [
             'exclude' => false,
@@ -339,4 +339,3 @@ return [
         ],
     ],
 ];
-

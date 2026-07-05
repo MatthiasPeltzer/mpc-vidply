@@ -55,7 +55,7 @@ final class MediaObjectJsonLdBuilder
     /**
      * @param array<string, mixed> $media
      * @param array<string, mixed>|null $vidply
-     * @return array<string, mixed>|null Graph node without @context (for @graph merging)
+     * @return array<string, mixed>|null Graph node without @context(for @graph merging)
      */
     public function buildGraphNode(
         array $media,

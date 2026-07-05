@@ -96,5 +96,3 @@ final class ExternalVideoHelper extends AbstractOnlineMediaHelper
     }
 
 }
-
-

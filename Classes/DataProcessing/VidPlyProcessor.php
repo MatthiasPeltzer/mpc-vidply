@@ -154,9 +154,17 @@ class VidPlyProcessor implements DataProcessorInterface
         $assetFlags = $this->resolveAssetFlags($serviceType, $trackResult);
 
         return $this->assembleTemplateData(
-            $data, $playerOptions, $trackResult, $singleTrackData,
-            $playlistData, $serviceType, $privacySettings, $uiConfig,
-            $resolvedMediaType, $renderMode, $assetFlags
+            $data,
+            $playerOptions,
+            $trackResult,
+            $singleTrackData,
+            $playlistData,
+            $serviceType,
+            $privacySettings,
+            $uiConfig,
+            $resolvedMediaType,
+            $renderMode,
+            $assetFlags
         );
     }
 

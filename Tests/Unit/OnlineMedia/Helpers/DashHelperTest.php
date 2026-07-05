@@ -18,7 +18,7 @@ final class DashHelperTest extends TestCase
 {
     private function createSubject(string $allowedVideoDomains = 'cdn.example.com'): DashHelper
     {
-        $extensionConfiguration = $this->createStub(ExtensionConfiguration::class);
+        $extensionConfiguration = self::createStub(ExtensionConfiguration::class);
         $extensionConfiguration->method('get')->willReturn([
             'allowedVideoDomains' => $allowedVideoDomains,
         ]);

@@ -25,5 +25,6 @@ npm-debug.log*
 
 # Standalone test build (composer install inside the extension)
 /.Build/
+/.php-cs-fixer.cache
 composer.lock
 

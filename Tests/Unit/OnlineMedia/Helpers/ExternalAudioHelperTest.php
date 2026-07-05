@@ -18,7 +18,7 @@ final class ExternalAudioHelperTest extends TestCase
 {
     private function createSubject(string $allowedAudioDomains = 'cdn.example.com'): ExternalAudioHelper
     {
-        $extensionConfiguration = $this->createStub(ExtensionConfiguration::class);
+        $extensionConfiguration = self::createStub(ExtensionConfiguration::class);
         $extensionConfiguration->method('get')->willReturn([
             'allowedAudioDomains' => $allowedAudioDomains,
         ]);
