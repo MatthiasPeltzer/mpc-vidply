@@ -133,7 +133,7 @@ final class VidPlyPlaylistTranslationSync
 
         $this->replicateFromParentToTranslationUids(
             $sourceContentUid,
-            array_map(static fn(mixed $v): int => (int)$v, $translatedUids),
+            array_map(static fn (mixed $v): int => (int)$v, $translatedUids),
             self::CTYPE
         );
     }
@@ -154,8 +154,8 @@ final class VidPlyPlaylistTranslationSync
             return;
         }
         $translationUids = array_values(array_filter(
-            array_map(static fn(mixed $v): int => (int)$v, $translationUids),
-            static fn(int $u): bool => $u > 0
+            array_map(static fn (mixed $v): int => (int)$v, $translationUids),
+            static fn (int $u): bool => $u > 0
         ));
         if ($translationUids === []) {
             return;

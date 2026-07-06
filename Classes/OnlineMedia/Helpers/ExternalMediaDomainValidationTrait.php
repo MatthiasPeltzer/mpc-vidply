@@ -26,8 +26,8 @@ trait ExternalMediaDomainValidationTrait
 
         $raw = (string)($config[$key] ?? '');
         $items = preg_split('/[,\r\n]+/', $raw) ?: [];
-        $items = array_map(static fn(string $v): string => trim($v), $items);
-        return array_values(array_filter($items, static fn(string $v): bool => $v !== ''));
+        $items = array_map(static fn (string $v): string => trim($v), $items);
+        return array_values(array_filter($items, static fn (string $v): bool => $v !== ''));
     }
 
     /**

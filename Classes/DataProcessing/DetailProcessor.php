@@ -169,8 +169,8 @@ final class DetailProcessor implements DataProcessorInterface
         }
 
         $mediaUids = array_values(array_filter(
-            array_map(static fn(array $m): int => (int)($m['uid'] ?? 0), $relatedRaw),
-            static fn(int $uid): bool => $uid > 0
+            array_map(static fn (array $m): int => (int)($m['uid'] ?? 0), $relatedRaw),
+            static fn (int $uid): bool => $uid > 0
         ));
         $posterRefsByMediaUid = $this->prefetchPosterRefs($mediaUids);
 
@@ -362,7 +362,7 @@ final class DetailProcessor implements DataProcessorInterface
             ->fetchAllAssociative();
 
         return array_map(
-            static fn(array $r): array => [
+            static fn (array $r): array => [
                 'uid' => (int)($r['uid'] ?? 0),
                 'title' => (string)($r['title'] ?? ''),
             ],

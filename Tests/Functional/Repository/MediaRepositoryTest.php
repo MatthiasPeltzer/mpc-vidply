@@ -31,7 +31,7 @@ final class MediaRepositoryTest extends FunctionalTestCase
      */
     private function uids(array $records): array
     {
-        return array_map(static fn(array $r): int => (int)$r['uid'], $records);
+        return array_map(static fn (array $r): int => (int)$r['uid'], $records);
     }
 
     #[Test]

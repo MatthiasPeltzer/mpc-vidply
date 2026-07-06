@@ -30,7 +30,7 @@ final class MediaUrlImportSessionServiceTest extends TestCase
             ->onlyMethods(['getSessionData', 'setSessionData'])
             ->getMock();
         $this->backendUser->method('getSessionData')->willReturnCallback(
-            fn(string $key): mixed => $this->sessionStorage[$key] ?? null
+            fn (string $key): mixed => $this->sessionStorage[$key] ?? null
         );
         $this->backendUser->method('setSessionData')->willReturnCallback(function (string $key, mixed $data): void {
             $this->sessionStorage[$key] = $data;

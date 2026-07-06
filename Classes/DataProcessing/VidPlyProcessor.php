@@ -305,10 +305,10 @@ class VidPlyProcessor implements DataProcessorInterface
     private function prefetchRelatedFiles(array $mediaRecords): void
     {
         $mediaUids = array_values(array_unique(array_map(
-            static fn(array $row): int => (int)($row['uid'] ?? 0),
+            static fn (array $row): int => (int)($row['uid'] ?? 0),
             $mediaRecords
         )));
-        $mediaUids = array_values(array_filter($mediaUids, static fn(int $uid): bool => $uid > 0));
+        $mediaUids = array_values(array_filter($mediaUids, static fn (int $uid): bool => $uid > 0));
 
         if ($mediaUids === []) {
             $this->fileReferencesByMediaUid = [];
@@ -1044,7 +1044,7 @@ class VidPlyProcessor implements DataProcessorInterface
 
         $raw = (string)($extConf['allowedPlayIconDomains'] ?? '');
         $items = preg_split('/[,\r\n]+/', $raw) ?: [];
-        $allowedPatterns = array_values(array_filter(array_map('trim', $items), static fn(string $v): bool => $v !== ''));
+        $allowedPatterns = array_values(array_filter(array_map('trim', $items), static fn (string $v): bool => $v !== ''));
         if ($allowedPatterns === []) {
             return null;
         }
@@ -1231,7 +1231,7 @@ class VidPlyProcessor implements DataProcessorInterface
 
         $existingClass = trim((string)$svg->getAttribute('class'));
         $parts = preg_split('/\s+/', $existingClass) ?: [];
-        $parts = array_values(array_filter($parts, static fn(string $c): bool => $c !== '' && $c !== 'vidply-play-overlay'));
+        $parts = array_values(array_filter($parts, static fn (string $c): bool => $c !== '' && $c !== 'vidply-play-overlay'));
         $parts[] = 'mpc-vidply-custom-play-icon';
         $svg->setAttribute('class', implode(' ', array_values(array_unique($parts))));
         $svg->setAttribute('aria-hidden', 'true');

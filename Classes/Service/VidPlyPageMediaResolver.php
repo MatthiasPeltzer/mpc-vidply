@@ -363,7 +363,7 @@ final class VidPlyPageMediaResolver
             ->executeQuery()
             ->fetchAllAssociative();
 
-        return array_values(array_filter($rows, static fn(array $row): bool => $row !== []));
+        return array_values(array_filter($rows, static fn (array $row): bool => $row !== []));
     }
 
     /**

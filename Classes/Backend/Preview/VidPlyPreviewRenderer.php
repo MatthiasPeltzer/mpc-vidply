@@ -62,8 +62,8 @@ final class VidPlyPreviewRenderer extends StandardContentPreviewRenderer impleme
         }
 
         $mediaUids = array_values(array_filter(
-            array_map(static fn(array $row): int => (int)($row['uid'] ?? 0), $mediaItems),
-            static fn(int $uid): bool => $uid > 0
+            array_map(static fn (array $row): int => (int)($row['uid'] ?? 0), $mediaItems),
+            static fn (int $uid): bool => $uid > 0
         ));
         $this->prefetchFileReferences($mediaUids);
 

@@ -101,9 +101,6 @@ final class MediaOEmbedMetadataServiceTest extends TestCase
      */
     private function invokePrivateMethod(object $object, string $methodName, array $arguments): mixed
     {
-        $method = new \ReflectionMethod($object, $methodName);
-        $method->setAccessible(true);
-
-        return $method->invoke($object, ...$arguments);
+        return (new \ReflectionMethod($object, $methodName))->invoke($object, ...$arguments);
     }
 }

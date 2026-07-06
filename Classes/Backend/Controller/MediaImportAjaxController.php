@@ -14,7 +14,7 @@ use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Resource\DefaultUploadFolderResolver;
-use TYPO3\CMS\Core\Resource\File;
+use TYPO3\CMS\Core\Resource\Folder;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 
 #[AsController]
@@ -57,7 +57,7 @@ final readonly class MediaImportAjaxController
             $tableName,
             'media_file'
         );
-        if (!$targetFolder instanceof \TYPO3\CMS\Core\Resource\Folder) {
+        if (!$targetFolder instanceof Folder) {
             return new JsonResponse(['success' => false, 'errorMessage' => 'Could not resolve an upload folder for this record.']);
         }
 

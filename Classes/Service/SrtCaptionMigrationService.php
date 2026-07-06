@@ -135,7 +135,7 @@ final class SrtCaptionMigrationService
      */
     public function convertForMediaRecords(array $mediaUids, bool $dryRun = false): MigrationBatchResult
     {
-        $mediaUids = array_values(array_filter(array_map('intval', $mediaUids), static fn(int $uid): bool => $uid > 0));
+        $mediaUids = array_values(array_filter(array_map('intval', $mediaUids), static fn (int $uid): bool => $uid > 0));
         if ($mediaUids === []) {
             return new MigrationBatchResult([]);
         }

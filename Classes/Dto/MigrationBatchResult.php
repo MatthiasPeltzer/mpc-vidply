@@ -17,7 +17,7 @@ final readonly class MigrationBatchResult
     {
         return count(array_filter(
             $this->results,
-            static fn(FileConversionResult $result): bool => $result->status === $status
+            static fn (FileConversionResult $result): bool => $result->status === $status
         ));
     }
 

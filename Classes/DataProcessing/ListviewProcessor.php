@@ -93,8 +93,8 @@ final class ListviewProcessor implements DataProcessorInterface
             $mediaRecords = $this->mediaResolver->resolveMediaRecordsForRow($row, $languageId);
 
             $mediaUids = array_values(array_filter(
-                array_map(static fn(array $m): int => (int)($m['uid'] ?? 0), $mediaRecords),
-                static fn(int $uid): bool => $uid > 0
+                array_map(static fn (array $m): int => (int)($m['uid'] ?? 0), $mediaRecords),
+                static fn (int $uid): bool => $uid > 0
             ));
             $posterRefsByMediaUid = $this->prefetchPosterReferences($mediaUids);
             $categoryMap = $this->fetchCategoriesByForeignMediaUids(
@@ -254,7 +254,7 @@ final class ListviewProcessor implements DataProcessorInterface
         $list = array_values(
             array_filter(
                 $list,
-                static fn(array $c): bool => trim((string)($c['title'] ?? '')) !== ''
+                static fn (array $c): bool => trim((string)($c['title'] ?? '')) !== ''
             )
         );
         return $list;
@@ -267,8 +267,8 @@ final class ListviewProcessor implements DataProcessorInterface
     private function fetchCategoriesByForeignMediaUids(array $foreignMediaUids, int $languageId): array
     {
         $foreignMediaUids = array_values(array_filter(
-            array_map(static fn(int|string $v): int => (int)$v, $foreignMediaUids),
-            static fn(int $u): bool => $u > 0
+            array_map(static fn (int|string $v): int => (int)$v, $foreignMediaUids),
+            static fn (int $u): bool => $u > 0
         ));
         if ($foreignMediaUids === []) {
             return [];

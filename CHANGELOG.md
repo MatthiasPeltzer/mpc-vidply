@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Adopt TYPO3 coding standards (`typo3/coding-standards`): `.php-cs-fixer.dist.php`, `.editorconfig`, and `composer cs` / `composer cs:fix` scripts.
+- Declare `extra.typo3/cms.Package.providesPackages` in `composer.json` for TYPO3 v14.3 metadata.
+- Enable SQLite for functional tests and switch PHP-CS-Fixer to `@PER-CS1x0`.
+
+### Fixed
+- Coding standards in `MediaImportAjaxController`.
+
+### Tests
+- Remove obsolete `ReflectionMethod::setAccessible()` call in `MediaOEmbedMetadataServiceTest` (deprecated in PHP 8.5).
 
 ## [1.2.15] - 2026-07-04
 - VidPly in Vue sliders/galleries: re-scan slide HTML after Swiper mounts (`window.VidPlyInit.scan`),

@@ -239,8 +239,8 @@ final class ListviewPreviewRenderer extends StandardContentPreviewRenderer
         }
 
         $mediaUids = array_values(array_filter(
-            array_map(static fn(array $m): int => (int)($m['uid'] ?? 0), $mediaRecords),
-            static fn(int $u): bool => $u > 0
+            array_map(static fn (array $m): int => (int)($m['uid'] ?? 0), $mediaRecords),
+            static fn (int $u): bool => $u > 0
         ));
         $posterRefsByMediaUid = $this->prefetchPosterReferences($mediaUids);
 
@@ -343,12 +343,12 @@ final class ListviewPreviewRenderer extends StandardContentPreviewRenderer
         if ($sortBy === 'title_asc') {
             usort(
                 $mediaRecords,
-                static fn(array $a, array $b): int => strcasecmp((string)($a['title'] ?? ''), (string)($b['title'] ?? ''))
+                static fn (array $a, array $b): int => strcasecmp((string)($a['title'] ?? ''), (string)($b['title'] ?? ''))
             );
         } elseif ($sortBy === 'crdate_desc') {
             usort(
                 $mediaRecords,
-                static fn(array $a, array $b): int => (int)($b['crdate'] ?? 0) <=> (int)($a['crdate'] ?? 0)
+                static fn (array $a, array $b): int => (int)($b['crdate'] ?? 0) <=> (int)($a['crdate'] ?? 0)
             );
         }
 
@@ -372,7 +372,7 @@ final class ListviewPreviewRenderer extends StandardContentPreviewRenderer
             ->executeQuery()
             ->fetchFirstColumn();
 
-        return array_values(array_unique(array_map(static fn(int|string $v): int => (int)$v, $uids)));
+        return array_values(array_unique(array_map(static fn (int|string $v): int => (int)$v, $uids)));
     }
 
     /**

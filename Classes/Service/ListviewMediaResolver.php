@@ -55,7 +55,7 @@ final class ListviewMediaResolver
         if ($languageId <= 0) {
             return array_values(array_filter(
                 $rows,
-                static fn(array $row): bool => (int)($row['sys_language_uid'] ?? 0) <= 0
+                static fn (array $row): bool => (int)($row['sys_language_uid'] ?? 0) <= 0
             ));
         }
 
@@ -105,12 +105,12 @@ final class ListviewMediaResolver
         if ($sortBy === 'title_asc') {
             usort(
                 $mediaRecords,
-                static fn(array $a, array $b): int => strcasecmp((string)($a['title'] ?? ''), (string)($b['title'] ?? ''))
+                static fn (array $a, array $b): int => strcasecmp((string)($a['title'] ?? ''), (string)($b['title'] ?? ''))
             );
         } elseif ($sortBy === 'crdate_desc') {
             usort(
                 $mediaRecords,
-                static fn(array $a, array $b): int => (int)($b['crdate'] ?? 0) <=> (int)($a['crdate'] ?? 0)
+                static fn (array $a, array $b): int => (int)($b['crdate'] ?? 0) <=> (int)($a['crdate'] ?? 0)
             );
         }
 
@@ -187,6 +187,6 @@ final class ListviewMediaResolver
             ->executeQuery()
             ->fetchFirstColumn();
 
-        return array_values(array_unique(array_map(static fn(int|string $v): int => (int)$v, $uids)));
+        return array_values(array_unique(array_map(static fn (int|string $v): int => (int)$v, $uids)));
     }
 }

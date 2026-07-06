@@ -55,19 +55,16 @@
     "test:functional": "phpunit --colors=always -c Build/FunctionalTests.xml",
     "test:coverage": "phpunit --colors=always -c phpunit.xml.dist --coverage-text --coverage-html .Build/coverage",
     "phpstan": "phpstan analyse -c phpstan.neon.dist --memory-limit=512M",
-    "cs": [
-      "@putenv PHP_CS_FIXER_IGNORE_ENV=1",
-      "php .Build/bin/php-cs-fixer fix --dry-run -v --config .php-cs-fixer.dist.php"
-    ],
-    "cs:fix": [
-      "@putenv PHP_CS_FIXER_IGNORE_ENV=1",
-      "php .Build/bin/php-cs-fixer fix -v --config .php-cs-fixer.dist.php"
-    ]
+    "cs": "php .Build/bin/php-cs-fixer fix --dry-run -v --config .php-cs-fixer.dist.php",
+    "cs:fix": "php .Build/bin/php-cs-fixer fix -v --config .php-cs-fixer.dist.php"
   },
   "extra": {
     "typo3/cms": {
       "extension-key": "mpc_vidply",
-      "web-dir": ".Build/Public"
+      "web-dir": ".Build/Public",
+      "Package": {
+        "providesPackages": {}
+      }
     }
   }
 }

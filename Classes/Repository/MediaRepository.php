@@ -132,10 +132,10 @@ final class MediaRepository
     private function extractPositiveUids(array $rows, string $column): array
     {
         $uids = array_values(array_unique(array_map(
-            static fn(array $row): int => (int)($row[$column] ?? 0),
+            static fn (array $row): int => (int)($row[$column] ?? 0),
             $rows
         )));
-        return array_values(array_filter($uids, static fn(int $v): bool => $v > 0));
+        return array_values(array_filter($uids, static fn (int $v): bool => $v > 0));
     }
 
     /**
@@ -206,7 +206,7 @@ final class MediaRepository
 
         $missingUids = array_values(array_filter(
             $defaultUids,
-            static fn(int $uid): bool => !isset($defaultByUid[$uid])
+            static fn (int $uid): bool => !isset($defaultByUid[$uid])
         ));
 
         if ($missingUids !== []) {
@@ -532,8 +532,8 @@ final class MediaRepository
         string $sortBy = 'sorting'
     ): array {
         $categoryUids = array_values(array_filter(
-            array_map(static fn(int|string $v): int => (int)$v, $categoryUids),
-            static fn(int $v): bool => $v > 0
+            array_map(static fn (int|string $v): int => (int)$v, $categoryUids),
+            static fn (int $v): bool => $v > 0
         ));
         if ($categoryUids === [] || $limit <= 0) {
             return [];
@@ -591,7 +591,7 @@ final class MediaRepository
         }
 
         $uids = array_values(array_unique(array_map(
-            static fn(array $row): int => (int)($row['uid'] ?? 0),
+            static fn (array $row): int => (int)($row['uid'] ?? 0),
             $rows
         )));
 
@@ -639,7 +639,7 @@ final class MediaRepository
             ->fetchFirstColumn();
 
         $categoryUids = array_values(array_unique(array_map(
-            static fn(int|string $v): int => (int)$v,
+            static fn (int|string $v): int => (int)$v,
             $categoryUids
         )));
         if ($categoryUids === []) {
@@ -650,7 +650,7 @@ final class MediaRepository
 
         return array_values(array_filter(
             $records,
-            static fn(array $row): bool => (int)($row['uid'] ?? 0) !== $mediaUid
+            static fn (array $row): bool => (int)($row['uid'] ?? 0) !== $mediaUid
                 && (int)($row['l10n_parent'] ?? 0) !== $mediaUid
         ));
     }
