@@ -13,6 +13,7 @@ use TYPO3\CMS\Core\Resource\Exception\ResourceDoesNotExistException;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Resource\FileRepository;
+use TYPO3\CMS\Core\Resource\MimeTypeDetector;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 
 final class SrtCaptionMigrationService
@@ -27,6 +28,7 @@ final class SrtCaptionMigrationService
         private readonly ResourceFactory $resourceFactory,
         private readonly FileRepository $fileRepository,
         private readonly ConnectionPool $connectionPool,
+        private readonly MimeTypeDetector $mimeTypeDetector,
     ) {}
 
     /**
@@ -273,16 +275,39 @@ final class SrtCaptionMigrationService
 
     private function replaceFileWithVtt(File $file, string $vttContent): string
     {
-        $storage = $file->getStorage();
-
         $file->setContents($vttContent);
         $targetName = $this->buildVttFileName($file->getName());
         if ($file->getName() === $targetName) {
             return $targetName;
         }
 
+        $this->alignMimeTypeWithExtension($file, $targetName);
+
         $renamedFile = $file->rename($targetName, DuplicationBehavior::RENAME);
         return $renamedFile->getName();
+    }
+
+    /**
+     * The file still carries the MIME type detected for the former ".srt" file
+     * (e.g. "application/x-subrip"). TYPO3's resource consistency check rejects
+     * renaming it to ".vtt" unless the MIME type matches the target extension.
+     * Since the contents are now valid WebVTT, align the MIME type with the new
+     * extension before renaming. After the rename TYPO3 re-indexes the file, so
+     * the persisted MIME type is refreshed from the actual contents anyway.
+     */
+    private function alignMimeTypeWithExtension(File $file, string $targetFileName): void
+    {
+        $extension = strtolower(pathinfo($targetFileName, PATHINFO_EXTENSION));
+        if ($extension === '') {
+            return;
+        }
+
+        $expectedMimeTypes = $this->mimeTypeDetector->getMimeTypesForFileExtension($extension);
+        if ($expectedMimeTypes === [] || in_array($file->getMimeType(), $expectedMimeTypes, true)) {
+            return;
+        }
+
+        $file->updateProperties(['mime_type' => (string)reset($expectedMimeTypes)]);
     }
 
     /**

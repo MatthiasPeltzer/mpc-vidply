@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Coding standards in `MediaImportAjaxController`.
+- SRT → VTT caption migration failing with "Resource consistency check failed" on
+  current TYPO3 13/14: align the file's MIME type with the `.vtt` extension before
+  renaming so TYPO3's resource consistency check accepts the converted subtitle.
 
 ### Tests
 - Remove obsolete `ReflectionMethod::setAccessible()` call in `MediaOEmbedMetadataServiceTest` (deprecated in PHP 8.5).
