@@ -95,7 +95,7 @@ final class MediaRepository
     private function fetchMmRelations(int $contentUid): array
     {
         $qb = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_content_media_mm');
-        return $qb
+        $rows = $qb
             ->select('uid_foreign', 'sorting')
             ->from('tx_mpcvidply_content_media_mm')
             ->where(
@@ -104,6 +104,25 @@ final class MediaRepository
             ->orderBy('sorting', 'ASC')
             ->executeQuery()
             ->fetchAllAssociative();
+
+        return $this->normalizeMmRelationRows($rows);
+    }
+
+    /**
+     * @param list<array<string, mixed>> $rows
+     * @return list<array{uid_foreign: int|string, sorting: int|string}>
+     */
+    private function normalizeMmRelationRows(array $rows): array
+    {
+        $result = [];
+        foreach ($rows as $row) {
+            $result[] = [
+                'uid_foreign' => $row['uid_foreign'] ?? 0,
+                'sorting' => $row['sorting'] ?? 0,
+            ];
+        }
+
+        return $result;
     }
 
     /**
@@ -242,7 +261,13 @@ final class MediaRepository
         return $map;
     }
 
-    /** @return list<array<string, mixed>> */
+    /**
+     * @param list<array{uid_foreign: int|string, sorting: int|string}> $mmRelations
+     * @param array<int, array<string, mixed>> $referencedByUid
+     * @param array<int, array<string, mixed>> $defaultByUid
+     * @param array<int, array<string, mixed>> $translatedByParent
+     * @return list<array<string, mixed>>
+     */
     private function assembleOrderedResult(
         array $mmRelations,
         array $referencedByUid,
@@ -309,6 +334,12 @@ final class MediaRepository
         return $conditions;
     }
 
+    /**
+     * @param array<string, mixed> $referenced
+     * @param array<int, array<string, mixed>> $defaultByUid
+     * @param array<int, array<string, mixed>> $translatedByParent
+     * @return array<string, mixed>|null
+     */
     private function selectOverlayRecord(
         array $referenced,
         int $referencedLanguageId,
@@ -346,6 +377,8 @@ final class MediaRepository
     /**
      * Find a single media record by UID with language overlay resolution.
      * Accepts both default-language and translated UIDs.
+     *
+     * @return array<string, mixed>|null
      */
     public function findByUid(int $uid, int $languageId = 0): ?array
     {
@@ -396,6 +429,8 @@ final class MediaRepository
 
     /**
      * Find a single media record by its SEO slug (language-aware).
+     *
+     * @return array<string, mixed>|null
      */
     public function findBySlug(string $slug, int $languageId = 0): ?array
     {
@@ -441,7 +476,7 @@ final class MediaRepository
         }
 
         $qb = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_listview_row_media_mm');
-        $mmRelations = $qb
+        $mmRelations = $this->normalizeMmRelationRows($qb
             ->select('uid_foreign', 'sorting')
             ->from('tx_mpcvidply_listview_row_media_mm')
             ->where(
@@ -449,7 +484,7 @@ final class MediaRepository
             )
             ->orderBy('sorting', 'ASC')
             ->executeQuery()
-            ->fetchAllAssociative();
+            ->fetchAllAssociative());
 
         if ($mmRelations === []) {
             return [];
@@ -620,6 +655,9 @@ final class MediaRepository
         ));
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     private function fetchSingleDefaultRow(int $defaultUid): ?array
     {
         if ($defaultUid <= 0) {

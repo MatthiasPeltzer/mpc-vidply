@@ -21,6 +21,9 @@ final readonly class PrivacySettingsLabel
         $this->siteFinder = $siteFinder ?? GeneralUtility::makeInstance(SiteFinder::class);
     }
 
+    /**
+     * @param array<string, mixed> $parameters
+     */
     public function getLabel(array &$parameters): void
     {
         $row = $parameters['row'];

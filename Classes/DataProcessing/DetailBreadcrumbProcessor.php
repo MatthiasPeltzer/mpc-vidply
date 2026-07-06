@@ -30,6 +30,12 @@ final class DetailBreadcrumbProcessor implements DataProcessorInterface
         $this->resolver = $resolver ?? GeneralUtility::makeInstance(DetailRequestResolver::class);
     }
 
+    /**
+     * @param array<string, mixed> $contentObjectConfiguration
+     * @param array<string, mixed> $processorConfiguration
+     * @param array<string, mixed> $processedData
+     * @return array<string, mixed>
+     */
     public function process(
         ContentObjectRenderer $cObj,
         array $contentObjectConfiguration,
@@ -51,8 +57,10 @@ final class DetailBreadcrumbProcessor implements DataProcessorInterface
         $titleKey = (string)($processorConfiguration['titleAs'] ?? 'vidplyDetailTitle');
 
         if (isset($processedData[$breadcrumbKey]) && is_array($processedData[$breadcrumbKey])) {
+            /** @var list<array<string, mixed>> $breadcrumbItems */
+            $breadcrumbItems = array_values($processedData[$breadcrumbKey]);
             $processedData[$breadcrumbKey] = $this->overrideCurrentItem(
-                $processedData[$breadcrumbKey],
+                $breadcrumbItems,
                 $title
             );
         }

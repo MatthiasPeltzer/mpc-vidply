@@ -9,6 +9,9 @@ use TYPO3\CMS\Core\Page\JavaScriptModuleInstruction;
 
 final class MediaUrlImportElement extends AbstractFormElement
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function render(): array
     {
         $resultArray = $this->initializeResultArray();

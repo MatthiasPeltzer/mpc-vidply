@@ -15,7 +15,7 @@ $autoloadCandidates = [
     __DIR__ . '/../vendor/autoload.php',
     // Standalone with a `.Build` web layout (typo3/cms-composer-installers).
     __DIR__ . '/../.Build/vendor/autoload.php',
-    // mpcore monorepo: extension lives at <root>/libs/mpc-vidply.
+    // mpcore monorepo: extension lives at mpcore/packages/mpc-vidply.
     __DIR__ . '/../../../vendor/autoload.php',
 ];
 

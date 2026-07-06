@@ -35,6 +35,12 @@ final class VidPlyStructuredDataProcessor implements DataProcessorInterface
         $this->jsonLdBuilder = $jsonLdBuilder ?? GeneralUtility::makeInstance(MediaObjectJsonLdBuilder::class);
     }
 
+    /**
+     * @param array<string, mixed> $contentObjectConfiguration
+     * @param array<string, mixed> $processorConfiguration
+     * @param array<string, mixed> $processedData
+     * @return array<string, mixed>
+     */
     public function process(
         ContentObjectRenderer $cObj,
         array $contentObjectConfiguration,
@@ -80,7 +86,13 @@ final class VidPlyStructuredDataProcessor implements DataProcessorInterface
      *     mode: 'single'|'list',
      *     pageUrl: string,
      *     pageName: string,
-     *     items: list<array<string, mixed>>
+     *     items: list<array{
+     *         media: array<string, mixed>,
+     *         vidply: array<string, mixed>,
+     *         pageUrl: string,
+     *         itemUrl: string,
+     *         posterUrl: string|null
+     *     }>
      * } $structuredData
      * @return array<string, mixed>|null
      */
@@ -125,10 +137,12 @@ final class VidPlyStructuredDataProcessor implements DataProcessorInterface
                 $payload = json_decode($jsonLd, true, 512, JSON_THROW_ON_ERROR);
                 $graph = is_array($payload) ? ($payload['@graph'] ?? null) : null;
                 if (is_array($graph)) {
-                    $graph[] = $schemaNode;
-                    $graph = $this->linkWebPageToMainEntity($graph, (string)($schemaNode['@id'] ?? ''));
+                    /** @var list<array<string, mixed>> $graphList */
+                    $graphList = array_values($graph);
+                    $graphList[] = $schemaNode;
+                    $graphList = $this->linkWebPageToMainEntity($graphList, (string)($schemaNode['@id'] ?? ''));
 
-                    $payload['@graph'] = $graph;
+                    $payload['@graph'] = $graphList;
                     $processedData['structuredDataJsonLd'] = json_encode(
                         $payload,
                         MediaObjectJsonLdBuilder::JSON_ENCODE_FLAGS

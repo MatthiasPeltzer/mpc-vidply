@@ -38,7 +38,7 @@ final readonly class PrivacySettingsService
      * @param string $service Service name: 'youtube', 'vimeo', or 'soundcloud'
      * @param int $languageId Language ID (0 for default language)
      * @param ServerRequestInterface|null $request Current request for language resolution (avoids $GLOBALS access)
-     * @return array Array with keys: headline, intro_text, outro_text, policy_link, link_text, button_label
+     * @return array<string, string>
      */
     public function getSettingsForService(string $service, int $languageId = 0, ?ServerRequestInterface $request = null): array
     {
@@ -93,7 +93,7 @@ final readonly class PrivacySettingsService
 
     /**
      * @param int $languageId Language ID (0 for default language)
-     * @return array|null Settings array or null if not found
+     * @return array<string, mixed>|null Settings array or null if not found
      */
     public function getAllSettings(int $languageId = 0): ?array
     {
@@ -132,6 +132,9 @@ final readonly class PrivacySettingsService
         return $settings !== false ? $settings : null;
     }
 
+    /**
+     * @return array<string, string>
+     */
     private function getFallbackSettings(string $service, int $languageId = 0, ?ServerRequestInterface $request = null): array
     {
         return [

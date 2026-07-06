@@ -17,6 +17,8 @@ use TYPO3\CMS\Core\Resource\Exception\ResourceDoesNotExistException;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Resource\FileRepository;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
+use TYPO3\CMS\Core\SystemResource\Publishing\SystemResourcePublisherInterface;
+use TYPO3\CMS\Core\SystemResource\SystemResourceFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -31,6 +33,16 @@ use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
  * Uses constructor injection with fallback for TYPO3 13/14 compatibility.
  * DataProcessors are instantiated via GeneralUtility::makeInstance() from TypoScript,
  * so we need optional parameters with service locator fallback.
+ *
+ * @phpstan-type TrackResult array{
+ *     tracks: list<array<string, mixed>>,
+ *     mediaType: ?string,
+ *     hasExternalMedia: bool,
+ *     hasLocalMedia: bool,
+ *     externalServiceTypes: list<string>,
+ *     isPlaylist: bool,
+ *     isMixedPlaylist: bool
+ * }
  */
 class VidPlyProcessor implements DataProcessorInterface
 {
@@ -84,6 +96,12 @@ class VidPlyProcessor implements DataProcessorInterface
         $this->mediaRepository = $mediaRepository ?? GeneralUtility::makeInstance(MediaRepository::class);
     }
 
+    /**
+     * @param array<string, mixed> $contentObjectConfiguration
+     * @param array<string, mixed> $processorConfiguration
+     * @param array<string, mixed> $processedData
+     * @return array<string, mixed>
+     */
     public function process(
         ContentObjectRenderer $cObj,
         array $contentObjectConfiguration,
@@ -230,6 +248,10 @@ class VidPlyProcessor implements DataProcessorInterface
         $this->describedSourceByFileReferenceUid = [];
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
     private function buildPlayerOptions(array $data): array
     {
         $bits = (int)($data['tx_mpcvidply_options'] ?? 0);
@@ -259,6 +281,9 @@ class VidPlyProcessor implements DataProcessorInterface
      * Resolve the frontend language ID from the request or content element.
      * Uses toArray() to avoid extension scanner false positive on getLanguageId().
      */
+    /**
+     * @param array<string, mixed> $data
+     */
     private function resolveLanguageId(ServerRequestInterface $request, array $data): int
     {
         $languageId = 0;
@@ -274,6 +299,9 @@ class VidPlyProcessor implements DataProcessorInterface
         return $languageId;
     }
 
+    /**
+     * @param list<array<string, mixed>> $mediaRecords
+     */
     private function prefetchRelatedFiles(array $mediaRecords): void
     {
         $mediaUids = array_values(array_unique(array_map(
@@ -298,15 +326,8 @@ class VidPlyProcessor implements DataProcessorInterface
     }
 
     /**
-     * @return array{
-     *     tracks: list<array>,
-     *     mediaType: ?string,
-     *     hasExternalMedia: bool,
-     *     hasLocalMedia: bool,
-     *     externalServiceTypes: list<string>,
-     *     isPlaylist: bool,
-     *     isMixedPlaylist: bool
-     * }
+     * @param list<array<string, mixed>> $mediaRecords
+     * @return TrackResult
      */
     private function buildTracksResult(array $mediaRecords, string $siteDefaultLanguageCode = 'en'): array
     {
@@ -354,6 +375,10 @@ class VidPlyProcessor implements DataProcessorInterface
 
     /**
      * Apply options that depend on the built tracks (transcript, per-media UI overrides).
+     *
+     * @param array<string, mixed> $playerOptions
+     * @param TrackResult $trackResult
+     * @param list<array<string, mixed>> $mediaRecords
      */
     private function applyTrackDependentOptions(array &$playerOptions, array $trackResult, array $mediaRecords): void
     {
@@ -438,7 +463,9 @@ class VidPlyProcessor implements DataProcessorInterface
     }
 
     /**
-     * @return array{playlistData: ?array, optionOverrides: array}
+     * @param TrackResult $trackResult
+     * @param array<string, mixed> $playerOptions
+     * @return array{playlistData: ?array<string, mixed>, optionOverrides: array<string, mixed>}
      */
     private function buildPlaylistData(array $trackResult, array $playerOptions): array
     {
@@ -476,19 +503,8 @@ class VidPlyProcessor implements DataProcessorInterface
     /**
      * For single-item mode, extract template-level variables from the first track.
      *
-     * @return array{
-     *     trackData: array{
-     *         videoUrl: string,
-     *         poster: ?string,
-     *         mediaFiles: list<array>,
-     *         sources: ?list<array>,
-     *         captions: list<array>,
-     *         chapters: list<array>,
-     *         audioDescriptionTracks: list<array>,
-     *         signLanguage: list<array>
-     *     },
-     *     optionOverrides: array
-     * }
+     * @param TrackResult $trackResult
+     * @return array{trackData: array<string, mixed>, optionOverrides: array<string, mixed>}
      */
     private function extractSingleTrackData(array $trackResult, string $siteDefaultLanguageCode = 'en'): array
     {
@@ -638,6 +654,9 @@ class VidPlyProcessor implements DataProcessorInterface
         return ['trackData' => $result, 'optionOverrides' => $optionOverrides];
     }
 
+    /**
+     * @param TrackResult $trackResult
+     */
     private function resolveServiceType(array $trackResult): ?string
     {
         if ($trackResult['isPlaylist'] || $trackResult['tracks'] === []) {
@@ -650,6 +669,10 @@ class VidPlyProcessor implements DataProcessorInterface
         return ($mediaType !== null && $mediaType->isExternal()) ? $mediaType->value : null;
     }
 
+    /**
+     * @param TrackResult $trackResult
+     * @return array<string, array<string, string>>
+     */
     private function loadPrivacySettings(?string $serviceType, array $trackResult, int $languageId, ServerRequestInterface $request): array
     {
         $privacySettings = [];
@@ -753,6 +776,7 @@ class VidPlyProcessor implements DataProcessorInterface
     }
 
     /**
+     * @param TrackResult $trackResult
      * @return array{needsPrivacyLayer: bool, needsVidPlay: bool, needsPlaylist: bool, needsHLS: bool, needsDASH: bool}
      */
     private function resolveAssetFlags(?string $serviceType, array $trackResult): array
@@ -794,6 +818,9 @@ class VidPlyProcessor implements DataProcessorInterface
     /**
      * Derive effective media type for template rendering (<audio> vs <video>).
      * Handles stream types (e.g. audio HLS) that should not render a <video> element.
+     */
+    /**
+     * @param TrackResult $trackResult
      */
     private function resolveEffectiveMediaType(array $trackResult): string
     {
@@ -840,6 +867,9 @@ class VidPlyProcessor implements DataProcessorInterface
         return $resolvedMediaType;
     }
 
+    /**
+     * @param TrackResult $trackResult
+     */
     private function determineRenderMode(?string $serviceType, array $trackResult, string $resolvedMediaType): RenderMode
     {
         if ($trackResult['tracks'] === []) {
@@ -857,6 +887,24 @@ class VidPlyProcessor implements DataProcessorInterface
         return $resolvedMediaType === 'audio' ? RenderMode::Audio : RenderMode::Video;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $playerOptions
+     * @param TrackResult $trackResult
+     * @param array<string, mixed> $singleTrackData
+     * @param array<string, mixed>|null $playlistData
+     * @param array<string, array<string, string>> $privacySettings
+     * @param array{
+     *     playIconUrl: ?string,
+     *     playIconInlineSvg: ?string,
+     *     playButtonPosition: string,
+     *     useCssIcons: bool,
+     *     theme: string,
+     *     themeSyncEnabled: bool
+     * } $uiConfig
+     * @param array{needsPrivacyLayer: bool, needsVidPlay: bool, needsPlaylist: bool, needsHLS: bool, needsDASH: bool} $assetFlags
+     * @return array<string, mixed>
+     */
     private function assembleTemplateData(
         array $data,
         array $playerOptions,
@@ -1225,6 +1273,10 @@ class VidPlyProcessor implements DataProcessorInterface
     // Single media record → track array
     // -----------------------------------------------------------------------
 
+    /**
+     * @param array<string, mixed> $mediaRecord
+     * @return array<string, mixed>|null
+     */
     protected function processMediaRecord(array $mediaRecord, string $siteDefaultLanguageCode = 'en'): ?array
     {
         $mediaType = MediaType::tryFrom((string)($mediaRecord['media_type'] ?? ''));
@@ -1251,6 +1303,10 @@ class VidPlyProcessor implements DataProcessorInterface
         return $track;
     }
 
+    /**
+     * @param array<string, mixed> $mediaRecord
+     * @return array<string, mixed>
+     */
     private function buildBaseTrackData(array $mediaRecord): array
     {
         $track = [
@@ -1286,6 +1342,9 @@ class VidPlyProcessor implements DataProcessorInterface
         return $track;
     }
 
+    /**
+     * @param array<string, mixed> $track
+     */
     private function resolveDownloadUrl(array $track): ?string
     {
         $progressiveTypes = ['video/mp4', 'video/webm', 'audio/mpeg', 'audio/ogg'];
@@ -1386,6 +1445,10 @@ class VidPlyProcessor implements DataProcessorInterface
         return $result;
     }
 
+    /**
+     * @param array<string, mixed> $track
+     * @param array<string, mixed> $mediaRecord
+     */
     private function enrichTrackWithAccessibilityData(array &$track, int $mediaUid, array $mediaRecord, string $siteDefaultLanguageCode = 'en'): void
     {
         $posterFiles = $this->getFileReferencesForMedia($mediaUid, 'poster');
@@ -1487,12 +1550,11 @@ class VidPlyProcessor implements DataProcessorInterface
      */
     private function resolvePublicResourceWebPath(string $resourcePath): string
     {
-        if (class_exists(\TYPO3\CMS\Core\Resource\SystemResourceFactory::class)) {
+        if (class_exists(SystemResourceFactory::class)) {
             try {
-                $factory = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Resource\SystemResourceFactory::class);
-                $publisher = GeneralUtility::makeInstance(
-                    \TYPO3\CMS\Core\Resource\SystemResourcePublisherInterface::class
-                );
+                $factory = GeneralUtility::makeInstance(SystemResourceFactory::class);
+                $publisher = GeneralUtility::makeInstance(SystemResourcePublisherInterface::class);
+
                 return (string)$publisher->generateUri(
                     $factory->createPublicResource($resourcePath),
                     null

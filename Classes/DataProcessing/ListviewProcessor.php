@@ -41,6 +41,12 @@ final class ListviewProcessor implements DataProcessorInterface
         $this->mediaResolver = $mediaResolver ?? GeneralUtility::makeInstance(ListviewMediaResolver::class);
     }
 
+    /**
+     * @param array<string, mixed> $contentObjectConfiguration
+     * @param array<string, mixed> $processorConfiguration
+     * @param array<string, mixed> $processedData
+     * @return array<string, mixed>
+     */
     public function process(
         ContentObjectRenderer $cObj,
         array $contentObjectConfiguration,
@@ -69,6 +75,7 @@ final class ListviewProcessor implements DataProcessorInterface
     }
 
     /**
+     * @param list<array<string, mixed>> $rows
      * @return list<array<string, mixed>>
      */
     private function assembleRows(array $rows, ContentObjectRenderer $cObj, int $languageId, int $detailPageUid): array
@@ -149,9 +156,11 @@ final class ListviewProcessor implements DataProcessorInterface
     }
 
     /**
+     * @param array<string, mixed> $media
      * @param array<int, FileReference[]> $posterRefsByMediaUid
      * @param array<int, list<array{uid: int, title: string}>> $categoryMap Indexed by
      *        `tx_mpcvidply_media` uid (relation `sys_category_record_mm.uid_foreign`).
+     * @return array<string, mixed>|null
      */
     private function buildCardData(
         array $media,
@@ -220,6 +229,9 @@ final class ListviewProcessor implements DataProcessorInterface
         return array_values(array_unique($ids, SORT_NUMERIC));
     }
 
+    /**
+     * @param array<string, mixed> $media
+     */
     private function resolveCategoryMmForeignMediaUid(array $media): int
     {
         $l10nParent = (int)($media['l10n_parent'] ?? 0);
@@ -228,6 +240,7 @@ final class ListviewProcessor implements DataProcessorInterface
     }
 
     /**
+     * @param array<string, mixed> $media
      * @param array<int, list<array{uid: int, title: string}>> $categoryMap
      * @return list<array{uid: int, title: string}>
      */
@@ -452,6 +465,9 @@ final class ListviewProcessor implements DataProcessorInterface
         return $result;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     private function resolveLanguageId(ServerRequestInterface $request, array $data): int
     {
         $language = $request->getAttribute('language');

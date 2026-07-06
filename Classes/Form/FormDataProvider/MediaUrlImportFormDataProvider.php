@@ -16,6 +16,10 @@ final class MediaUrlImportFormDataProvider implements FormDataProviderInterface
         private readonly MediaUrlImportSessionService $sessionService,
     ) {}
 
+    /**
+     * @param array<string, mixed> $result
+     * @return array<string, mixed>
+     */
     public function addData(array $result): array
     {
         if (($result['tableName'] ?? '') !== 'tx_mpcvidply_media') {

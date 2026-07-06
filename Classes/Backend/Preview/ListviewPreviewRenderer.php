@@ -39,10 +39,7 @@ final class ListviewPreviewRenderer extends StandardContentPreviewRenderer
 
     public function renderPageModulePreviewContent(GridColumnItem $item): string
     {
-        $record = $item->getRecord();
-        if (is_object($record) && method_exists($record, 'toArray')) {
-            $record = $record->toArray();
-        }
+        $record = $item->getRecord()->toArray();
 
         // The grid / Record payload can omit l18n_parent. Without it we only
         // query parentid = uid and miss rows that hang off the translation
@@ -296,6 +293,7 @@ final class ListviewPreviewRenderer extends StandardContentPreviewRenderer
     /**
      * Truncation / cap notes placed after the media area with the other row meta.
      *
+     * @param array<string, mixed> $row
      * @param list<array<string, mixed>> $mediaRecords
      */
     private function renderListviewRowPreviewHints(array $row, array $mediaRecords, LanguageService $lang): string
@@ -322,6 +320,7 @@ final class ListviewPreviewRenderer extends StandardContentPreviewRenderer
     /**
      * Resolves the same media set as the frontend listview for one row, capped for backend preview.
      *
+     * @param array<string, mixed> $row
      * @return list<array<string, mixed>>
      */
     private function loadMediaForListviewRow(array $row, int $languageId): array

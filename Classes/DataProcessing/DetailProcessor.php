@@ -41,6 +41,12 @@ final class DetailProcessor implements DataProcessorInterface
         $this->resourceFactory = $resourceFactory ?? GeneralUtility::makeInstance(ResourceFactory::class);
     }
 
+    /**
+     * @param array<string, mixed> $contentObjectConfiguration
+     * @param array<string, mixed> $processorConfiguration
+     * @param array<string, mixed> $processedData
+     * @return array<string, mixed>
+     */
     public function process(
         ContentObjectRenderer $cObj,
         array $contentObjectConfiguration,
@@ -93,6 +99,9 @@ final class DetailProcessor implements DataProcessorInterface
         return $processedData;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     private function resolveMediaRecord(ServerRequestInterface $request, int $languageId): ?array
     {
         $queryParams = $request->getQueryParams();
@@ -108,6 +117,7 @@ final class DetailProcessor implements DataProcessorInterface
     }
 
     /**
+     * @param array<string, mixed> $media
      * @return array<string, mixed>
      */
     private function assembleDetailData(array $media, int $languageId): array
@@ -374,6 +384,9 @@ final class DetailProcessor implements DataProcessorInterface
         return sprintf('%d:%02d', $minutes, $secs);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     private function resolveLanguageId(ServerRequestInterface $request, array $data): int
     {
         $language = $request->getAttribute('language');

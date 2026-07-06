@@ -33,7 +33,7 @@ final readonly class MediaImportAjaxController
             return new JsonResponse(['success' => false, 'errorMessage' => 'Access denied.'], 403);
         }
 
-        $body = $request->getParsedBody();
+        $body = $this->getRequestBody($request);
         $url = trim((string)($body['url'] ?? ''));
         $pid = (int)($body['pid'] ?? 0);
         $recordIdentifier = trim((string)($body['recordIdentifier'] ?? ''));
@@ -89,7 +89,7 @@ final readonly class MediaImportAjaxController
             return new JsonResponse(['success' => false, 'errorMessage' => 'Access denied.'], 403);
         }
 
-        $body = $request->getParsedBody();
+        $body = $this->getRequestBody($request);
         $fileUid = (int)($body['fileUid'] ?? 0);
         $currentMediaType = trim((string)($body['currentMediaType'] ?? ''));
         $recordIdentifier = trim((string)($body['recordIdentifier'] ?? ''));
@@ -102,10 +102,6 @@ final readonly class MediaImportAjaxController
         try {
             $file = $this->resourceFactory->getFileObject($fileUid);
         } catch (\Throwable) {
-            return new JsonResponse(['success' => false, 'errorMessage' => 'Media file not found.']);
-        }
-
-        if (!$file instanceof File) {
             return new JsonResponse(['success' => false, 'errorMessage' => 'Media file not found.']);
         }
 
@@ -142,12 +138,17 @@ final readonly class MediaImportAjaxController
 
     private function canAccessStoragePage(int $pid): bool
     {
-        $pageRecord = BackendUtility::getRecord('pages', $pid);
-        if (!is_array($pageRecord)) {
-            return false;
-        }
+        return BackendUtility::readPageAccess($pid, $this->getBackendUser()->getPagePermsClause(1)) !== false;
+    }
 
-        return BackendUtility::readPageAccess($pageRecord, $this->getBackendUser()->getPagePermsClause(1)) !== false;
+    /**
+     * @return array<string, mixed>
+     */
+    private function getRequestBody(ServerRequestInterface $request): array
+    {
+        $body = $request->getParsedBody();
+
+        return is_array($body) ? $body : [];
     }
 
     private function getBackendUser(): BackendUserAuthentication

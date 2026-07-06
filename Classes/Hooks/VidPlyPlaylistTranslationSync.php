@@ -142,6 +142,9 @@ final class VidPlyPlaylistTranslationSync
      * Copy playlist MM rows from the default-language `tt_content` to one or more
      * target `tt_content` uids (local sides). Used for translation saves and localize.
      */
+    /**
+     * @param list<int> $translationUids
+     */
     private function replicateFromParentToTranslationUids(
         int $sourceContentUid,
         array $translationUids,

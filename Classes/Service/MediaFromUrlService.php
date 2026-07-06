@@ -115,10 +115,9 @@ final class MediaFromUrlService
     {
         try {
             $file = $this->onlineMediaHelperRegistry->transformUrlToFile($url, $targetFolder, []);
-            return $file instanceof File ? $file : null;
+            return $file;
         } catch (OnlineMediaAlreadyExistsException $exception) {
-            $existing = $exception->getOnlineMedia();
-            return $existing instanceof File ? $existing : null;
+            return $exception->getOnlineMedia();
         }
     }
 

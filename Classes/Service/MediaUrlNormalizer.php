@@ -133,7 +133,7 @@ final class MediaUrlNormalizer
         }
 
         parse_str((string)$parts['query'], $queryParams);
-        if (!is_array($queryParams) || $queryParams === []) {
+        if ($queryParams === []) {
             return $url;
         }
 

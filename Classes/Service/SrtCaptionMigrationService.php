@@ -14,7 +14,6 @@ use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Resource\FileRepository;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
-use TYPO3\CMS\Core\Resource\ResourceStorage;
 
 final class SrtCaptionMigrationService
 {
@@ -185,9 +184,6 @@ final class SrtCaptionMigrationService
     public function convertFileReference(FileReference $fileReference, bool $dryRun = false): FileConversionResult
     {
         $originalFile = $fileReference->getOriginalFile();
-        if (!$originalFile instanceof File) {
-            return FileConversionResult::skipped('', 'Referenced file is not a regular file.');
-        }
 
         $originalName = $originalFile->getName();
         if ($originalFile->getExtension() !== 'srt') {
@@ -278,9 +274,6 @@ final class SrtCaptionMigrationService
     private function replaceFileWithVtt(File $file, string $vttContent): string
     {
         $storage = $file->getStorage();
-        if (!$storage instanceof ResourceStorage) {
-            throw new \RuntimeException('Unable to access file storage.');
-        }
 
         $file->setContents($vttContent);
         $targetName = $this->buildVttFileName($file->getName());
@@ -292,6 +285,9 @@ final class SrtCaptionMigrationService
         return $renamedFile->getName();
     }
 
+    /**
+     * @return non-empty-string
+     */
     private function buildVttFileName(string $originalName): string
     {
         $baseName = pathinfo($originalName, PATHINFO_FILENAME);

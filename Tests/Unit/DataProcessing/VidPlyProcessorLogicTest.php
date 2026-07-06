@@ -32,6 +32,20 @@ final class VidPlyProcessorLogicTest extends TestCase
         return (new \ReflectionMethod(VidPlyProcessor::class, $method))->invoke($this->subject, ...$args);
     }
 
+    /**
+     * @param array<string, mixed> $playerOptions
+     * @param array<string, mixed> $trackResult
+     * @param list<array<string, mixed>> $mediaRecords
+     */
+    private function invokeApplyTrackDependentOptions(
+        array &$playerOptions,
+        array $trackResult,
+        array $mediaRecords,
+    ): void {
+        $method = new \ReflectionMethod(VidPlyProcessor::class, 'applyTrackDependentOptions');
+        $method->invokeArgs($this->subject, [&$playerOptions, $trackResult, $mediaRecords]);
+    }
+
     #[Test]
     public function buildPlayerOptionsDefaultsWhenNoBitsSet(): void
     {
@@ -243,7 +257,7 @@ final class VidPlyProcessorLogicTest extends TestCase
         $trackResult = ['isPlaylist' => false, 'tracks' => [['title' => 'Test']]];
         $mediaRecords = [['hide_help_button' => 1, 'media_type' => 'video']];
 
-        $this->invoke('applyTrackDependentOptions', $playerOptions, $trackResult, $mediaRecords);
+        $this->invokeApplyTrackDependentOptions($playerOptions, $trackResult, $mediaRecords);
 
         self::assertFalse($playerOptions['helpButton']);
     }
@@ -255,7 +269,7 @@ final class VidPlyProcessorLogicTest extends TestCase
         $trackResult = ['isPlaylist' => true, 'tracks' => [['title' => 'A'], ['title' => 'B']]];
         $mediaRecords = [['hide_help_button' => 1, 'media_type' => 'video']];
 
-        $this->invoke('applyTrackDependentOptions', $playerOptions, $trackResult, $mediaRecords);
+        $this->invokeApplyTrackDependentOptions($playerOptions, $trackResult, $mediaRecords);
 
         self::assertArrayNotHasKey('helpButton', $playerOptions);
     }

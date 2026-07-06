@@ -21,7 +21,10 @@
     "typo3/cms-extbase": "^13.4 || ^14.3"
   },
   "require-dev": {
+    "phpstan/extension-installer": "^1.4",
+    "phpstan/phpstan": "^2.1",
     "phpunit/phpunit": "^10.5 || ^11.5",
+    "saschaegerer/phpstan-typo3": "^3.0",
     "typo3/coding-standards": "^0.8.0",
     "typo3/testing-framework": "^8.2 || ^9.0"
   },
@@ -42,6 +45,7 @@
     "vendor-dir": ".Build/vendor",
     "bin-dir": ".Build/bin",
     "allow-plugins": {
+      "phpstan/extension-installer": true,
       "typo3/class-alias-loader": true,
       "typo3/cms-composer-installers": true
     }
@@ -49,6 +53,8 @@
   "scripts": {
     "test:unit": "phpunit --colors=always -c phpunit.xml.dist",
     "test:functional": "phpunit --colors=always -c Build/FunctionalTests.xml",
+    "test:coverage": "phpunit --colors=always -c phpunit.xml.dist --coverage-text --coverage-html .Build/coverage",
+    "phpstan": "phpstan analyse -c phpstan.neon.dist --memory-limit=512M",
     "cs": [
       "@putenv PHP_CS_FIXER_IGNORE_ENV=1",
       "php .Build/bin/php-cs-fixer fix --dry-run -v --config .php-cs-fixer.dist.php"

@@ -1,0 +1,9 @@
+# PHPStan configuration for the mpc_vidply extension.
+#
+# TYPO3-specific rules and reflection stubs are provided by
+# saschaegerer/phpstan-typo3 (auto-registered via phpstan/extension-installer).
+parameters:
+    level: 8
+    paths:
+        - Classes
+    treatPhpDocTypesAsCertain: false

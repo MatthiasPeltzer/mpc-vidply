@@ -42,11 +42,7 @@ final class VidPlyPreviewRenderer extends StandardContentPreviewRenderer impleme
 
     public function renderPageModulePreviewContent(GridColumnItem $item): string
     {
-        $record = $item->getRecord();
-
-        if (is_object($record) && method_exists($record, 'toArray')) {
-            $record = $record->toArray();
-        }
+        $record = $item->getRecord()->toArray();
 
         $contentUid = (int)($record['uid'] ?? 0);
         $l10nSource = (int)($record['l18n_parent'] ?? $record['l10n_parent'] ?? 0);
