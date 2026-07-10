@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\Backend\Preview;
 
+use Mpc\MpcVidply\Utility\RecordAwareValueResolver;
 use TYPO3\CMS\Backend\View\BackendLayout\Grid\GridColumnItem;
 
 /**
@@ -17,18 +18,6 @@ final class ContentElementPreviewRecord
      */
     public static function fromGridColumnItem(GridColumnItem $item): array
     {
-        return self::normalize($item->getRecord());
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private static function normalize(mixed $record): array
-    {
-        if (is_object($record) && method_exists($record, 'toArray')) {
-            $record = $record->toArray();
-        }
-
-        return is_array($record) ? $record : [];
+        return RecordAwareValueResolver::normalizeToArray($item->getRecord());
     }
 }

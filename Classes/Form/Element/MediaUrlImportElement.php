@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\Form\Element;
 
+use Mpc\MpcVidply\Utility\RecordAwareValueResolver;
 use TYPO3\CMS\Backend\Form\Element\AbstractFormElement;
 use TYPO3\CMS\Core\Page\JavaScriptModuleInstruction;
 
@@ -18,11 +19,11 @@ final class MediaUrlImportElement extends AbstractFormElement
         $languageService = $this->getLanguageService();
 
         $databaseRow = $this->data['databaseRow'] ?? [];
-        $recordUid = $this->resolveScalarFormValue($databaseRow['uid'] ?? null);
-        $pid = (int)($this->data['effectivePid'] ?? $this->resolveScalarFormValue($databaseRow['pid'] ?? null, '0'));
+        $recordUid = RecordAwareValueResolver::resolveScalar($databaseRow['uid'] ?? null);
+        $pid = (int)($this->data['effectivePid'] ?? RecordAwareValueResolver::resolveScalar($databaseRow['pid'] ?? null, '0'));
         $currentMediaType = (string)($this->data['recordTypeValue'] ?? '');
         if ($currentMediaType === '') {
-            $currentMediaType = $this->resolveScalarFormValue($databaseRow['media_type'] ?? null, 'video');
+            $currentMediaType = RecordAwareValueResolver::resolveScalar($databaseRow['media_type'] ?? null, 'video');
         }
         $linkedFileUid = $this->resolveLinkedMediaFileUid();
 
@@ -131,32 +132,5 @@ final class MediaUrlImportElement extends AbstractFormElement
         }
 
         return (int)$uidLocal;
-    }
-
-    private function resolveScalarFormValue(mixed $value, string $default = ''): string
-    {
-        if (is_array($value)) {
-            if ($value === []) {
-                return $default;
-            }
-
-            $first = reset($value);
-            if (is_array($first)) {
-                if (isset($first['value'])) {
-                    return (string)$first['value'];
-                }
-                if (isset($first['uid'])) {
-                    return (string)$first['uid'];
-                }
-            }
-
-            return (string)$first;
-        }
-
-        if ($value === null || $value === '') {
-            return $default;
-        }
-
-        return (string)$value;
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mpc\MpcVidply\Form\FormDataProvider;
 
 use Mpc\MpcVidply\Service\MediaUrlImportSessionService;
+use Mpc\MpcVidply\Utility\RecordAwareValueResolver;
 use TYPO3\CMS\Backend\Form\FormDataProviderInterface;
 
 /**
@@ -26,7 +27,7 @@ final class MediaUrlImportFormDataProvider implements FormDataProviderInterface
             return $result;
         }
 
-        $uid = $this->resolveScalarFormValue($result['databaseRow']['uid'] ?? null);
+        $uid = RecordAwareValueResolver::resolveScalar($result['databaseRow']['uid'] ?? null);
         if ($uid === '') {
             return $result;
         }
@@ -76,32 +77,5 @@ final class MediaUrlImportFormDataProvider implements FormDataProviderInterface
         }
 
         return $result;
-    }
-
-    private function resolveScalarFormValue(mixed $value, string $default = ''): string
-    {
-        if (is_array($value)) {
-            if ($value === []) {
-                return $default;
-            }
-
-            $first = reset($value);
-            if (is_array($first)) {
-                if (isset($first['value'])) {
-                    return (string)$first['value'];
-                }
-                if (isset($first['uid'])) {
-                    return (string)$first['uid'];
-                }
-            }
-
-            return (string)$first;
-        }
-
-        if ($value === null || $value === '') {
-            return $default;
-        }
-
-        return (string)$value;
     }
 }

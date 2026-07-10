@@ -65,7 +65,7 @@ final class VidPlyPageMediaResolver
      */
     public function resolveStructuredData(ServerRequestInterface $request, ContentObjectRenderer $cObj): ?array
     {
-        $languageId = $this->resolveLanguageId($request);
+        $languageId = FrontendLanguageResolver::resolveLanguageId($request);
         $pageId = $this->resolvePageId($request);
         if ($pageId <= 0) {
             return null;
@@ -468,16 +468,6 @@ final class VidPlyPageMediaResolver
         $routing = $request->getAttribute('routing');
         if ($routing !== null && method_exists($routing, 'getPageId')) {
             return (int)$routing->getPageId();
-        }
-
-        return 0;
-    }
-
-    private function resolveLanguageId(ServerRequestInterface $request): int
-    {
-        $language = $request->getAttribute('language');
-        if ($language !== null && method_exists($language, 'toArray')) {
-            return (int)($language->toArray()['languageId'] ?? 0);
         }
 
         return 0;

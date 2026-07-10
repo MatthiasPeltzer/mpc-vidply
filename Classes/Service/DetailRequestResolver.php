@@ -72,7 +72,7 @@ final class DetailRequestResolver
             return null;
         }
 
-        $languageId = $this->resolveLanguageId($request);
+        $languageId = FrontendLanguageResolver::resolveLanguageId($request);
         $cacheKey = $pageId . '|' . $languageId . '|' . $mediaParam;
         if (array_key_exists($cacheKey, $this->cache)) {
             return $this->cache[$cacheKey];
@@ -122,20 +122,6 @@ final class DetailRequestResolver
             return (int)$routing->getPageId();
         }
 
-        return 0;
-    }
-
-    private function resolveLanguageId(ServerRequestInterface $request): int
-    {
-        // Read the language id via `toArray()` — same idiom as the
-        // DataProcessors in this extension. Avoids the TYPO3 Extension Scanner
-        // weak match for `AbstractSectionMarkupGeneratedEvent->getLanguageId`,
-        // which fires on every `->getLanguageId()` call regardless of receiver
-        // type.
-        $language = $request->getAttribute('language');
-        if ($language !== null && method_exists($language, 'toArray')) {
-            return (int)($language->toArray()['languageId'] ?? 0);
-        }
         return 0;
     }
 }

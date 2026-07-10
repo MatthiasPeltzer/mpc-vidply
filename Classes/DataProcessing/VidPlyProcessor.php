@@ -7,6 +7,7 @@ namespace Mpc\MpcVidply\DataProcessing;
 use Mpc\MpcVidply\Enums\MediaType;
 use Mpc\MpcVidply\Enums\RenderMode;
 use Mpc\MpcVidply\Repository\MediaRepository;
+use Mpc\MpcVidply\Service\FrontendLanguageResolver;
 use Mpc\MpcVidply\Service\PrivacySettingsService;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
@@ -111,7 +112,7 @@ class VidPlyProcessor implements DataProcessorInterface
         $data = $processedData['data'];
         $request = $cObj->getRequest();
 
-        $languageId = $this->resolveLanguageId($request, $data);
+        $languageId = FrontendLanguageResolver::resolveLanguageId($request, $data);
         $contentUid = (int)$data['uid'];
         $l10nParent = (int)($data['l18n_parent'] ?? $data['l10n_parent'] ?? 0);
         // MM uid_local: try translated CE first, then default (see MediaRepository::findByContentUid)
@@ -146,7 +147,7 @@ class VidPlyProcessor implements DataProcessorInterface
         $this->resetCaches();
 
         $playerOptions = $this->buildPlayerOptions($data);
-        $languageId = $languageIdOverride ?? $this->resolveLanguageId($request, $data);
+        $languageId = $languageIdOverride ?? FrontendLanguageResolver::resolveLanguageId($request, $data);
 
         $this->prefetchRelatedFiles($mediaRecords);
 
@@ -275,28 +276,6 @@ class VidPlyProcessor implements DataProcessorInterface
         $playerOptions['requirePlaybackForAccessibilityToggles'] = $playerOptions['deferLoad'];
 
         return $playerOptions;
-    }
-
-    /**
-     * Resolve the frontend language ID from the request or content element.
-     * Uses toArray() to avoid extension scanner false positive on getLanguageId().
-     */
-    /**
-     * @param array<string, mixed> $data
-     */
-    private function resolveLanguageId(ServerRequestInterface $request, array $data): int
-    {
-        $languageId = 0;
-        $language = $request->getAttribute('language');
-        if ($language !== null) {
-            $languageId = (int)$language->toArray()['languageId'];
-        }
-
-        if ($languageId === 0 && isset($data['sys_language_uid']) && (int)$data['sys_language_uid'] > 0) {
-            $languageId = (int)$data['sys_language_uid'];
-        }
-
-        return $languageId;
     }
 
     /**

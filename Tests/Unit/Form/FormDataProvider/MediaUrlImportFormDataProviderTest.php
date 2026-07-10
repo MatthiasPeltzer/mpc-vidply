@@ -107,6 +107,32 @@ final class MediaUrlImportFormDataProviderTest extends TestCase
     }
 
     #[Test]
+    public function addDataResolvesRecordObjectUidFromFormEngine(): void
+    {
+        $record = new class () {
+            public function getUid(): int
+            {
+                return 456;
+            }
+        };
+
+        $this->sessionService->store('tx_mpcvidply_media:456', [
+            'mediaType' => 'vimeo',
+        ]);
+
+        $subject = new MediaUrlImportFormDataProvider($this->sessionService);
+        $result = $subject->addData([
+            'tableName' => 'tx_mpcvidply_media',
+            'databaseRow' => [
+                'uid' => $record,
+                'title' => '',
+            ],
+        ]);
+
+        self::assertSame('vimeo', $result['databaseRow']['media_type']);
+    }
+
+    #[Test]
     public function addDataIgnoresOtherTables(): void
     {
         $this->sessionService->store('tx_mpcvidply_media:1', [

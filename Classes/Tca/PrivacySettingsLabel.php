@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\Tca;
 
+use Mpc\MpcVidply\Utility\RecordAwareValueResolver;
 use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -26,12 +27,12 @@ final readonly class PrivacySettingsLabel
      */
     public function getLabel(array &$parameters): void
     {
-        $row = $parameters['row'];
+        $row = RecordAwareValueResolver::normalizeToArray($parameters['row']);
 
         $languageService = $GLOBALS['LANG'] ?? $this->languageServiceFactory->create('default');
         $label = $languageService->sL('LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tx_mpcvidply_privacy_settings') ?: 'Privacy Layer Settings';
 
-        $languageId = (int)($row['sys_language_uid'] ?? 0);
+        $languageId = RecordAwareValueResolver::resolveInt($row['sys_language_uid'] ?? null);
         if ($languageId > 0) {
             $languageTitle = $this->getLanguageTitle($languageId);
             if ($languageTitle !== null) {

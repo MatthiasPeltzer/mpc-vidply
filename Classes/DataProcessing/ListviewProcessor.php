@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\DataProcessing;
 
+use Mpc\MpcVidply\Service\FrontendLanguageResolver;
 use Mpc\MpcVidply\Service\ListviewMediaResolver;
-use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Resource\Exception\ResourceDoesNotExistException;
@@ -55,7 +55,7 @@ final class ListviewProcessor implements DataProcessorInterface
     ): array {
         $data = $processedData['data'];
         $request = $cObj->getRequest();
-        $languageId = $this->resolveLanguageId($request, $data);
+        $languageId = FrontendLanguageResolver::resolveLanguageId($request, $data);
 
         $contentUid = (int)($data['uid'] ?? 0);
         // `tt_content` uses `l18n_parent` in the database; `l10n_parent` is a legacy alias in some rows.
@@ -463,21 +463,6 @@ final class ListviewProcessor implements DataProcessorInterface
             $result[$mediaUid][] = $ref;
         }
         return $result;
-    }
-
-    /**
-     * @param array<string, mixed> $data
-     */
-    private function resolveLanguageId(ServerRequestInterface $request, array $data): int
-    {
-        $language = $request->getAttribute('language');
-        if ($language !== null) {
-            $id = (int)($language->toArray()['languageId'] ?? 0);
-            if ($id > 0) {
-                return $id;
-            }
-        }
-        return (int)($data['sys_language_uid'] ?? 0);
     }
 
     private function formatDuration(int $seconds): string

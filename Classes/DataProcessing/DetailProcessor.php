@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mpc\MpcVidply\DataProcessing;
 
 use Mpc\MpcVidply\Repository\MediaRepository;
+use Mpc\MpcVidply\Service\FrontendLanguageResolver;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
@@ -55,7 +56,7 @@ final class DetailProcessor implements DataProcessorInterface
     ): array {
         $data = $processedData['data'];
         $request = $cObj->getRequest();
-        $languageId = $this->resolveLanguageId($request, $data);
+        $languageId = FrontendLanguageResolver::resolveLanguageId($request, $data);
 
         $media = $this->resolveMediaRecord($request, $languageId);
 
@@ -382,20 +383,5 @@ final class DetailProcessor implements DataProcessorInterface
             return sprintf('%d:%02d:%02d', $hours, $minutes, $secs);
         }
         return sprintf('%d:%02d', $minutes, $secs);
-    }
-
-    /**
-     * @param array<string, mixed> $data
-     */
-    private function resolveLanguageId(ServerRequestInterface $request, array $data): int
-    {
-        $language = $request->getAttribute('language');
-        if ($language !== null) {
-            $id = (int)($language->toArray()['languageId'] ?? 0);
-            if ($id > 0) {
-                return $id;
-            }
-        }
-        return (int)($data['sys_language_uid'] ?? 0);
     }
 }
