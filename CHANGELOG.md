@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- PHPStan level 8 in backend preview renderers: normalize `GridColumnItem` records for
+  TYPO3 v13 (array) and v14 (`RecordInterface`) without relying on `getRow()`.
+- Shared `RecordAwareValueResolver` and `FrontendLanguageResolver` for cross-version
+  FormEngine, preview, and DataProcessor code paths.
+- CI job validating the extension against TYPO3 13.4 LTS.
+- `ContentElementPreviewRecordTest` split by TYPO3 major version so mocks match
+  `GridColumnItem::getRecord()` return types (array on v13, `RecordInterface` on v14).
+
 ## [1.2.16] - 2026-07-06
 
 ### Changed
