@@ -39,7 +39,7 @@ final class ListviewPreviewRenderer extends StandardContentPreviewRenderer
 
     public function renderPageModulePreviewContent(GridColumnItem $item): string
     {
-        $record = method_exists($item, 'getRow') ? $item->getRow() : $item->getRecord();
+        $record = ContentElementPreviewRecord::fromGridColumnItem($item);
 
         // The grid / Record payload can omit l18n_parent. Without it we only
         // query parentid = uid and miss rows that hang off the translation
