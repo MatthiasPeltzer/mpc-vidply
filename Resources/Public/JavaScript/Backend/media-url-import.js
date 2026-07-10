@@ -10,6 +10,11 @@ import RegularEvent from '@typo3/core/event/regular-event.js';
 
 const IMPORT_FIELD = '[import_source_url]';
 
+const FILE_CONTAINER_SELECTORS = [
+  'typo3-formengine-container-inline',
+  'typo3-formengine-container-files',
+].join(',');
+
 const SELECTORS = {
   wrap: '.vidply-media-url-import-wrap',
   importButton: '.t3js-vidply-media-url-import',
@@ -18,6 +23,20 @@ const SELECTORS = {
   status: '.t3js-vidply-media-url-status',
   mediaTypeSelect: 'select[name*="[media_type]"]',
 };
+
+/**
+ * TYPO3 14+ exposes markFieldAsChanged on FormEngine directly;
+ * TYPO3 13.4 keeps it on FormEngine.Validation.
+ *
+ * @param {HTMLElement} field
+ */
+function markFieldAsChanged(field) {
+  if (typeof FormEngine.markFieldAsChanged === 'function') {
+    FormEngine.markFieldAsChanged(field);
+    return;
+  }
+  FormEngine.Validation?.markFieldAsChanged?.(field);
+}
 
 /**
  * @param {HTMLElement} wrap
@@ -92,23 +111,51 @@ function resolveFormFieldPrefix(wrap) {
 }
 
 /**
+ * Resolve the file field web component and its data container.
+ * TYPO3 14+ uses typo3-formengine-container-inline with attributes on the element.
+ * TYPO3 13.4 uses typo3-formengine-container-files with attributes on an inner div.
+ *
  * @param {HTMLElement} wrap
  * @param {ParentNode} scope
  * @param {string} fieldName
- * @returns {HTMLElement|null}
+ * @returns {{ webComponent: HTMLElement|null, dataContainer: HTMLElement|null }}
  */
-function findFileFieldContainer(wrap, scope, fieldName) {
+function resolveFileFieldNodes(wrap, scope, fieldName) {
   const prefix = resolveFormFieldPrefix(wrap);
   const expectedName = prefix ? `${prefix}[${fieldName}]` : '';
+  const suffix = `[${fieldName}]`;
 
-  for (const container of scope.querySelectorAll('typo3-formengine-container-inline[data-form-field]')) {
-    const formField = container.getAttribute('data-form-field') || '';
-    if ((expectedName !== '' && formField === expectedName) || formField.endsWith(`[${fieldName}]`)) {
-      return container;
+  for (const element of scope.querySelectorAll('typo3-formengine-container-inline[data-form-field]')) {
+    const formField = element.getAttribute('data-form-field') || '';
+    if ((expectedName !== '' && formField === expectedName) || formField.endsWith(suffix)) {
+      return { webComponent: element, dataContainer: element };
     }
   }
 
-  return null;
+  for (const element of scope.querySelectorAll('typo3-formengine-container-files')) {
+    const inner = element.querySelector('[data-form-field]');
+    if (!(inner instanceof HTMLElement)) {
+      continue;
+    }
+    const formField = inner.getAttribute('data-form-field') || '';
+    if ((expectedName !== '' && formField === expectedName) || formField.endsWith(suffix)) {
+      return { webComponent: element, dataContainer: inner };
+    }
+  }
+
+  const hiddenInput = scope.querySelector(`input.inlineRecord[name$="${suffix}"]`);
+  if (hiddenInput instanceof HTMLInputElement) {
+    const dataContainer = hiddenInput.closest('[data-object-group]');
+    const webComponent = hiddenInput.closest(FILE_CONTAINER_SELECTORS);
+    if (dataContainer instanceof HTMLElement || webComponent instanceof HTMLElement) {
+      return {
+        webComponent: webComponent instanceof HTMLElement ? webComponent : null,
+        dataContainer: dataContainer instanceof HTMLElement ? dataContainer : webComponent,
+      };
+    }
+  }
+
+  return { webComponent: null, dataContainer: null };
 }
 
 /**
@@ -118,33 +165,26 @@ function findFileFieldContainer(wrap, scope, fieldName) {
  * @returns {string|null}
  */
 function findIrreObjectForField(fieldName, scope = document, wrap = null) {
-  const container = wrap instanceof HTMLElement ? findFileFieldContainer(wrap, scope, fieldName) : null;
-  if (container) {
-    const objectGroup = container.getAttribute('data-object-group');
-    if (objectGroup) {
-      return objectGroup;
+  if (wrap instanceof HTMLElement) {
+    const { dataContainer } = resolveFileFieldNodes(wrap, scope, fieldName);
+    if (dataContainer?.dataset.objectGroup) {
+      return dataContainer.dataset.objectGroup;
     }
   }
 
   const hiddenInput = scope.querySelector(`input.inlineRecord[name$="[${fieldName}]"]`);
-  if (hiddenInput) {
-    const container = hiddenInput.closest('typo3-formengine-container-inline');
-    const objectGroup = container?.getAttribute('data-object-group');
-    if (objectGroup) {
-      return objectGroup;
-    }
-
-    const trigger = container?.querySelector('[data-file-irre-object], [data-irre-object-id]');
-    if (trigger) {
-      return trigger.dataset.fileIrreObject || trigger.dataset.irreObjectId || null;
+  if (hiddenInput instanceof HTMLInputElement) {
+    const dataContainer = hiddenInput.closest('[data-object-group]');
+    if (dataContainer instanceof HTMLElement && dataContainer.dataset.objectGroup) {
+      return dataContainer.dataset.objectGroup;
     }
   }
 
-  for (const trigger of scope.querySelectorAll(
-    '[data-file-irre-object], [data-irre-object-id]'
-  )) {
-    const irreObject = trigger.dataset.fileIrreObject || trigger.dataset.irreObjectId || '';
-    const fieldWrap = trigger.closest('.form-group, .form-control-wrap, typo3-formengine-container-inline');
+  for (const trigger of scope.querySelectorAll('[data-file-irre-object]')) {
+    const irreObject = trigger.dataset.fileIrreObject || '';
+    const fieldWrap = trigger.closest(
+      '.form-group, .form-control-wrap, typo3-formengine-container-files, typo3-formengine-container-inline'
+    );
     if (fieldWrap?.querySelector(`input.inlineRecord[name$="[${fieldName}]"]`)) {
       return irreObject;
     }
@@ -160,14 +200,17 @@ function findIrreObjectForField(fieldName, scope = document, wrap = null) {
  * @param {HTMLElement|null} wrap
  */
 function insertFileRelation(fieldName, fileUid, scope = document, wrap = null) {
-  const container = wrap instanceof HTMLElement ? findFileFieldContainer(wrap, scope, fieldName) : null;
+  const nodes = wrap instanceof HTMLElement
+    ? resolveFileFieldNodes(wrap, scope, fieldName)
+    : { webComponent: null, dataContainer: null };
   const irreObject = findIrreObjectForField(fieldName, scope, wrap);
+
   if (!irreObject) {
     return false;
   }
 
-  if (container && typeof container.importRecord === 'function') {
-    void container.importRecord([irreObject, String(fileUid)]);
+  if (nodes.webComponent && typeof nodes.webComponent.importRecord === 'function') {
+    void nodes.webComponent.importRecord([irreObject, String(fileUid)]);
     return true;
   }
 
@@ -212,7 +255,7 @@ function insertFileRelationWithRetry(fieldName, fileUid, scope, wrap = null, att
 function setFieldValue(input, value) {
   input.value = value;
   input.dispatchEvent(new Event('change', { bubbles: true }));
-  FormEngine.markFieldAsChanged(input);
+  markFieldAsChanged(input);
 }
 
 /**
@@ -255,8 +298,9 @@ function applyFieldValue(wrap, scope, fieldName, value) {
  *   duration?: number,
  * }} result
  * @param {{ silentMediaType?: boolean }} [options]
+ * @returns {Promise<boolean>}
  */
-function applyImportResultImmediate(wrap, result, options = {}) {
+async function applyImportResultImmediate(wrap, result, options = {}) {
   const silentMediaType = options.silentMediaType ?? false;
   const scope = getRecordScope(wrap);
 
@@ -265,24 +309,20 @@ function applyImportResultImmediate(wrap, result, options = {}) {
   applyFieldValue(wrap, scope, 'description', result.description || '');
   applyFieldValue(wrap, scope, 'duration', result.duration || 0);
 
-  const fileInserts = [];
+  let mediaFileInserted = true;
   if (result.mediaFileUid) {
-    fileInserts.push(
-      insertFileRelationWithRetry('media_file', result.mediaFileUid, scope, wrap)
-    );
-  } else {
-    fileInserts.push(Promise.resolve(true));
+    mediaFileInserted = await insertFileRelationWithRetry('media_file', result.mediaFileUid, scope, wrap);
   }
 
-  Promise.all(fileInserts).then(() => {
-    if (result.posterFileUid) {
-      insertFileRelationWithRetry('poster', result.posterFileUid, scope, wrap);
-    }
-  });
+  if (result.posterFileUid) {
+    await insertFileRelationWithRetry('poster', result.posterFileUid, scope, wrap);
+  }
 
   if (result.mediaType) {
     updateMediaTypeField(wrap, result.mediaType, { triggerChange: !silentMediaType });
   }
+
+  return mediaFileInserted;
 }
 
 /**
@@ -304,12 +344,15 @@ function applyPendingFileInserts(wrap, attempts = 0) {
 
   const scope = getRecordScope(wrap);
 
-  if (pending.mediaFileUid && !findIrreObjectForField('media_file', scope, wrap) && attempts < 80) {
-    window.setTimeout(() => applyPendingFileInserts(wrap, attempts + 1), 150);
-    return;
+  if (pending.mediaFileUid) {
+    const { webComponent } = resolveFileFieldNodes(wrap, scope, 'media_file');
+    if (!webComponent && attempts < 80) {
+      window.setTimeout(() => applyPendingFileInserts(wrap, attempts + 1), 150);
+      return;
+    }
   }
 
-  applyImportResultImmediate(wrap, pending, { silentMediaType: true });
+  void applyImportResultImmediate(wrap, pending, { silentMediaType: true });
   delete wrap.dataset.vidplyPendingImport;
 }
 
@@ -374,7 +417,7 @@ function updateMediaTypeField(wrap, mediaType, options = {}) {
 
   if (select instanceof HTMLSelectElement && select.value !== mediaType) {
     select.value = mediaType;
-    FormEngine.markFieldAsChanged(select);
+    markFieldAsChanged(select);
     if (triggerChange) {
       select.dispatchEvent(new Event('change', { bubbles: true }));
     }
@@ -382,7 +425,7 @@ function updateMediaTypeField(wrap, mediaType, options = {}) {
 
   if (hidden instanceof HTMLInputElement && hidden !== select && hidden.value !== mediaType) {
     hidden.value = mediaType;
-    FormEngine.markFieldAsChanged(hidden);
+    markFieldAsChanged(hidden);
     if (triggerChange) {
       hidden.dispatchEvent(new Event('change', { bubbles: true }));
     }
@@ -454,12 +497,22 @@ async function handleImport(wrap) {
     const typeChanged = config.currentMediaType !== result.mediaType;
     const isNewRecord = !isPersistedRecord(config.recordIdentifier);
 
-    applyImportResultImmediate(wrap, result, {
+    const mediaFileInserted = await applyImportResultImmediate(wrap, result, {
       silentMediaType: isNewRecord || typeChanged,
     });
 
     if (typeChanged && !isNewRecord) {
       triggerMediaTypeReload(wrap, result.mediaType);
+      return;
+    }
+
+    if (result.mediaFileUid && !mediaFileInserted) {
+      setStatus(
+        wrap,
+        'Metadata imported, but media file/poster could not be linked automatically. Save and add them manually, or try again.',
+        'warning'
+      );
+      Notification.warning('Import partially complete', 'Media file or poster could not be linked automatically.');
       return;
     }
 
@@ -548,7 +601,9 @@ registerEvents.initialized = false;
 class MediaUrlImportModule {
   constructor() {
     DocumentService.ready().then(async () => {
-      await FormEngine.ready();
+      if (typeof FormEngine.ready === 'function') {
+        await FormEngine.ready();
+      }
       document.querySelectorAll(SELECTORS.wrap).forEach((wrap) => {
         applyPendingFileInserts(wrap);
       });
