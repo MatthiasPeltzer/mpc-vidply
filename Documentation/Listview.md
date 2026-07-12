@@ -39,6 +39,8 @@ Editor picks media/categories
 
 ### 1.2 Create the overview page
 
+![Media library listview — responsive grid rows with category chips and sort control](Images/frontend/frontend-listview-mediathek.png)
+
 1. On your landing page (e.g. */mediathek*) insert a **VidPly Listview**
    content element.
 2. Under *Detail Page* choose the page created in 1.1.
@@ -65,6 +67,10 @@ Editor picks media/categories
 Cards show title, optional artist line, and **category chips** (from the
 media record’s own categories) when available.
 
+**Assign categories:** on each **VidPly Media** record, open the **Categories**
+tab and select one or more categories. These appear on listview cards and power
+*Automatic (by category)* row selection.
+
 ### 1.3 Slugs
 
 Every record in `tx_mpcvidply_media` automatically receives a URL-friendly
@@ -86,6 +92,8 @@ language; translated pages use the same rows unless you maintain separate
 row data. See the extension’s `ListviewProcessor` and TCA for details.
 
 ### 1.5 Media: short and long copy on the detail page
+
+![Detail page — player, short description, category chips, and related-content shelf](Images/frontend/frontend-detail-page.png)
 
 On each **VidPly Media** record, editors can use:
 

@@ -103,7 +103,7 @@ Shared by video and audio players. Supports multiple languages and track kinds.
 
 ### 5. MetadataScripts.html
 
-**JSON metadata for accessibility features**
+**JSON payloads for audio description and sign language** (read by the player at init — not JSON-LD)
 
 ```html
 <f:render partial="VidPly/MetadataScripts" arguments="{
@@ -114,7 +114,9 @@ Shared by video and audio players. Supports multiple languages and track kinds.
 }" />
 ```
 
-Used by video players for audio description and sign language.
+Used by video players for audio description and sign language track metadata.
+
+> **SEO JSON-LD** (`VideoObject` / `AudioObject`) is emitted separately in the page `<head>` via `Partials/Page/StructuredDataVideo.html` — see [Developers Quickstart → Structured data](Developers-Quickstart.md#structured-data-json-ld).
 
 ---
 
@@ -153,15 +155,18 @@ Displays play button with privacy notice for YouTube, Vimeo, and SoundCloud. Use
 
 ```
 VidPly.html (Main)
-├── Header
-├── Check if external service?
-│   ├── YES → PrivacyLayer
-│   └── NO → VideoPlayer or AudioPlayer (video/audio, may include HLS/DASH sources)
-│       ├── VideoSources / AudioSources
-│       ├── Tracks
-│       └── MetadataScripts (video only)
-└── Assets
+└── VidPly/Player.html (wrapper + renderMode switch)
+    ├── privacy → PrivacyLayer.html
+    ├── mixedPlaylist → MixedPlaylistPlayer.html
+    ├── audio → AudioPlayer.html
+    └── video → VideoPlayer.html
+        ├── VideoSources.html / AudioSources.html
+        ├── Tracks.html
+        └── MetadataScripts.html (video only)
+    └── Assets.html (conditional JS/CSS)
 ```
+
+Page-level: `Partials/Page/StructuredDataVideo.html` (JSON-LD in `<head>`).
 
 ## Customization
 

@@ -44,7 +44,7 @@ https://cdn.jsdelivr.net/npm/hls.js@1.6.16/dist/hls.min.js
 
 #### 2. VidPly HLS Renderer
 
-**File:** `libs/vidply/src/renderers/HLSRenderer.ts`
+**File:** `.libs/vidply/src/renderers/HLSRenderer.ts` (standalone player source; shipped build is vendored under `Resources/Public/JavaScript/vidply/`)
 
 The renderer self-decides whether to use `hls.js` or the browser's native HLS support:
 
@@ -86,7 +86,7 @@ https://cdn.jsdelivr.net/npm/dashjs@5.2.0/dist/modern/umd/dash.all.min.js
 
 #### 2. VidPly DASH Renderer
 
-**File:** `libs/vidply/src/renderers/DASHRenderer.ts`
+**File:** `.libs/vidply/src/renderers/DASHRenderer.ts` (standalone player source; shipped build is vendored under `Resources/Public/JavaScript/vidply/`)
 
 Features:
 - Adaptive bitrate streaming with automatic quality switching
@@ -106,10 +106,12 @@ Required CSP directives (shared by HLS and DASH):
 'media-src'       => ['blob:', 'data:', 'https:'],
 'worker-src'      => ['blob:'],
 'connect-src'     => ['blob:', 'data:', 'https:'],
-'script-src-elem' => ["'self'", 'https://cdn.jsdelivr.net'],
+'script-src-elem' => ["'self'"],
 ```
 
-Why these are needed:
+> **Note:** `mpc-vidply` ships **hls.js** and **dash.js** locally (`Resources/Public/JavaScript/`). The jsDelivr URLs mentioned elsewhere in this file are fallbacks for standalone VidPly embeds only — they are **not** required when using the TYPO3 extension with vendored scripts. Since v1.2.6 the extension CSP no longer whitelists `cdn.jsdelivr.net` for scripts by default.
+
+Why these directives are needed:
 
 - `media-src 'blob:'` — `hls.js` / `dash.js` set a `blob:` URL on `<video>.src` while playing.
 - `media-src 'data:'` — some HLS variants embed init segments / WebVTT inline as `data:` URIs.

@@ -1,8 +1,36 @@
 # VidPly Settings Architecture
 
-Analysis of settings distribution between Player (content element) and Media Items (media records).
+Where configuration lives: **extension-wide defaults**, **site-wide privacy**, **content-element player options**, and **per-media record** fields.
+
+## Overview
+
+| Tier | Where configured | Scope |
+|------|------------------|-------|
+| Extension Configuration | Admin → Settings → Extension Configuration → VidPly | Whole TYPO3 installation |
+| Privacy Layer Settings | List module → Privacy Layer Settings | Site-wide external-service consent copy |
+| Player (content element) | Page module → VidPly Player CE | One player instance on a page |
+| Media record | List module → VidPly Media | Reusable item (any player/listview) |
+
+See also [Integrations.md](Integrations.md) for mp-core site settings that affect JSON-LD output.
 
 ## Current Architecture
+
+### Extension Configuration (global)
+
+Configured in **Admin → Settings → Extension Configuration → mpc_vidply** (`ext_conf_template.txt`):
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `allowedVideoDomains` | string | *(empty)* | Allow-list for external video URLs (comma/newline; wildcards supported) |
+| `allowedAudioDomains` | string | *(empty)* | Allow-list for external audio URLs |
+| `playIcon` | string | *(empty)* | Custom play-button image: `EXT:…` path, site-relative path, or HTTPS URL |
+| `allowedPlayIconDomains` | string | *(empty)* | Allow-list for external play-icon URLs (required when using HTTPS icons) |
+| `playPosition` | select | `center` | Play overlay position: center, corners |
+| `useCssIcons` | bool | `0` | Use CSS-based control-bar icons (enables theming via CSS variables) |
+| `theme` | select | `dark` | Player chrome: `dark` or `light` |
+| `themeSyncEnabled` | bool | `0` | Sync player theme with page light/dark mode (body class + custom events) |
+
+These apply to every frontend player unless overridden in Fluid/TypoScript.
 
 ### Privacy Layer Settings (tx_mpcvidply_privacy_settings)
 **Site-wide settings for external service privacy layers:**
@@ -54,18 +82,32 @@ Available for YouTube, Vimeo, and SoundCloud. Supports multilingual content via 
 | Media Type | video, audio, youtube, vimeo, soundcloud |
 | Media File/URL | Source file or URL |
 | Title | Track title |
+| Slug | URL slug for listview detail routing (auto from title) |
 | Artist | Creator/artist name |
-| Description | Track description |
+| Description | Short text (list cards, player) |
+| Long description | RTE copy for detail page |
 | Duration | Length in seconds |
 | Poster | Thumbnail image |
-| Captions | WebVTT caption files |
-| Chapters | WebVTT chapter markers |
+| Categories | TYPO3 categories (listview chips + category-based rows) |
+| Captions | WebVTT / SRT caption files |
+| Chapters | WebVTT / SRT chapter files |
 | Enable Transcript | Per-track transcript flag |
 | Audio Description | Described video (MP4/WebM swap) or VTT speech via `audio_description_mode` |
 | Audio Description Mode | `auto` \| `swap` \| `vtt_speech` — delivery path for spoken AD |
 | Sign Language | Sign language overlay video |
+| Hide speed button | Hide playback-speed control for this item (per-track in playlists) |
+| Hide keyboard shortcuts help | Hide help button for this item (per-track in playlists) |
+| Allow download | Show download button (uses progressive source when available) |
+| Enable floating player | Custom draggable PiP window (single-item players only) |
 
 ## Best Practices
+
+### Extension Configuration (Installation-Wide)
+Use for branding and security defaults that should not vary per page:
+- Allowed external media domains
+- Default dark/light theme and page theme sync
+- Custom play icon for privacy overlay and player
+- CSS icon mode for design-system integration
 
 ### Privacy Layer Settings (Site-Wide)
 Use for settings that should be **consistent across all external services**:
@@ -82,10 +124,11 @@ Use for settings that should be **consistent across all tracks**:
 
 ### Media-Level (Per-Item)
 Use for settings that are **specific to content**:
-- Source files/URLs
-- Metadata (title, artist, description)
-- Accessibility features (captions, chapters)
+- Source files/URLs and slug
+- Metadata (title, artist, descriptions, categories)
+- Accessibility features (captions, chapters, AD, sign language)
 - Visual elements (poster)
+- Per-item UI toggles (download, floating player, hide speed/help)
 
 ## Rationale
 
@@ -100,8 +143,8 @@ This separation provides:
 ## Future Considerations
 
 Potential improvements:
-- Per-item loop/muted settings (for background videos)
 - Per-item caption default (for multilingual content)
+- Per-item loop/muted overrides (some playlist track behaviour already exists for speed/help visibility)
 - Template overrides for custom use cases
 
 Current architecture is solid and follows TYPO3 best practices.

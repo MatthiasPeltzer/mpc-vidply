@@ -20,6 +20,8 @@ VidPly is a universal, accessible media player supporting multiple sources:
 
 ## Two-Step Workflow
 
+![VidPly player on a demo page — single video with control bar and poster](Images/frontend/frontend-player-single-video.png)
+
 ### Step 1: Create Media Records
 
 First, create reusable media items in the **VidPly Media** storage.
@@ -39,6 +41,8 @@ Then, add a **VidPly Player** content element and select your media.
 Or use the "Create new record" button in the VidPly Player element.
 
 ### Fastest way: Import from URL
+
+![Backend: Import from URL on a new VidPly Media record — paste a media URL and click Import](Images/backend/backend-import-from-url.png)
 
 For YouTube, Vimeo, SoundCloud, streaming URLs (`.m3u8` / `.mpd`), and allowlisted external MP4/MP3 links:
 
@@ -133,7 +137,7 @@ On existing records with a linked online-media file, use **Refresh metadata** to
 3. Add a **title** (required)
 4. Add a **poster image** (optional) — **allowed formats: JPG / JPEG, PNG, WebP, SVG**
 
-> SoundCloud combines a **GDPR consent overlay** (no tracking before the user accepts) with the dedicated VidPly **SoundCloud renderer** that takes over after consent — playback, seek, volume, transcript and the rest of the VidPly UI behave the same as for YouTube and Vimeo.
+> After the user accepts the privacy notice, playback runs inside the **SoundCloud Widget iframe** (visual waveform UI). This is the default, lightweight path. Developers can optionally switch to VidPly's unified control bar via a template/processor override — see [PrivacyLayer.md → Switch SoundCloud to Renderer Mode](PrivacyLayer.md#switch-soundcloud-to-renderer-mode-advanced).
 
 ---
 
@@ -147,8 +151,10 @@ Every media record has a **metadata palette**:
 | **Artist** | Creator name (shown in playlist) | No |
 | **Description** | Short text (list cards, player context) | No |
 | **Long description** | Rich text (CKEditor); shown on the **VidPly Detail** page below the short description | No |
+| **Slug** | URL segment for listview detail links (auto-generated from title; override on Metadata tab) | No |
 | **Duration** | Length in seconds (for display) | No |
 | **Poster** | Thumbnail image | Recommended |
+| **Categories** | TYPO3 categories (shown as chips on listview cards; used for automatic listview row selection) | No |
 
 ### VidPly Listview & detail page (overview)
 
@@ -172,9 +178,10 @@ do not want the “You might also like” row below the player.
 - **Hide speed button**: Hides the playback speed control for this media item.
   - **Single item**: the speed control is hidden.
   - **Playlist**: the speed control is hidden **only while this item is the active track** (it can re-appear for other tracks).
-- **Hide keyboard shortcuts help**: Hides the help button (`.vidply-help`) in the control bar for this media item. Same single-item / per-track playlist behavior as the speed button. The `?` keyboard shortcut remains available when keyboard controls are enabled on the content element.
+- **Hide keyboard shortcuts help**: Hides the help button (`.vidply-help`) in the control bar for this media item. Same single-item / per-track playlist behavior as the speed button. The **`?` keyboard shortcut** still opens the shortcuts dialog when keyboard controls are enabled on the content element.
+- **Allow download**: Shows a download button in the control bar for this media item. Works automatically when a progressive file (MP4, WebM, MP3, OGG) is attached. For **HLS/DASH-only** records, add a progressive fallback file so the player can resolve a downloadable URL (manifests themselves are not downloadable).
+- **Enable floating player (custom PiP)**: Replaces the browser's native Picture-in-Picture with VidPly's **draggable, resizable floating window** (also triggers when the video scrolls out of view while playing). Only applies to **single-item** players, not playlists. Distinct from the standard **PiP** toolbar button, which uses the browser's native mini-player.
 - **Buffering spinner**: A centered loading spinner is shown automatically while the player is buffering — no configuration required. Works for local files, HLS and DASH streams.
-- **Download button** *(if exposed by your sitepackage / TCA override)*: Per-media toggle to show a download button in the control bar. For HLS / DASH sources, also configure an explicit download URL pointing to a single MP4 / MP3 / WebM file (manifests are not directly downloadable).
 
 ## Accessibility Features
 
@@ -347,6 +354,8 @@ Generate searchable text transcript from captions:
 
 ### Automatic Playlist
 
+![Mixed-media playlist with track panel — local, streaming, and external items](Images/frontend/frontend-playlist-mixed.png)
+
 Select **2 or more media items** to automatically create a playlist:
 
 - Thumbnail list appears alongside player
@@ -375,8 +384,10 @@ Select **2 or more media items** to automatically create a playlist:
 | Skip previous/next | Previous/next in playlist |
 | CC | Toggle captions |
 | Settings | Quality, speed, captions |
-| PiP | Picture-in-Picture |
+| PiP | Browser Picture-in-Picture (native mini-player) |
 | Fullscreen | Enter fullscreen |
+
+> **Note:** **Enable floating player** on a media record uses VidPly's custom in-page floating window instead of (and in addition to configuring) native PiP behaviour. See Player UI Options above.
 
 ### Keyboard Shortcuts
 
@@ -392,8 +403,13 @@ Select **2 or more media items** to automatically create a playlist:
 | **↓** | Volume down 10% |
 | **Home** | Go to start |
 | **End** | Go to end |
+| **?** | Open keyboard shortcuts help (dialog) |
 
----
+### Keyboard shortcuts help
+
+![Keyboard shortcuts help dialog listing play, seek, volume, captions, and fullscreen keys](Images/frontend/frontend-keyboard-shortcuts-help.png)
+
+When **Keyboard** is enabled on the content element, users can press **`?`** or click the **help** button in the control bar to open a focus-trapped dialog listing all active shortcuts. Hide the button per media record with **Hide keyboard shortcuts help** (the `?` shortcut still works unless keyboard controls are disabled on the content element).
 
 ## Privacy Layer (GDPR)
 
@@ -425,6 +441,8 @@ Customize the privacy layer content for all external services:
 Settings apply to both single items and playlists. Empty fields automatically use default translations.
 
 ### What Users See
+
+![YouTube privacy layer — poster, play button, and GDPR notice before the iframe loads](Images/frontend/frontend-privacy-layer-youtube.png)
 
 ```
 ┌─────────────────────────────────┐
@@ -510,5 +528,5 @@ Ensure your VTT files:
 
 ---
 
-**Need help?** Contact your site administrator or check the [technical documentation](../README.md) (repository root).
+**Need help?** Contact your site administrator or see the [documentation index](README.md).
 

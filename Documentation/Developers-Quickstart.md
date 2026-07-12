@@ -4,7 +4,7 @@ Quick reference for developers working with VidPly. For detailed docs, see indiv
 
 ---
 
-## 🚀 Installation
+## Installation
 
 ```bash
 composer require mpc/mpc-vidply
@@ -26,7 +26,7 @@ lib.mpcVidplyContentElement.partialRootPaths.10 = {$styles.templates.partialRoot
 
 ---
 
-## 📁 Directory Structure
+## Directory Structure
 
 ```
 mpc_vidply/
@@ -66,8 +66,12 @@ mpc_vidply/
 │           ├── PrivacyLayer.js   # GDPR consent (YouTube/Vimeo/SoundCloud)
 │           └── vidply/           # Core player (compiled from TypeScript, ESM, code-split)
 └── Documentation/
+    ├── README.md                 # Documentation index (start here)
     ├── AssetLoading.md
+    ├── Editors-Guide.md
     ├── HLS-Implementation.md
+    ├── Integrations.md           # Vue/Swiper, CSP, mp-core JSON-LD
+    ├── Listview.md
     ├── Partials.md
     ├── PrivacyLayer.md
     └── SettingsArchitecture.md
@@ -75,7 +79,7 @@ mpc_vidply/
 
 ---
 
-## ⚡ Site Set
+## Site Set
 
 Enable in `config/sites/<site>/config.yaml`:
 
@@ -88,7 +92,7 @@ Or via Backend: Site Management → Sites → Sets → Add VidPly.
 
 ---
 
-## 📦 Database Tables
+## Database Tables
 
 ### `tx_mpcvidply_media`
 
@@ -166,7 +170,36 @@ Site-wide privacy layer configuration for external services (YouTube, Vimeo, Sou
 
 ---
 
-## 🎬 Content Element
+## Extension Configuration
+
+Global UI and security defaults: **Admin → Settings → Extension Configuration → mpc_vidply** (`ext_conf_template.txt`).
+
+| Setting | Purpose |
+|---------|---------|
+| `allowedVideoDomains` / `allowedAudioDomains` | Allow-list for external MP4/WebM URLs |
+| `playIcon` / `playPosition` / `allowedPlayIconDomains` | Custom privacy/play overlay icon |
+| `useCssIcons` | CSS-based control-bar icons |
+| `theme` / `themeSyncEnabled` | Dark/light player + page theme sync |
+
+Full reference: [SettingsArchitecture.md → Extension Configuration](SettingsArchitecture.md#extension-configuration-global).
+
+---
+
+## Dynamic content & integrations
+
+Vue, Swiper, CSP, mp-core JSON-LD merge, theme API: **[Integrations.md](Integrations.md)**.
+
+Quick API after `PlaylistInit.js` loads:
+
+```javascript
+window.VidPlyInit.scan(rootElement);
+window.VidPlyInit.pauseOutside(activeSlide);
+document.dispatchEvent(new CustomEvent('mpc:dynamic-content:ready', { detail: { root } }));
+```
+
+---
+
+## Content Element
 
 ### CType: `mpc_vidply`
 
@@ -208,7 +241,7 @@ const AUTO_ADVANCE    = 256;  // Auto-play next in playlist
 
 ---
 
-## 🔧 Data Processing
+## Data Processing
 
 ### VidPlyProcessor
 
@@ -251,7 +284,7 @@ tt_content.mpc_vidply {
 
 ---
 
-## 🎨 Template Structure
+## Template Structure
 
 ### Main Template
 
@@ -281,7 +314,7 @@ tt_content.mpc_vidply {
 
 ---
 
-## 📜 JavaScript Architecture
+## JavaScript Architecture
 
 ### Conditional Loading
 
@@ -325,7 +358,7 @@ const playlist = new PlaylistManager(player, { autoAdvance: true });
 
 ---
 
-## 🔒 Privacy Layer
+## Privacy Layer
 
 ### Implementation
 
@@ -375,7 +408,7 @@ Settings fall back to language file translations if database fields are empty.
 
 ---
 
-## 🌐 HLS & DASH Streaming
+## HLS & DASH Streaming
 
 HLS and DASH are not separate media types. Streaming sources (.m3u8 / .mpd) are added as files within the **Video** or **Audio** media type alongside progressive fallbacks.
 
@@ -416,7 +449,7 @@ return [
 
 ---
 
-## 🛠️ Extending VidPly
+## Extending VidPly
 
 ### Add Custom Media Type
 
@@ -450,7 +483,7 @@ $GLOBALS['TCA']['tt_content']['columns']['tx_mpcvidply_options']['config']['item
 
 ---
 
-## 🐛 Debugging
+## Debugging
 
 ### Common Issues
 
@@ -487,7 +520,7 @@ $GLOBALS['TYPO3_CONF_VARS']['FE']['debug'] = true;
 
 ---
 
-## 🔎 Structured data (JSON-LD)
+## Structured data (JSON-LD)
 
 VidPly emits `schema.org` structured data for its media so pages are eligible for
 Google video/audio rich results. The output is built in the page `<head>`, not in
@@ -521,11 +554,16 @@ the content element template.
     produces no usable `@graph`, VidPly falls back to a standalone document.
 
 - **Disabling**: set the site setting `structuredDataEnabled` to `false` to suppress
-  all VidPly JSON-LD for that site (defaults to enabled).
+  all VidPly JSON-LD for that site (defaults to enabled). Add to
+  `config/sites/<site>/config.yaml` if your Site Set does not define it.
+
+- **With mp-core**: when mp-core emits JSON-LD, VidPly merges into its `@graph`.
+  mp-core may also require `seo.schema.enabled` — both toggles must be true for
+  mp-core's global structured-data path. See [Integrations.md → Structured data](Integrations.md#structured-data-json-ld-with-mp-core).
 
 ---
 
-## 🧪 Automated Tests
+## Automated Tests
 
 The extension ships a PHPUnit suite built on `typo3/testing-framework`:
 
@@ -534,10 +572,12 @@ The extension ships a PHPUnit suite built on `typo3/testing-framework`:
 
 ### Setup (once)
 
-Install the extension's own dev dependencies into a self-contained `.Build/` tree (kept out of the monorepo `vendor/`):
+Install the extension's own dev dependencies into a self-contained `.Build/` tree (from the **extension root** — the directory containing this package's `composer.json`):
 
 ```bash
-ddev composer install --working-dir=libs/mpc-vidply
+composer install --working-dir=vendor/mpc/mpc-vidply
+# or, in a path-repo checkout:
+composer install --working-dir=mpcore/packages/mpc-vidply
 ```
 
 Functional tests need permission to create throwaway `db_*` databases. Grant it once to the DDEV `db` user:
@@ -549,11 +589,11 @@ ddev exec 'mysql -uroot -proot -e "GRANT ALL ON \`db_%\`.* TO \`db\`@\`%\`; FLUS
 ### Run
 
 ```bash
-# Unit tests
-ddev exec 'cd libs/mpc-vidply && .Build/bin/phpunit -c phpunit.xml.dist'
+# Unit tests (replace EXT_ROOT with your checkout path)
+ddev exec 'cd mpcore/packages/mpc-vidply && .Build/bin/phpunit -c phpunit.xml.dist'
 
 # Functional tests (point typo3Database* at the DDEV `db` service)
-ddev exec 'cd libs/mpc-vidply && \
+ddev exec 'cd mpcore/packages/mpc-vidply && \
   typo3DatabaseDriver=mysqli typo3DatabaseHost=db typo3DatabaseName=db \
   typo3DatabaseUsername=db typo3DatabasePassword=db \
   .Build/bin/phpunit -c Build/FunctionalTests.xml'
@@ -567,25 +607,30 @@ Composer shortcuts are also defined: `composer test:unit` and `composer test:fun
 Enable a coverage driver (`ddev xdebug on`, or install pcov) and add a coverage flag:
 
 ```bash
-ddev exec 'cd libs/mpc-vidply && XDEBUG_MODE=coverage .Build/bin/phpunit -c phpunit.xml.dist --coverage-text --coverage-html .Build/coverage'
+ddev exec 'cd mpcore/packages/mpc-vidply && XDEBUG_MODE=coverage .Build/bin/phpunit -c phpunit.xml.dist --coverage-text --coverage-html .Build/coverage'
 ```
 
 ---
 
-## 📚 Documentation Index
+## Documentation Index
+
+See **[README.md](README.md)** for audience-based navigation.
 
 | File | Content |
 |------|---------|
+| [README.md](README.md) | Documentation hub |
+| [Editors-Guide.md](Editors-Guide.md) | Guide for content editors |
+| [Listview.md](Listview.md) | Mediathek listview + detail CEs |
+| [Integrations.md](Integrations.md) | Vue/Swiper, CSP, mp-core, theme API |
 | [AssetLoading.md](AssetLoading.md) | Conditional JS loading optimization |
 | [Partials.md](Partials.md) | Template partial documentation |
 | [PrivacyLayer.md](PrivacyLayer.md) | GDPR implementation details |
-| [HLS-Implementation.md](HLS-Implementation.md) | HLS & DASH streaming technical details (integrated into video/audio types) |
-| [SettingsArchitecture.md](SettingsArchitecture.md) | Configuration system |
-| [Editors-Guide.md](Editors-Guide.md) | Guide for content editors |
+| [HLS-Implementation.md](HLS-Implementation.md) | HLS & DASH streaming technical details |
+| [SettingsArchitecture.md](SettingsArchitecture.md) | Configuration tiers and fields |
 
 ---
 
-## 🔗 External Resources
+## External Resources
 
 - [TYPO3 Documentation](https://docs.typo3.org/)
 - [HLS.js](https://github.com/video-dev/hls.js/)
@@ -627,5 +672,5 @@ tx_mpcvidply_privacy_settings -- Privacy layer configuration
 
 ---
 
-**Version:** 1.1.3 | **TYPO3:** 13.4+ / 14.x | **PHP:** ≥8.2
+**Version:** 1.2.17 | **TYPO3:** 13.4+ / 14.x | **PHP:** ≥8.2
 

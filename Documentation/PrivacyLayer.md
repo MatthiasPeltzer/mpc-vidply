@@ -6,6 +6,12 @@ GDPR-compliant loading of external media services (YouTube, Vimeo, SoundCloud).
 
 External content only loads **after explicit user consent**, preventing tracking before interaction.
 
+![YouTube privacy layer on the frontend — poster, play control, and policy link before any iframe request](Images/frontend/frontend-privacy-layer-youtube.png)
+
+Backend copy for each provider is edited under **List → Privacy Layer Settings** (YouTube / Vimeo / SoundCloud tabs):
+
+![Backend: Privacy Layer Settings — YouTube headline, intro/outro text, and policy link fields](Images/backend/backend-privacy-settings.png)
+
 ## Supported Services
 
 | Service | Type | Post-consent player | Domain | Features |
@@ -42,6 +48,8 @@ External content only loads **after explicit user consent**, preventing tracking
 
 **Default text (SoundCloud):**
 > "To activate the widget, you must click on the button. After activating the button, **SoundCloud's privacy policy** applies."
+
+> **For content editors:** After consent, YouTube and Vimeo load their own embed players; SoundCloud loads the **Widget iframe** (waveform UI), not VidPly's unified control bar — unless your site uses the advanced renderer override documented below.
 
 **Customizable** - All privacy texts, links, headlines, and button labels can be configured in the backend.
 

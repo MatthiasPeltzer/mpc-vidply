@@ -27,4 +27,3 @@ npm-debug.log*
 /.Build/
 /.php-cs-fixer.cache
 composer.lock
-

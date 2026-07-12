@@ -11,10 +11,13 @@ Universal, Accessible Video & Audio Player for TYPO3. Includes support for HTML5
 - **Full Accessibility** - Captions, chapters, audio description, sign language, keyboard controls
 - **HLS Streaming** - Adaptive bitrate streaming with **hls.js 1.6.16** (Chrome / Firefox / Edge / desktop Safari) and native HLS on iOS / iPadOS — both paths integrate with VidPly's captions, transcript and quality menus
 - **DASH Streaming** - MPEG-DASH via **dash.js 5.2.0** (modern UMD) with adaptive quality and subtitles (integrated into video/audio types)
-- **SoundCloud Renderer** - First-class SoundCloud playback through the SoundCloud Widget API (in addition to the GDPR consent layer)
+- **Import from URL** - Paste a media URL in the backend to auto-detect type, attach online media, and pre-fill title, artist, and poster
+- **SoundCloud Support** - GDPR consent layer, then SoundCloud Widget playback (optional developer opt-in for unified VidPly controls — see [PrivacyLayer.md](Documentation/PrivacyLayer.md))
 - **Buffering Spinner** - Centered loading spinner shown automatically while the media is buffering
-- **Optional Download Button** - Per-media download control with custom URL support
-- **Modern Player** - Responsive, Picture-in-Picture, quality switching, playback speed
+- **Optional Download Button** - Per-media toggle; progressive sources (MP4/WebM/MP3) are used automatically; for HLS/DASH-only items add a progressive fallback file
+- **Floating Player** - Optional custom Picture-in-Picture: draggable, resizable in-page window (per media record)
+- **Modern Player** - Responsive, browser PiP, quality switching, playback speed, keyboard-shortcuts help overlay
+- **Structured Data (JSON-LD)** - `VideoObject` / `AudioObject` (and `ItemList` on gallery pages) for SEO rich results — see [Developers Quickstart](Documentation/Developers-Quickstart.md#structured-data-json-ld)
 - **TypeScript Codebase** - The bundled VidPly player is now authored in strict TypeScript with shipped `.d.ts` declarations
 - **Conditional Asset Loading** - Only loads JavaScript needed for your media types
 - **Listview & Detail Page** — Add a **VidPly Listview** content element for one or more browsable rows (horizontal shelf or responsive grid), optional per-row **browser pagination** and **sort** control, category chips on cards, and links to a **VidPly Detail** page with short + **long (RTE) description**, categories, and slug or `?media=` URLs; connected translations follow the default-language row configuration (see [`Documentation/Listview.md`](Documentation/Listview.md))
@@ -27,15 +30,18 @@ Universal, Accessible Video & Audio Player for TYPO3. Includes support for HTML5
 composer require mpc/mpc-vidply
 ```
 
-1. **Database Update** → Maintenance → Analyze Database Structure
-2. **Include Static Template** → Root page → "VidPly Player (mpc_vidply)"
+1. **Database Update** → Admin Tools → Maintenance → Analyze Database Structure
+2. **Include Site Set** → Site Management → Sites → Your Site → Sets → Add `mpc/mpc-vidply`  
+   (or add `mpc/mpc-vidply` to `dependencies` in `config/sites/<site>/config.yaml`)
 3. **Clear Caches**
 
 ### Create Media
 
 **List Module → VidPly Media**
 
-Choose media type:
+**Fastest way:** use **Import from URL** at the top of the form — paste a YouTube, Vimeo, SoundCloud, streaming (`.m3u8` / `.mpd`), or allowlisted external MP4/MP3 link. VidPly detects the type and pre-fills metadata. See the [Editors Guide](Documentation/Editors-Guide.md).
+
+Or choose media type manually:
 - **Video** - Upload MP4, WebM or add HLS/DASH streaming URLs (with progressive fallbacks)
 - **Audio** - Upload MP3, OGG or add HLS/DASH streaming URLs (with progressive fallbacks)
 - **YouTube** - Paste video URL
@@ -72,7 +78,7 @@ Settings support multilingual content and apply to both single items and playlis
 | Audio | Upload/URL | No | MP3, OGG, HLS (.m3u8), DASH (.mpd) with fallbacks |
 | YouTube | Video URL | Yes | GDPR consent required |
 | Vimeo | Video URL | Yes | GDPR consent required |
-| SoundCloud | Track/Set URL | Yes | GDPR consent required; once accepted, played via the dedicated SoundCloud Widget renderer |
+| SoundCloud | Track/Set URL | Yes | GDPR consent required; after consent the SoundCloud Widget iframe loads (default). Unified VidPly UI is an optional developer override |
 
 ## Privacy Layer
 
@@ -104,6 +110,7 @@ For YouTube, Vimeo, and SoundCloud:
 - **M** - Mute
 - **F** - Fullscreen
 - **C** - Captions
+- **?** - Keyboard shortcuts help (focus-trapped dialog)
 - **←/→** - Seek ±10s
 - **↑/↓** - Volume ±10%
 
@@ -149,14 +156,17 @@ Modular template partials:
 
 ## Documentation
 
+Start at the **[Documentation index](Documentation/README.md)** for audience-based navigation (editors, administrators, developers).
+
 - [Editors Guide](Documentation/Editors-Guide.md) - How to use VidPly for content editors
 - [Listview & Detail](Documentation/Listview.md) - Mediathek-style overview, detail page, routing, pagination, i18n behaviour
 - [Developers Quickstart](Documentation/Developers-Quickstart.md) - Quick reference for developers
+- [Integrations](Documentation/Integrations.md) - Vue/Swiper sliders, dynamic content, CSP, mp-core JSON-LD
+- [Settings Architecture](Documentation/SettingsArchitecture.md) - Configuration tiers (privacy, player, media, extension)
 - [AssetLoading.md](Documentation/AssetLoading.md) - Conditional asset loading optimization
 - [Partials.md](Documentation/Partials.md) - Template structure and customization
 - [PrivacyLayer.md](Documentation/PrivacyLayer.md) - External service privacy implementation
 - [HLS-Implementation.md](Documentation/HLS-Implementation.md) - HLS & DASH streaming technical details
-- [SettingsArchitecture.md](Documentation/SettingsArchitecture.md) - Configuration system architecture
 
 ## Troubleshooting
 
@@ -174,6 +184,13 @@ Modular template partials:
 - Clear TYPO3 caches
 - Check PrivacyLayer.js loads
 - Verify Privacy Layer Settings are configured
+
+**HLS/DASH or CSP errors?**
+- Verify stream URLs are reachable and send CORS headers
+- Check `Configuration/ContentSecurityPolicies.php` allows `blob:`, `data:`, and your CDN — see [HLS-Implementation.md](Documentation/HLS-Implementation.md)
+
+**Player missing inside a Vue/Swiper slider?**
+- Re-scan after dynamic HTML injection — see [Integrations.md](Documentation/Integrations.md)
 
 ## Requirements
 
