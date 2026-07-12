@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\DataProcessing;
 
+use Mpc\MpcVidply\Service\CategoryTitleResolver;
 use Mpc\MpcVidply\Service\FrontendLanguageResolver;
 use Mpc\MpcVidply\Service\ListviewMediaResolver;
 use TYPO3\CMS\Core\Database\Connection;
@@ -30,15 +31,18 @@ final class ListviewProcessor implements DataProcessorInterface
     private readonly ConnectionPool $connectionPool;
     private readonly ResourceFactory $resourceFactory;
     private readonly ListviewMediaResolver $mediaResolver;
+    private readonly CategoryTitleResolver $categoryTitleResolver;
 
     public function __construct(
         ?ConnectionPool $connectionPool = null,
         ?ResourceFactory $resourceFactory = null,
-        ?ListviewMediaResolver $mediaResolver = null
+        ?ListviewMediaResolver $mediaResolver = null,
+        ?CategoryTitleResolver $categoryTitleResolver = null
     ) {
         $this->connectionPool = $connectionPool ?? GeneralUtility::makeInstance(ConnectionPool::class);
         $this->resourceFactory = $resourceFactory ?? GeneralUtility::makeInstance(ResourceFactory::class);
         $this->mediaResolver = $mediaResolver ?? GeneralUtility::makeInstance(ListviewMediaResolver::class);
+        $this->categoryTitleResolver = $categoryTitleResolver ?? GeneralUtility::makeInstance(CategoryTitleResolver::class);
     }
 
     /**
@@ -60,6 +64,9 @@ final class ListviewProcessor implements DataProcessorInterface
         $contentUid = (int)($data['uid'] ?? 0);
         // `tt_content` uses `l18n_parent` in the database; `l10n_parent` is a legacy alias in some rows.
         $l10nParent = (int)($data['l18n_parent'] ?? $data['l10n_parent'] ?? 0);
+        if ($l10nParent <= 0 && $languageId > 0 && $contentUid > 0) {
+            $l10nParent = $this->resolveTranslationSourceUid($contentUid);
+        }
 
         $detailPageUid = (int)($data['tx_mpcvidply_detail_page'] ?? 0);
 
@@ -72,6 +79,27 @@ final class ListviewProcessor implements DataProcessorInterface
         ];
 
         return $processedData;
+    }
+
+    private function resolveTranslationSourceUid(int $contentUid): int
+    {
+        if ($contentUid <= 0) {
+            return 0;
+        }
+
+        $qb = $this->connectionPool->getQueryBuilderForTable('tt_content');
+        $parent = $qb
+            ->select('l18n_parent')
+            ->from('tt_content')
+            ->where(
+                $qb->expr()->eq('uid', $qb->createNamedParameter($contentUid, Connection::PARAM_INT)),
+                $qb->expr()->eq('deleted', $qb->createNamedParameter(0, Connection::PARAM_INT))
+            )
+            ->setMaxResults(1)
+            ->executeQuery()
+            ->fetchOne();
+
+        return is_numeric($parent) ? (int)$parent : 0;
     }
 
     /**
@@ -188,7 +216,10 @@ final class ListviewProcessor implements DataProcessorInterface
 
         $mediaType = (string)($media['media_type'] ?? 'video');
         $isExternal = in_array($mediaType, ['youtube', 'vimeo', 'soundcloud'], true);
-        $categories = $this->resolveCategoriesForMedia($media, $categoryMap);
+        $categories = $this->categoryTitleResolver->localizeCategories(
+            $this->resolveCategoriesForMedia($media, $categoryMap),
+            $languageId
+        );
 
         return [
             'uid' => $uid,
@@ -274,8 +305,6 @@ final class ListviewProcessor implements DataProcessorInterface
             return [];
         }
 
-        $lang = array_values(array_unique([0, -1, $languageId], SORT_REGULAR));
-
         $qb = $this->connectionPool->getQueryBuilderForTable('sys_category');
         $rows = $qb
             ->select('mm.uid_foreign', 'sys_category.uid', 'sys_category.title', 'mm.sorting')
@@ -294,10 +323,7 @@ final class ListviewProcessor implements DataProcessorInterface
             ->where(
                 $qb->expr()->eq('sys_category.deleted', $qb->createNamedParameter(0, Connection::PARAM_INT)),
                 $qb->expr()->eq('sys_category.hidden', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-                $qb->expr()->in(
-                    'sys_category.sys_language_uid',
-                    $qb->createNamedParameter($lang, Connection::PARAM_INT_ARRAY)
-                )
+                $qb->expr()->lte('sys_category.sys_language_uid', $qb->createNamedParameter(0, Connection::PARAM_INT))
             )
             ->orderBy('mm.uid_foreign', 'ASC')
             ->addOrderBy('mm.sorting', 'ASC')

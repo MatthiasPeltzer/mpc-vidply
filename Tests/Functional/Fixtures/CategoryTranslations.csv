@@ -1,0 +1,5 @@
+"sys_category"
+,"uid","pid","sys_language_uid","l10n_parent","title","hidden","deleted"
+,50,1,0,0,"Documentaries",0,0
+,51,1,1,50,"Dokumentationen",0,0
+,60,1,0,0,"Music",0,0

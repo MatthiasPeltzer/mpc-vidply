@@ -127,6 +127,7 @@ return [
         ],
         'layout' => [
             'exclude' => false,
+            'l10n_mode' => 'exclude',
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_listview_row.layout',
             'onChange' => 'reload',
             'config' => [
@@ -141,6 +142,7 @@ return [
         ],
         'card_style' => [
             'exclude' => true,
+            'l10n_mode' => 'exclude',
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_listview_row.card_style',
             'config' => [
                 'type' => 'select',
@@ -216,6 +218,7 @@ return [
         ],
         'selection_mode' => [
             'exclude' => false,
+            'l10n_mode' => 'exclude',
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_listview_row.selection_mode',
             'config' => [
                 'type' => 'select',
@@ -230,6 +233,7 @@ return [
         ],
         'media_items' => [
             'exclude' => false,
+            'l10n_mode' => 'exclude',
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_listview_row.media_items',
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_listview_row.media_items.description',
             'displayCond' => 'FIELD:selection_mode:=:manual',
@@ -261,6 +265,7 @@ return [
         ],
         'categories' => [
             'exclude' => false,
+            'l10n_mode' => 'exclude',
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_listview_row.categories',
             'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_listview_row.categories.description',
             'displayCond' => 'FIELD:selection_mode:=:category',

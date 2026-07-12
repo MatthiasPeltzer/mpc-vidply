@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Mpc\MpcVidply\Form\Element\MediaUrlImportElement;
 use Mpc\MpcVidply\Form\FormDataProvider\MediaUrlImportFormDataProvider;
+use Mpc\MpcVidply\Hooks\ListviewRowTranslationSync;
 use Mpc\MpcVidply\Hooks\MediaUrlImportPosterPersistHook;
 use Mpc\MpcVidply\Hooks\SrtCaptionConversionHook;
 use Mpc\MpcVidply\Hooks\VidPlyPlaylistTranslationSync;
@@ -25,9 +26,11 @@ defined('TYPO3') or die('Access denied.');
 $GLOBALS['TYPO3_CONF_VARS']['FE']['contentRenderingTemplates'][] = 'mpc_vidply/Configuration/TypoScript/';
 
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = VidPlyPlaylistTranslationSync::class;
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = ListviewRowTranslationSync::class;
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = SrtCaptionConversionHook::class;
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = MediaUrlImportPosterPersistHook::class;
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processCmdmapClass'][] = VidPlyPlaylistTranslationSync::class;
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processCmdmapClass'][] = ListviewRowTranslationSync::class;
 
 // Custom route aspect for `route-enhancers.yaml` (slug optional → query fallback).
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['routing']['aspects']['MpcVidplyMediaRoute'] = VidPlyMediaRouteAspect::class;

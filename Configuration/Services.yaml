@@ -62,6 +62,16 @@ services:
 
   Mpc\MpcVidply\Backend\Preview\ListviewPreviewRenderer:
     public: true
+    arguments:
+      $connectionPool: '@TYPO3\CMS\Core\Database\ConnectionPool'
+      $resourceFactory: '@TYPO3\CMS\Core\Resource\ResourceFactory'
+      $mediaResolver: '@Mpc\MpcVidply\Service\ListviewMediaResolver'
+
+  Mpc\MpcVidply\Hooks\ListviewRowTranslationSync:
+    public: true
+
+  Mpc\MpcVidply\Hooks\VidPlyPlaylistTranslationSync:
+    public: true
 
   Mpc\MpcVidply\EventListener\RegisterOnlineMediaIconsEventListener:
     tags:

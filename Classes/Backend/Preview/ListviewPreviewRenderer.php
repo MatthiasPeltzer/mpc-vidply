@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\Backend\Preview;
 
-use Mpc\MpcVidply\Repository\MediaRepository;
+use Mpc\MpcVidply\Service\ListviewMediaResolver;
 use TYPO3\CMS\Backend\Preview\StandardContentPreviewRenderer;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Backend\View\BackendLayout\Grid\GridColumnItem;
@@ -25,16 +25,16 @@ final class ListviewPreviewRenderer extends StandardContentPreviewRenderer
 
     private readonly ConnectionPool $connectionPool;
     private readonly ResourceFactory $resourceFactory;
-    private readonly MediaRepository $mediaRepository;
+    private readonly ListviewMediaResolver $mediaResolver;
 
     public function __construct(
         ?ConnectionPool $connectionPool = null,
         ?ResourceFactory $resourceFactory = null,
-        ?MediaRepository $mediaRepository = null
+        ?ListviewMediaResolver $mediaResolver = null
     ) {
         $this->connectionPool = $connectionPool ?? GeneralUtility::makeInstance(ConnectionPool::class);
         $this->resourceFactory = $resourceFactory ?? GeneralUtility::makeInstance(ResourceFactory::class);
-        $this->mediaRepository = $mediaRepository ?? GeneralUtility::makeInstance(MediaRepository::class);
+        $this->mediaResolver = $mediaResolver ?? GeneralUtility::makeInstance(ListviewMediaResolver::class);
     }
 
     public function renderPageModulePreviewContent(GridColumnItem $item): string
@@ -61,7 +61,7 @@ final class ListviewPreviewRenderer extends StandardContentPreviewRenderer
         $l10nParent = (int)($record['l18n_parent'] ?? $record['l10n_parent'] ?? 0);
         $ceLanguage = (int)($record['sys_language_uid'] ?? 0);
 
-        $rows = $this->fetchRows($contentUid, $l10nParent);
+        $rows = $this->mediaResolver->resolveRows($contentUid, $l10nParent, $ceLanguage);
         $lang = $this->getLanguageService();
 
         $html = '<div class="mpc-vidply-listview-preview w-100 mt-2">';
@@ -90,8 +90,8 @@ final class ListviewPreviewRenderer extends StandardContentPreviewRenderer
                 $headline = trim((string)($row['headline'] ?? ''));
                 $layout = (string)($row['layout'] ?? 'shelf');
                 $selectionMode = (string)($row['selection_mode'] ?? 'manual');
-                $rowUid = (int)($row['uid'] ?? 0);
-                $itemCount = $this->countItems($rowUid, $selectionMode);
+                $relationRowUid = $this->mediaResolver->resolveRelationRowUid($row);
+                $itemCount = $this->countItems($relationRowUid, $selectionMode);
                 $mediaRecords = $this->loadMediaForListviewRow($row, $ceLanguage);
 
                 $html .= '<div class="callout callout-default mpc-vidply-listview-row w-100 my-1 p-2">';
@@ -146,52 +146,6 @@ final class ListviewPreviewRenderer extends StandardContentPreviewRenderer
         $html .= '</div>';
 
         return $html;
-    }
-
-    /**
-     * Same parent resolution as {@see \Mpc\MpcVidply\DataProcessing\ListviewProcessor::fetchRowsForContent()}.
-     *
-     * The page-module preview does not filter `sys_language_uid`: child rows
-     * for overlays or "all languages" would otherwise be omitted when the
-     * in-memory record was incomplete. `hidden=0` matches the FE listview.
-     *
-     * @return list<array<string, mixed>>
-     */
-    private function fetchRows(int $contentUid, int $translationSourceUid): array
-    {
-        if ($contentUid <= 0) {
-            return [];
-        }
-        $parentIds = $translationSourceUid > 0 ? [$translationSourceUid] : [$contentUid];
-        $rows = $this->queryListviewRowRecordsForPreview($parentIds);
-        if ($rows === [] && $translationSourceUid > 0) {
-            $rows = $this->queryListviewRowRecordsForPreview([$contentUid]);
-        }
-        return $rows;
-    }
-
-    /**
-     * @param list<int> $parentIds
-     * @return list<array<string, mixed>>
-     */
-    private function queryListviewRowRecordsForPreview(array $parentIds): array
-    {
-        if ($parentIds === []) {
-            return [];
-        }
-        $qb = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_listview_row');
-        return $qb
-            ->select('uid', 'headline', 'layout', 'selection_mode', 'limit_items', 'parentid', 'sort_by')
-            ->from('tx_mpcvidply_listview_row')
-            ->where(
-                $qb->expr()->in('parentid', $qb->createNamedParameter($parentIds, Connection::PARAM_INT_ARRAY)),
-                $qb->expr()->eq('parenttable', $qb->createNamedParameter('tt_content')),
-                $qb->expr()->eq('deleted', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-                $qb->expr()->eq('hidden', $qb->createNamedParameter(0, Connection::PARAM_INT))
-            )
-            ->orderBy('sorting', 'ASC')
-            ->executeQuery()
-            ->fetchAllAssociative();
     }
 
     private function countItems(int $rowUid, string $selectionMode): int
@@ -298,11 +252,11 @@ final class ListviewPreviewRenderer extends StandardContentPreviewRenderer
      */
     private function renderListviewRowPreviewHints(array $row, array $mediaRecords, LanguageService $lang): string
     {
-        $rowUid = (int)($row['uid'] ?? 0);
         $selectionMode = (string)($row['selection_mode'] ?? 'manual');
         $html = '';
         if ($selectionMode === 'manual') {
-            $mmTotal = $rowUid > 0 ? $this->countItems($rowUid, 'manual') : 0;
+            $relationRowUid = $this->mediaResolver->resolveRelationRowUid($row);
+            $mmTotal = $relationRowUid > 0 ? $this->countItems($relationRowUid, 'manual') : 0;
             if ($mmTotal > count($mediaRecords)) {
                 $more = $lang->sL(self::LLL . 'preview.listview.row_items_truncated') ?: '%1$d of %2$d items shown';
                 $html .= '<div class="d-block w-100 small text-muted mt-1">'
@@ -325,54 +279,11 @@ final class ListviewPreviewRenderer extends StandardContentPreviewRenderer
      */
     private function loadMediaForListviewRow(array $row, int $languageId): array
     {
-        $rowUid = (int)($row['uid'] ?? 0);
-        if ($rowUid <= 0) {
-            return [];
-        }
         $limitConfig = max(1, (int)($row['limit_items'] ?? 12));
         $limit = min(self::PREVIEW_MAX_ITEMS_PER_ROW, $limitConfig);
-        $sortBy = (string)($row['sort_by'] ?? 'sorting');
-        $selectionMode = (string)($row['selection_mode'] ?? 'manual');
-
-        if ($selectionMode === 'category') {
-            $categoryUids = $this->resolveCategoryUidsForRow($rowUid);
-
-            return $this->mediaRepository->findByCategories($categoryUids, $languageId, $limit, $sortBy);
-        }
-        $mediaRecords = $this->mediaRepository->findByRowUid($rowUid, $languageId);
-        if ($sortBy === 'title_asc') {
-            usort(
-                $mediaRecords,
-                static fn (array $a, array $b): int => strcasecmp((string)($a['title'] ?? ''), (string)($b['title'] ?? ''))
-            );
-        } elseif ($sortBy === 'crdate_desc') {
-            usort(
-                $mediaRecords,
-                static fn (array $a, array $b): int => (int)($b['crdate'] ?? 0) <=> (int)($a['crdate'] ?? 0)
-            );
-        }
+        $mediaRecords = $this->mediaResolver->resolveMediaRecordsForRow($row, $languageId);
 
         return array_slice($mediaRecords, 0, $limit);
-    }
-
-    /**
-     * @return list<int>
-     */
-    private function resolveCategoryUidsForRow(int $rowUid): array
-    {
-        $qb = $this->connectionPool->getQueryBuilderForTable('sys_category_record_mm');
-        $uids = $qb
-            ->select('uid_local')
-            ->from('sys_category_record_mm')
-            ->where(
-                $qb->expr()->eq('tablenames', $qb->createNamedParameter('tx_mpcvidply_listview_row')),
-                $qb->expr()->eq('fieldname', $qb->createNamedParameter('categories')),
-                $qb->expr()->eq('uid_foreign', $qb->createNamedParameter($rowUid, Connection::PARAM_INT))
-            )
-            ->executeQuery()
-            ->fetchFirstColumn();
-
-        return array_values(array_unique(array_map(static fn (int|string $v): int => (int)$v, $uids)));
     }
 
     /**

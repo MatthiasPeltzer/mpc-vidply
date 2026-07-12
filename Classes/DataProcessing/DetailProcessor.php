@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mpc\MpcVidply\DataProcessing;
 
 use Mpc\MpcVidply\Repository\MediaRepository;
+use Mpc\MpcVidply\Service\CategoryTitleResolver;
 use Mpc\MpcVidply\Service\FrontendLanguageResolver;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Database\Connection;
@@ -29,17 +30,20 @@ final class DetailProcessor implements DataProcessorInterface
     private readonly VidPlyProcessor $vidPlyProcessor;
     private readonly ConnectionPool $connectionPool;
     private readonly ResourceFactory $resourceFactory;
+    private readonly CategoryTitleResolver $categoryTitleResolver;
 
     public function __construct(
         ?MediaRepository $mediaRepository = null,
         ?VidPlyProcessor $vidPlyProcessor = null,
         ?ConnectionPool $connectionPool = null,
-        ?ResourceFactory $resourceFactory = null
+        ?ResourceFactory $resourceFactory = null,
+        ?CategoryTitleResolver $categoryTitleResolver = null
     ) {
         $this->mediaRepository = $mediaRepository ?? GeneralUtility::makeInstance(MediaRepository::class);
         $this->vidPlyProcessor = $vidPlyProcessor ?? GeneralUtility::makeInstance(VidPlyProcessor::class);
         $this->connectionPool = $connectionPool ?? GeneralUtility::makeInstance(ConnectionPool::class);
         $this->resourceFactory = $resourceFactory ?? GeneralUtility::makeInstance(ResourceFactory::class);
+        $this->categoryTitleResolver = $categoryTitleResolver ?? GeneralUtility::makeInstance(CategoryTitleResolver::class);
     }
 
     /**
@@ -352,23 +356,22 @@ final class DetailProcessor implements DataProcessorInterface
             ->where(
                 $qb->expr()->eq('sys_category.deleted', $qb->createNamedParameter(0, Connection::PARAM_INT)),
                 $qb->expr()->eq('sys_category.hidden', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-                $qb->expr()->in(
-                    'sys_category.sys_language_uid',
-                    $qb->createNamedParameter($lang, Connection::PARAM_INT_ARRAY)
-                )
+                $qb->expr()->lte('sys_category.sys_language_uid', $qb->createNamedParameter(0, Connection::PARAM_INT))
             )
             ->groupBy('sys_category.uid', 'sys_category.title')
             ->orderBy('mm.sorting', 'ASC')
             ->executeQuery()
             ->fetchAllAssociative();
 
-        return array_map(
+        $categories = array_map(
             static fn (array $r): array => [
                 'uid' => (int)($r['uid'] ?? 0),
                 'title' => (string)($r['title'] ?? ''),
             ],
             $rows
         );
+
+        return $this->categoryTitleResolver->localizeCategories($categories, $languageId);
     }
 
     private function formatDuration(int $seconds): string

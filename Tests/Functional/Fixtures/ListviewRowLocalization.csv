@@ -1,0 +1,7 @@
+"tt_content"
+,"uid","pid","sys_language_uid","l18n_parent","CType","hidden","deleted"
+,400,1,0,0,"mpc_vidply_listview",0,0
+,401,1,1,400,"mpc_vidply_listview",0,0
+"tx_mpcvidply_listview_row"
+,"uid","pid","parentid","parenttable","parentfield","sorting","headline","headline_link","layout","selection_mode","limit_items","sort_by","hidden","deleted","sys_language_uid","l10n_parent"
+,10,1,400,"tt_content","tx_mpcvidply_listview_rows",1,"Latest Videos","","shelf","manual",12,"sorting",0,0,0,0

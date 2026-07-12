@@ -45,12 +45,17 @@ final class ListviewMediaResolver
             return [];
         }
 
-        $parentIds = $translationSourceUid > 0 ? [$translationSourceUid] : [$contentUid];
-
-        $rows = $this->queryListviewRowsByParentIds($parentIds, $languageId);
-        if ($rows === [] && $translationSourceUid > 0) {
-            $rows = $this->queryListviewRowsByParentIds([$contentUid], $languageId);
+        // Localized inline children may hang off the default-language CE, the
+        // translated CE, or both. Query every relevant parent id up front.
+        $parentIds = [$contentUid];
+        if ($translationSourceUid > 0 && $translationSourceUid !== $contentUid) {
+            $parentIds[] = $translationSourceUid;
         }
+
+        $rows = $this->queryListviewRowsByParentIds(
+            array_values(array_unique($parentIds, SORT_NUMERIC)),
+            $languageId
+        );
 
         if ($languageId <= 0) {
             return array_values(array_filter(
@@ -59,22 +64,74 @@ final class ListviewMediaResolver
             ));
         }
 
-        // Language overlay: prefer translated row, fall back to default row.
-        $byDefaultUid = [];
+        $defaultsByUid = [];
+        $translationsByParent = [];
+
         foreach ($rows as $row) {
             $language = (int)($row['sys_language_uid'] ?? 0);
             $uid = (int)($row['uid'] ?? 0);
-            $parent = (int)($row['l10n_parent'] ?? 0);
+            $parent = (int)($row['l10n_parent'] ?? $row['l18n_parent'] ?? 0);
+
             if ($language === 0 || $language === -1) {
-                $byDefaultUid[$uid] = $row;
+                if ($uid > 0) {
+                    $defaultsByUid[$uid] = $row;
+                }
                 continue;
             }
+
             if ($language === $languageId && $parent > 0) {
-                $byDefaultUid[$parent] = $row;
+                $translationsByParent[$parent] = $row;
             }
         }
 
-        return array_values($byDefaultUid);
+        // Connected-mode pages often render the default-language CE on a translated
+        // page. Overlays may hang off the translated CE uid, so resolve them by
+        // l10n_parent as well (not only via parentid in the first query).
+        foreach ($this->fetchLocalizedOverlaysByDefaultUids(array_keys($defaultsByUid), $languageId) as $parentUid => $overlayRow) {
+            $translationsByParent[$parentUid] = $overlayRow;
+        }
+
+        $merged = [];
+        foreach ($defaultsByUid as $defaultUid => $defaultRow) {
+            $merged[] = isset($translationsByParent[$defaultUid])
+                ? $this->mergeLocalizedListviewRow($defaultRow, $translationsByParent[$defaultUid])
+                : $defaultRow;
+        }
+
+        // Legacy rows attached only to the translated CE without a default sibling.
+        foreach ($translationsByParent as $parentUid => $translatedRow) {
+            if (!isset($defaultsByUid[$parentUid])) {
+                $merged[] = $translatedRow;
+            }
+        }
+
+        usort(
+            $merged,
+            static fn (array $a, array $b): int => (int)($a['sorting'] ?? 0) <=> (int)($b['sorting'] ?? 0)
+        );
+
+        return $merged;
+    }
+
+    /**
+     * @param array<string, mixed> $defaultRow
+     * @param array<string, mixed> $translatedRow
+     * @return array<string, mixed>
+     */
+    private function mergeLocalizedListviewRow(array $defaultRow, array $translatedRow): array
+    {
+        $merged = $defaultRow;
+        $merged['uid'] = (int)($translatedRow['uid'] ?? $defaultRow['uid'] ?? 0);
+        $merged['l10n_parent'] = (int)($defaultRow['uid'] ?? 0);
+
+        foreach (['headline', 'headline_link'] as $field) {
+            $value = trim((string)($translatedRow[$field] ?? ''));
+            if ($value !== '') {
+                $merged[$field] = $translatedRow[$field];
+            }
+        }
+
+        return $merged;
     }
 
     /**
@@ -91,17 +148,19 @@ final class ListviewMediaResolver
             return [];
         }
 
+        $relationRowUid = $this->resolveRelationRowUid($row);
+
         $selectionMode = (string)($row['selection_mode'] ?? 'manual');
         $limit = max(1, (int)($row['limit_items'] ?? 12));
         $sortBy = (string)($row['sort_by'] ?? 'sorting');
 
         if ($selectionMode === 'category') {
-            $categoryUids = $this->resolveCategoryUidsForRow($rowUid);
+            $categoryUids = $this->resolveCategoryUidsForRow($relationRowUid);
 
             return $this->mediaRepository->findByCategories($categoryUids, $languageId, $limit, $sortBy);
         }
 
-        $mediaRecords = $this->mediaRepository->findByRowUid($rowUid, $languageId);
+        $mediaRecords = $this->mediaRepository->findByRowUid($relationRowUid, $languageId);
         if ($sortBy === 'title_asc') {
             usort(
                 $mediaRecords,
@@ -115,6 +174,19 @@ final class ListviewMediaResolver
         }
 
         return array_slice($mediaRecords, 0, $limit);
+    }
+
+    /**
+     * MM relations for localized inline child rows hang off the default-language uid.
+     *
+     * @param array<string, mixed> $row
+     */
+    public function resolveRelationRowUid(array $row): int
+    {
+        $rowUid = (int)($row['uid'] ?? 0);
+        $parent = (int)($row['l10n_parent'] ?? $row['l18n_parent'] ?? 0);
+
+        return $parent > 0 ? $parent : $rowUid;
     }
 
     /**
@@ -168,6 +240,49 @@ final class ListviewMediaResolver
             ->orderBy('sorting', 'ASC')
             ->executeQuery()
             ->fetchAllAssociative();
+    }
+
+    /**
+     * @param list<int> $defaultRowUids
+     * @return array<int, array<string, mixed>> Indexed by l10n_parent (default row uid)
+     */
+    private function fetchLocalizedOverlaysByDefaultUids(array $defaultRowUids, int $languageId): array
+    {
+        $defaultRowUids = array_values(array_filter(
+            array_map(static fn (int|string $uid): int => (int)$uid, $defaultRowUids),
+            static fn (int $uid): bool => $uid > 0
+        ));
+        if ($defaultRowUids === [] || $languageId <= 0) {
+            return [];
+        }
+
+        $qb = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_listview_row');
+        $rows = $qb
+            ->select('*')
+            ->from('tx_mpcvidply_listview_row')
+            ->where(
+                $qb->expr()->in(
+                    'l10n_parent',
+                    $qb->createNamedParameter($defaultRowUids, Connection::PARAM_INT_ARRAY)
+                ),
+                $qb->expr()->eq('sys_language_uid', $qb->createNamedParameter($languageId, Connection::PARAM_INT)),
+                $qb->expr()->eq('deleted', $qb->createNamedParameter(0, Connection::PARAM_INT)),
+                $qb->expr()->eq('hidden', $qb->createNamedParameter(0, Connection::PARAM_INT))
+            )
+            ->orderBy('sorting', 'ASC')
+            ->executeQuery()
+            ->fetchAllAssociative();
+
+        $overlays = [];
+        foreach ($rows as $row) {
+            $parentUid = (int)($row['l10n_parent'] ?? $row['l18n_parent'] ?? 0);
+            if ($parentUid <= 0) {
+                continue;
+            }
+            $overlays[$parentUid] = $row;
+        }
+
+        return $overlays;
     }
 
     /**
