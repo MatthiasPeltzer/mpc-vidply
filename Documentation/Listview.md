@@ -41,6 +41,8 @@ Editor picks media/categories
 
 ![Media library listview — responsive grid rows with category chips and sort control](Images/frontend/frontend-listview-mediathek.png)
 
+![Backend: VidPly Listview content element — detail page picker and listview row configuration](Images/backend/backend-listview-ce.png)
+
 1. On your landing page (e.g. */mediathek*) insert a **VidPly Listview**
    content element.
 2. Under *Detail Page* choose the page created in 1.1.
@@ -212,5 +214,4 @@ properties for theming (see `listview.css` for the full list).
 - `schema.org` JSON-LD (`VideoObject` / `AudioObject`, or an `ItemList`
   on gallery pages) is emitted in the page `<head>` for SEO / rich-result
   eligibility. Listview shelves are included automatically, linking each
-  card to the configured detail page. See the "Structured data (JSON-LD)"
-  section in [Developers-Quickstart.md](Developers-Quickstart.md).
+  card to the configured detail page. See [Structured data (JSON-LD)](Developers-Quickstart.md#structured-data-json-ld).

@@ -143,6 +143,8 @@ On existing records with a linked online-media file, use **Refresh metadata** to
 
 ### Adding Metadata
 
+![Backend: VidPly Media record — metadata palette with title, slug, categories, and poster fields](Images/backend/backend-media-record.png)
+
 Every media record has a **metadata palette**:
 
 | Field | Description | Required |
@@ -317,6 +319,8 @@ Generate searchable text transcript from captions:
 ### Insert Content Element
 
 **Page Module → Add Content → VidPly Player**
+
+![Backend: VidPly Player content element — media items selection and player options](Images/backend/backend-content-element-player.png)
 
 ### Select Media Items
 

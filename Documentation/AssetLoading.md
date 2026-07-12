@@ -16,7 +16,7 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 
 **CSS always loads** — `vidply.min.css` is lightweight and always included for consistent styling. It also contains the styles for the centered buffering spinner (`.vidply-loading` / `.vidply-buffering`) and the download button.
 
-**SoundCloud uses the privacy-layer path by default** — In `mpc-vidply` SoundCloud media items load only `PrivacyLayer.js` + `privacy-layer.css` (not the VidPly core), because the SoundCloud Widget iframe brings its own UI. The bundled standalone `SoundCloudRenderer` is shipped inside the VidPly core bundle and is therefore only fetched for pages that already need the VidPly core for other reasons (local video / audio, HLS, DASH). See **PrivacyLayer.md → "Switch SoundCloud to Renderer Mode"** for opting in.
+**SoundCloud uses the privacy-layer path by default** — In `mpc-vidply` SoundCloud media items load only `PrivacyLayer.js` + `privacy-layer.css` (not the VidPly core), because the SoundCloud Widget iframe brings its own UI. The bundled standalone `SoundCloudRenderer` is shipped inside the VidPly core bundle and is therefore only fetched for pages that already need the VidPly core for other reasons (local video / audio, HLS, DASH). See [PrivacyLayer.md → Switch SoundCloud to Renderer Mode](PrivacyLayer.md#switch-soundcloud-to-renderer-mode-advanced) for opting in.
 
 ## Examples
 
@@ -27,7 +27,7 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 - PrivacyLayer.js (consent handling, mounts the service iframe after consent)
 
 **Not Loaded:**
-- VidPly player core (and therefore not the bundled `SoundCloudRenderer` either — see PrivacyLayer.md for the renderer-mode opt-in)
+- VidPly player core (and therefore not the bundled `SoundCloudRenderer` either — see [PrivacyLayer.md](PrivacyLayer.md#switch-soundcloud-to-renderer-mode-advanced) for the renderer-mode opt-in)
 - PlaylistInit.js
 - hls.js
 - dash.js

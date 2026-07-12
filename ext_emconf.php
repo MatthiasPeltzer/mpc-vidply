@@ -8,6 +8,7 @@ $EM_CONF['mpc_vidply'] = [
     'author_email' => 'mail@mpeltzer.de',
     'state' => 'stable',
     'version' => '1.2.17',
+    'documentation' => 'Documentation/',
     'constraints' => [
         'depends' => [
             'typo3' => '13.4.0-14.3.99',

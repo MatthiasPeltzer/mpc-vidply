@@ -612,21 +612,9 @@ ddev exec 'cd mpcore/packages/mpc-vidply && XDEBUG_MODE=coverage .Build/bin/phpu
 
 ---
 
-## Documentation Index
+## Further reading
 
-See **[README.md](README.md)** for audience-based navigation.
-
-| File | Content |
-|------|---------|
-| [README.md](README.md) | Documentation hub |
-| [Editors-Guide.md](Editors-Guide.md) | Guide for content editors |
-| [Listview.md](Listview.md) | Mediathek listview + detail CEs |
-| [Integrations.md](Integrations.md) | Vue/Swiper, CSP, mp-core, theme API |
-| [AssetLoading.md](AssetLoading.md) | Conditional JS loading optimization |
-| [Partials.md](Partials.md) | Template partial documentation |
-| [PrivacyLayer.md](PrivacyLayer.md) | GDPR implementation details |
-| [HLS-Implementation.md](HLS-Implementation.md) | HLS & DASH streaming technical details |
-| [SettingsArchitecture.md](SettingsArchitecture.md) | Configuration tiers and fields |
+Audience-based navigation and the full document list: **[Documentation/README.md](README.md)**.
 
 ---
 
