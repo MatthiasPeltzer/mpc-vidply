@@ -6,6 +6,7 @@ namespace Mpc\MpcVidply\Tests\Functional\Service;
 
 use Mpc\MpcVidply\Service\ListviewRowLocalizationService;
 use PHPUnit\Framework\Attributes\Test;
+use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 
@@ -28,7 +29,9 @@ final class ListviewRowLocalizationServiceTest extends FunctionalTestCase
 
         $this->subject->ensureLocalizedRowsForTranslation(400, 401, 1);
 
-        $localized = $this->getConnectionForTable('tx_mpcvidply_listview_row')
+        $connection = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_mpcvidply_listview_row');
+        $localized = $connection
             ->select(['*'], 'tx_mpcvidply_listview_row', ['l10n_parent' => 10, 'sys_language_uid' => 1])
             ->fetchAssociative();
 
@@ -45,7 +48,9 @@ final class ListviewRowLocalizationServiceTest extends FunctionalTestCase
 
         $this->subject->ensureLocalizedRowsForAllTranslations(400);
 
-        $count = (int)$this->getConnectionForTable('tx_mpcvidply_listview_row')
+        $connection = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_mpcvidply_listview_row');
+        $count = (int)$connection
             ->count('uid', 'tx_mpcvidply_listview_row', ['l10n_parent' => 10, 'sys_language_uid' => 1])
             ->fetchOne();
 
