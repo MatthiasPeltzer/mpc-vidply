@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.18] - 2026-07-12
+
+### Fixed
+- Frontend category chips and detail-page categories now resolve connected
+  `sys_category` translation overlays instead of always showing default-language titles.
+- Listview row media/category selection now reads MM relations from the default-language
+  row uid when a translated row overlay is active, so localized headlines no longer
+  break row content resolution.
+- Listview row headlines now resolve when localized child rows hang off the translated
+  `tt_content` record (TYPO3's default inline-localization parent id).
+- Auto-create localized `tx_mpcvidply_listview_row` records when a listview content
+  element is translated or re-saved, so row headlines can be edited per language in
+  the backend inline field and page-module preview.
+- Frontend listview headlines on connected-mode pages now resolve translation overlays
+  by `l10n_parent` when the default-language content element is rendered on a
+  translated page.
+
+### Changed
+- Documentation: added doc hub (`Documentation/README.md`) and `Integrations.md`
+  (Vue/Swiper, CSP, mp-core JSON-LD); corrected README install (Site Set),
+  SoundCloud/download/floating-player editor guidance, extension configuration
+  reference, and updated Developers Quickstart for v1.2.17.
+- Documentation: removed emoji icons from `Developers-Quickstart.md` section headings;
+  fixed internal anchor links to Structured data (JSON-LD).
+- Documentation: embedded remaining backend screenshots; trimmed root README duplication;
+  fixed cross-doc links; registered `documentation` path in `ext_emconf.php`.
+
 ## [1.2.17] - 2026-07-10
 
 ### Fixed
@@ -659,6 +686,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.18]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.17...v1.2.18
 [1.2.17]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.16...v1.2.17
 [1.2.16]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.15...v1.2.16
 [1.2.15]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.14...v1.2.15
