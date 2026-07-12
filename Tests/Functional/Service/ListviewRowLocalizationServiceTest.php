@@ -50,9 +50,11 @@ final class ListviewRowLocalizationServiceTest extends FunctionalTestCase
 
         $connection = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionForTable('tx_mpcvidply_listview_row');
-        $count = (int)$connection
-            ->count('uid', 'tx_mpcvidply_listview_row', ['l10n_parent' => 10, 'sys_language_uid' => 1])
-            ->fetchOne();
+        $count = $connection->count(
+            'uid',
+            'tx_mpcvidply_listview_row',
+            ['l10n_parent' => 10, 'sys_language_uid' => 1]
+        );
 
         self::assertSame(1, $count);
     }
