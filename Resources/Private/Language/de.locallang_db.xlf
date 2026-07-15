@@ -3,6 +3,58 @@
   <file source-language="en" target-language="de" datatype="plaintext" original="messages" date="2025-11-24T12:00:00Z" product-name="mpc_vidply">
     <header/>
     <body>
+      <trans-unit id="header_layout.0">
+        <source>Default</source>
+        <target>Standard</target>
+      </trans-unit>
+      <trans-unit id="header_layout.1">
+        <source>H1</source>
+        <target>H1</target>
+      </trans-unit>
+      <trans-unit id="header_layout.10">
+        <source>H4 - Hidden (SR only)</source>
+        <target>H4 - Versteckt (nur SR)</target>
+      </trans-unit>
+      <trans-unit id="header_layout.11">
+        <source>H5 - Hidden (SR only)</source>
+        <target>H5 - Versteckt (nur SR)</target>
+      </trans-unit>
+      <trans-unit id="header_layout.12">
+        <source>H6 - Hidden (SR only)</source>
+        <target>H6 - Versteckt (nur SR)</target>
+      </trans-unit>
+      <trans-unit id="header_layout.2">
+        <source>H2 - Default</source>
+        <target>H2 - Standard</target>
+      </trans-unit>
+      <trans-unit id="header_layout.3">
+        <source>H3</source>
+        <target>H3</target>
+      </trans-unit>
+      <trans-unit id="header_layout.4">
+        <source>H4</source>
+        <target>H4</target>
+      </trans-unit>
+      <trans-unit id="header_layout.5">
+        <source>H5</source>
+        <target>H5</target>
+      </trans-unit>
+      <trans-unit id="header_layout.6">
+        <source>H6</source>
+        <target>H6</target>
+      </trans-unit>
+      <trans-unit id="header_layout.7">
+        <source>H1 - Hidden (SR only)</source>
+        <target>H1 - Versteckt (nur SR)</target>
+      </trans-unit>
+      <trans-unit id="header_layout.8">
+        <source>H2 - Hidden (SR only)</source>
+        <target>H2 - Versteckt (nur SR)</target>
+      </trans-unit>
+      <trans-unit id="header_layout.9">
+        <source>H3 - Hidden (SR only)</source>
+        <target>H3 - Versteckt (nur SR)</target>
+      </trans-unit>
       <trans-unit id="sys_file_reference.tx_desc_src_file">
         <source>Audio Description Version</source>
         <target>Audiodeskriptions-Version</target>
@@ -51,9 +103,141 @@
         <source>Captions &amp; Chapters</source>
         <target>Untertitel &amp; Kapitel</target>
       </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row">
+        <source>VidPly Listview Row</source>
+        <target>VidPly Listview-Reihe</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.card_style">
+        <source>Card style</source>
+        <target>Karten-Stil</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.card_style.landscape">
+        <source>Landscape (wide)</source>
+        <target>Querformat (breit)</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.card_style.poster">
+        <source>Poster (16:9)</source>
+        <target>Poster (16:9)</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.card_style.poster_compact">
+        <source>Compact (3:4)</source>
+        <target>Kompakt (3:4)</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.categories">
+        <source>Categories</source>
+        <target>Kategorien</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.categories.description">
+        <source>Media records assigned to any of these categories will be rendered in this row.</source>
+        <target>Medien-Datensätze, die einer dieser Kategorien zugewiesen sind, werden in dieser Reihe angezeigt.</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.enable_pagination">
+        <source>Client-side pagination</source>
+        <target>Seiten (Paginierung im Browser)</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.enable_pagination.description">
+        <source>Only for layout "Responsive grid". Horizontal shelves use scrolling instead; pagination is not available for them. When enabled, long rows are split into pages in the browser (default 12 per page, configurable). Turn off to always show the full set up to the max items limit above.</source>
+        <target>Nur bei Layout „Responsives Raster“. Die horizontale Leiste nutzt dagegen Scrolling; Paginierung ist dafür nicht vorgesehen. Wenn aktiviert, werden lange Raster-Reihen im Browser in Seiten aufgeteilt (Standard 12 pro Seite, einstellbar). Wenn deaktiviert, werden bis zur maximalen Anzahl o. g. alle Einträge auf einmal gezeigt.</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.enable_pagination.toggle">
+        <source>Enabled</source>
+        <target>Aktiv</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.headline">
+        <source>Row Headline</source>
+        <target>Reihen-Überschrift</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.headline_link">
+        <source>"Show all" Link (optional)</source>
+        <target>"Alle anzeigen"-Link (optional)</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.headline_link.description">
+        <source>Optional link rendered beside the headline. Typically points to an archive or category page.</source>
+        <target>Optionaler Link neben der Überschrift. Zeigt typischerweise auf eine Archiv- oder Kategorieseite.</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.layout">
+        <source>Layout</source>
+        <target>Layout</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.layout.grid">
+        <source>Responsive grid</source>
+        <target>Responsives Raster</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.layout.shelf">
+        <source>Horizontal shelf (scrollable)</source>
+        <target>Horizontale Reihe (scrollbar)</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.limit_items">
+        <source>Max items</source>
+        <target>Maximale Anzahl</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.limit_items.description">
+        <source>Maximum number of items rendered in this row (1–200).</source>
+        <target>Maximale Anzahl der in dieser Reihe gerenderten Einträge (1–200).</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.media_items">
+        <source>Media items</source>
+        <target>Medien-Datensätze</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.media_items.add">
+        <source>Create media record</source>
+        <target>Medien-Datensatz anlegen</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.media_items.description">
+        <source>Hand-pick the media records to display in this row.</source>
+        <target>Wählen Sie die Medien-Datensätze aus, die in dieser Reihe angezeigt werden sollen.</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.pagination_per_page">
+        <source>Items per page</source>
+        <target>Einträge pro Seite</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.pagination_per_page.description">
+        <source>Grid layout only. How many items are visible on each “page” when pagination is active (1–200). Must be less than the total number of items for pagination to appear.</source>
+        <target>Nur Raster-Layout. Wie viele Einträge pro „Seite“ sichtbar sind, wenn die Paginierung aktiv ist (1–200). Es muss insgesamt mehr geben, sonst erscheint keine Paginierung.</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.selection_mode">
+        <source>Selection mode</source>
+        <target>Auswahlmodus</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.selection_mode.category">
+        <source>Automatic (by category)</source>
+        <target>Automatisch (nach Kategorie)</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.selection_mode.manual">
+        <source>Manual (pick individual records)</source>
+        <target>Manuell (einzelne Datensätze auswählen)</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.sort_by">
+        <source>Sort order</source>
+        <target>Sortierung</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.sort_by.crdate_desc">
+        <source>Newest first</source>
+        <target>Neueste zuerst</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.sort_by.sorting">
+        <source>Manual sorting</source>
+        <target>Manuelle Sortierung</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.sort_by.title_asc">
+        <source>Title A–Z</source>
+        <target>Titel A–Z</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_listview_row.tabs.selection">
+        <source>Selection</source>
+        <target>Auswahl</target>
+      </trans-unit>
       <trans-unit id="tx_mpcvidply_media">
         <source>VidPly Media</source>
         <target>VidPly Medien</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.allow_download">
+        <source>Allow download</source>
+        <target>Download erlauben</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.allow_download.description">
+        <source>When enabled, a download button is shown in the player control bar, allowing the user to download the media file.</source>
+        <target>Wenn aktiviert, wird eine Download-Schaltfläche in der Player-Steuerleiste angezeigt, mit der die Mediendatei heruntergeladen werden kann.</target>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.artist">
         <source>Artist / Creator</source>
@@ -79,13 +263,13 @@
         <source>Audio Description Mode</source>
         <target>Audiodeskriptions-Modus</target>
       </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.audio_description_mode.description">
-        <source>Automatic uses a described video when available, otherwise speaks descriptions VTT cues. Video swap only replaces the media file. VTT speech reads descriptions tracks aloud and pauses the video.</source>
-        <target>Automatisch nutzt eine beschriebene Videodatei, falls vorhanden, sonst werden Descriptions-VTT-Spuren vorgelesen. „Nur beschriebenes Video“ tauscht die Mediendatei. „Descriptions-VTT-Sprache“ liest Descriptions-Spuren vor und pausiert das Video.</target>
-      </trans-unit>
       <trans-unit id="tx_mpcvidply_media.audio_description_mode.auto">
         <source>Automatic</source>
         <target>Automatisch</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.audio_description_mode.description">
+        <source>Automatic uses a described video when available, otherwise speaks descriptions VTT cues. Video swap only replaces the media file. VTT speech reads descriptions tracks aloud and pauses the video.</source>
+        <target>Automatisch nutzt eine beschriebene Videodatei, falls vorhanden, sonst werden Descriptions-VTT-Spuren vorgelesen. „Nur beschriebenes Video“ tauscht die Mediendatei. „Descriptions-VTT-Sprache“ liest Descriptions-Spuren vor und pausiert das Video.</target>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.audio_description_mode.swap">
         <source>Described video only</source>
@@ -99,37 +283,29 @@
         <source>Captions / Subtitles (VTT / SRT)</source>
         <target>Untertitel / Captions (VTT / SRT)</target>
       </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.captions.description">
-        <source>Optional WebVTT or SubRip files for captions or subtitles. SRT files are converted automatically to WebVTT when you save the media record. For DASH/HLS streams, embedded subtitle tracks are used automatically; adding files here overrides or supplements the embedded tracks.</source>
-        <target>Optionale WebVTT- oder SubRip-Dateien für Untertitel. SRT-Dateien werden beim Speichern des Medien-Datensatzes automatisch in WebVTT umgewandelt. Bei DASH-/HLS-Streams werden eingebettete Untertitelspuren automatisch verwendet; hier hinzugefügte Dateien überschreiben oder ergänzen die eingebetteten Spuren.</target>
-      </trans-unit>
       <trans-unit id="tx_mpcvidply_media.captions.add">
         <source>Add caption file</source>
         <target>Untertitel-Datei hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.captions.description">
+        <source>Optional WebVTT or SubRip files for captions or subtitles. SRT files are converted automatically to WebVTT when you save the media record. For DASH/HLS streams, embedded subtitle tracks are used automatically; adding files here overrides or supplements the embedded tracks.</source>
+        <target>Optionale WebVTT- oder SubRip-Dateien für Untertitel. SRT-Dateien werden beim Speichern des Medien-Datensatzes automatisch in WebVTT umgewandelt. Bei DASH-/HLS-Streams werden eingebettete Untertitelspuren automatisch verwendet; hier hinzugefügte Dateien überschreiben oder ergänzen die eingebetteten Spuren.</target>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.chapters">
         <source>Chapters (VTT / SRT)</source>
         <target>Kapitel (VTT / SRT)</target>
       </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.chapters.description">
-        <source>Optional WebVTT or SubRip files for chapter markers. SRT files are converted automatically to WebVTT when you save the media record. For DASH/HLS streams, chapter metadata from the manifest is used automatically; adding files here overrides or supplements the embedded chapters.</source>
-        <target>Optionale WebVTT- oder SubRip-Dateien für Kapitelmarken. SRT-Dateien werden beim Speichern des Medien-Datensatzes automatisch in WebVTT umgewandelt. Bei DASH-/HLS-Streams werden Kapitel-Metadaten aus dem Manifest automatisch verwendet; hier hinzugefügte Dateien überschreiben oder ergänzen die eingebetteten Kapitel.</target>
-      </trans-unit>
       <trans-unit id="tx_mpcvidply_media.chapters.add">
         <source>Add chapter file</source>
         <target>Kapitel-Datei hinzufügen</target>
       </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.chapters.description">
+        <source>Optional WebVTT or SubRip files for chapter markers. SRT files are converted automatically to WebVTT when you save the media record. For DASH/HLS streams, chapter metadata from the manifest is used automatically; adding files here overrides or supplements the embedded chapters.</source>
+        <target>Optionale WebVTT- oder SubRip-Dateien für Kapitelmarken. SRT-Dateien werden beim Speichern des Medien-Datensatzes automatisch in WebVTT umgewandelt. Bei DASH-/HLS-Streams werden Kapitel-Metadaten aus dem Manifest automatisch verwendet; hier hinzugefügte Dateien überschreiben oder ergänzen die eingebetteten Kapitel.</target>
+      </trans-unit>
       <trans-unit id="tx_mpcvidply_media.description">
         <source>Description</source>
         <target>Beschreibung</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.long_description">
-        <source>Long description</source>
-        <target>Langbeschreibung</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.long_description.description">
-        <source>Full text for the detail page; supports rich text (headings, links, lists).</source>
-        <target>Volltext für die Detailseite; Rich Text (Überschriften, Verweise, Listen) möglich.</target>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.duration">
         <source>Duration (seconds)</source>
@@ -139,17 +315,17 @@
         <source>Duration in seconds (optional, for display purposes)</source>
         <target>Dauer in Sekunden (optional, für Anzeigezwecke)</target>
       </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.enable_floating_player">
+        <source>Enable floating player (custom PiP)</source>
+        <target>Schwebenden Player aktivieren (eigenes Bild-in-Bild)</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.enable_floating_player.description">
+        <source>When enabled, the player disables the browser's native Picture-in-Picture, adds a PiP button to the control bar, and pops the video into a draggable, resizable floating window that also appears when the video scrolls out of view while playing.</source>
+        <target>Wenn aktiviert, deaktiviert der Player das native Bild-in-Bild des Browsers, blendet eine PiP-Schaltfläche in der Steuerleiste ein und zeigt das Video in einem ziehbaren, in der Größe veränderbaren schwebenden Fenster an – auch wenn das Video beim Abspielen aus dem sichtbaren Bereich gescrollt wird.</target>
+      </trans-unit>
       <trans-unit id="tx_mpcvidply_media.enable_transcript">
         <source>Enable Transcript</source>
         <target>Transkript aktivieren</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.hide_speed_button">
-        <source>Hide speed button</source>
-        <target>Geschwindigkeits-Schaltfläche ausblenden</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.hide_speed_button.description">
-        <source>When enabled and the record is rendered as a single item, the playback speed control will be hidden.</source>
-        <target>Wenn aktiviert und der Datensatz als Einzel-Element gerendert wird, wird die Wiedergabegeschwindigkeit ausgeblendet.</target>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.hide_help_button">
         <source>Hide keyboard shortcuts help</source>
@@ -159,21 +335,21 @@
         <source>When enabled, the keyboard shortcuts help button is hidden for this media item. The ? shortcut still works when keyboard controls are enabled on the content element.</source>
         <target>Wenn aktiviert, wird die Hilfe-Schaltfläche für Tastaturkürzel für dieses Medium ausgeblendet. Die ?-Taste funktioniert weiterhin, wenn Tastatursteuerung am Inhaltselement aktiviert ist.</target>
       </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.allow_download">
-        <source>Allow download</source>
-        <target>Download erlauben</target>
+      <trans-unit id="tx_mpcvidply_media.hide_speed_button">
+        <source>Hide speed button</source>
+        <target>Geschwindigkeits-Schaltfläche ausblenden</target>
       </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.allow_download.description">
-        <source>When enabled, a download button is shown in the player control bar, allowing the user to download the media file.</source>
-        <target>Wenn aktiviert, wird eine Download-Schaltfläche in der Player-Steuerleiste angezeigt, mit der die Mediendatei heruntergeladen werden kann.</target>
+      <trans-unit id="tx_mpcvidply_media.hide_speed_button.description">
+        <source>When enabled and the record is rendered as a single item, the playback speed control will be hidden.</source>
+        <target>Wenn aktiviert und der Datensatz als Einzel-Element gerendert wird, wird die Wiedergabegeschwindigkeit ausgeblendet.</target>
       </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.enable_floating_player">
-        <source>Enable floating player (custom PiP)</source>
-        <target>Schwebenden Player aktivieren (eigenes Bild-in-Bild)</target>
+      <trans-unit id="tx_mpcvidply_media.long_description">
+        <source>Long description</source>
+        <target>Langbeschreibung</target>
       </trans-unit>
-      <trans-unit id="tx_mpcvidply_media.enable_floating_player.description">
-        <source>When enabled, the player disables the browser's native Picture-in-Picture, adds a PiP button to the control bar, and pops the video into a draggable, resizable floating window that also appears when the video scrolls out of view while playing.</source>
-        <target>Wenn aktiviert, deaktiviert der Player das native Bild-in-Bild des Browsers, blendet eine PiP-Schaltfläche in der Steuerleiste ein und zeigt das Video in einem ziehbaren, in der Größe veränderbaren schwebenden Fenster an – auch wenn das Video beim Abspielen aus dem sichtbaren Bereich gescrollt wird.</target>
+      <trans-unit id="tx_mpcvidply_media.long_description.description">
+        <source>Full text for the detail page; supports rich text (headings, links, lists).</source>
+        <target>Volltext für die Detailseite; Rich Text (Überschriften, Verweise, Listen) möglich.</target>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.media_file">
         <source>Media File</source>
@@ -250,130 +426,6 @@
       <trans-unit id="tx_mpcvidply_media.title">
         <source>Title</source>
         <target>Titel</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row">
-        <source>VidPly Listview Row</source>
-        <target>VidPly Listview-Reihe</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.tabs.selection">
-        <source>Selection</source>
-        <target>Auswahl</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.headline">
-        <source>Row Headline</source>
-        <target>Reihen-Überschrift</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.headline_link">
-        <source>"Show all" Link (optional)</source>
-        <target>"Alle anzeigen"-Link (optional)</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.headline_link.description">
-        <source>Optional link rendered beside the headline. Typically points to an archive or category page.</source>
-        <target>Optionaler Link neben der Überschrift. Zeigt typischerweise auf eine Archiv- oder Kategorieseite.</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.layout">
-        <source>Layout</source>
-        <target>Layout</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.layout.shelf">
-        <source>Horizontal shelf (scrollable)</source>
-        <target>Horizontale Reihe (scrollbar)</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.layout.grid">
-        <source>Responsive grid</source>
-        <target>Responsives Raster</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.card_style">
-        <source>Card style</source>
-        <target>Karten-Stil</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.card_style.poster">
-        <source>Poster (16:9)</source>
-        <target>Poster (16:9)</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.card_style.poster_compact">
-        <source>Compact (3:4)</source>
-        <target>Kompakt (3:4)</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.card_style.landscape">
-        <source>Landscape (wide)</source>
-        <target>Querformat (breit)</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.limit_items">
-        <source>Max items</source>
-        <target>Maximale Anzahl</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.limit_items.description">
-        <source>Maximum number of items rendered in this row (1–200).</source>
-        <target>Maximale Anzahl der in dieser Reihe gerenderten Einträge (1–200).</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.enable_pagination">
-        <source>Client-side pagination</source>
-        <target>Seiten (Paginierung im Browser)</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.enable_pagination.description">
-        <source>Only for layout &quot;Responsive grid&quot;. Horizontal shelves use scrolling instead; pagination is not available for them. When enabled, long rows are split into pages in the browser (default 12 per page, configurable). Turn off to always show the full set up to the max items limit above.</source>
-        <target>Nur bei Layout „Responsives Raster“. Die horizontale Leiste nutzt dagegen Scrolling; Paginierung ist dafür nicht vorgesehen. Wenn aktiviert, werden lange Raster-Reihen im Browser in Seiten aufgeteilt (Standard 12 pro Seite, einstellbar). Wenn deaktiviert, werden bis zur maximalen Anzahl o. g. alle Einträge auf einmal gezeigt.</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.enable_pagination.toggle">
-        <source>Enabled</source>
-        <target>Aktiv</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.pagination_per_page">
-        <source>Items per page</source>
-        <target>Einträge pro Seite</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.pagination_per_page.description">
-        <source>Grid layout only. How many items are visible on each “page” when pagination is active (1–200). Must be less than the total number of items for pagination to appear.</source>
-        <target>Nur Raster-Layout. Wie viele Einträge pro „Seite“ sichtbar sind, wenn die Paginierung aktiv ist (1–200). Es muss insgesamt mehr geben, sonst erscheint keine Paginierung.</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.sort_by">
-        <source>Sort order</source>
-        <target>Sortierung</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.sort_by.sorting">
-        <source>Manual sorting</source>
-        <target>Manuelle Sortierung</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.sort_by.crdate_desc">
-        <source>Newest first</source>
-        <target>Neueste zuerst</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.sort_by.title_asc">
-        <source>Title A–Z</source>
-        <target>Titel A–Z</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.selection_mode">
-        <source>Selection mode</source>
-        <target>Auswahlmodus</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.selection_mode.manual">
-        <source>Manual (pick individual records)</source>
-        <target>Manuell (einzelne Datensätze auswählen)</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.selection_mode.category">
-        <source>Automatic (by category)</source>
-        <target>Automatisch (nach Kategorie)</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.media_items">
-        <source>Media items</source>
-        <target>Medien-Datensätze</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.media_items.description">
-        <source>Hand-pick the media records to display in this row.</source>
-        <target>Wählen Sie die Medien-Datensätze aus, die in dieser Reihe angezeigt werden sollen.</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.media_items.add">
-        <source>Create media record</source>
-        <target>Medien-Datensatz anlegen</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.categories">
-        <source>Categories</source>
-        <target>Kategorien</target>
-      </trans-unit>
-      <trans-unit id="tx_mpcvidply_listview_row.categories.description">
-        <source>Media records assigned to any of these categories will be rendered in this row.</source>
-        <target>Medien-Datensätze, die einer dieser Kategorien zugewiesen sind, werden in dieser Reihe angezeigt.</target>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_privacy_settings.soundcloud_button_label">
         <source>Button Label (optional)</source>
@@ -530,58 +582,6 @@
       <trans-unit id="tx_mpcvidply_privacy_settings.youtube_policy_link.description">
         <source>URL to the privacy policy page (e.g., "https://policies.google.com/privacy")</source>
         <target>URL zur Datenschutzrichtlinien-Seite (z.B. "https://policies.google.com/privacy")</target>
-      </trans-unit>
-      <trans-unit id="header_layout.0">
-        <source>Default</source>
-        <target>Standard</target>
-      </trans-unit>
-      <trans-unit id="header_layout.1">
-        <source>H1</source>
-        <target>H1</target>
-      </trans-unit>
-      <trans-unit id="header_layout.2">
-        <source>H2 - Default</source>
-        <target>H2 - Standard</target>
-      </trans-unit>
-      <trans-unit id="header_layout.3">
-        <source>H3</source>
-        <target>H3</target>
-      </trans-unit>
-      <trans-unit id="header_layout.4">
-        <source>H4</source>
-        <target>H4</target>
-      </trans-unit>
-      <trans-unit id="header_layout.5">
-        <source>H5</source>
-        <target>H5</target>
-      </trans-unit>
-      <trans-unit id="header_layout.6">
-        <source>H6</source>
-        <target>H6</target>
-      </trans-unit>
-      <trans-unit id="header_layout.7">
-        <source>H1 - Hidden (SR only)</source>
-        <target>H1 - Versteckt (nur SR)</target>
-      </trans-unit>
-      <trans-unit id="header_layout.8">
-        <source>H2 - Hidden (SR only)</source>
-        <target>H2 - Versteckt (nur SR)</target>
-      </trans-unit>
-      <trans-unit id="header_layout.9">
-        <source>H3 - Hidden (SR only)</source>
-        <target>H3 - Versteckt (nur SR)</target>
-      </trans-unit>
-      <trans-unit id="header_layout.10">
-        <source>H4 - Hidden (SR only)</source>
-        <target>H4 - Versteckt (nur SR)</target>
-      </trans-unit>
-      <trans-unit id="header_layout.11">
-        <source>H5 - Hidden (SR only)</source>
-        <target>H5 - Versteckt (nur SR)</target>
-      </trans-unit>
-      <trans-unit id="header_layout.12">
-        <source>H6 - Hidden (SR only)</source>
-        <target>H6 - Versteckt (nur SR)</target>
       </trans-unit>
     </body>
   </file>

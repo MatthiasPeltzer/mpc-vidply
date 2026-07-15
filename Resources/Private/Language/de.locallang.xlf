@@ -11,6 +11,10 @@
         <source>Comma or newline separated list of allowed domains for external audio URLs (e.g. *.xyz.de, www.xyz.de, https://*.xyz.de)</source>
         <target>Durch Komma oder Zeilenumbruch getrennte Liste zulässiger Domains für externe Audio-URLs (z.B. *.xyz.de, www.xyz.de, https://*.xyz.de)</target>
       </trans-unit>
+      <trans-unit id="config.allowedPlayIconDomains">
+        <source>Allow-list for external play-icon domains (comma or newline separated; e.g. cdn.example.com, *.example.com). External URLs are rejected if empty — EXT:/relative paths always work.</source>
+        <target>Erlaubte Domains für externe Play-Icons (komma- oder zeilengetrennt; z.B. cdn.example.com, *.example.com). Externe URLs werden abgelehnt, wenn leer — EXT:/relative Pfade funktionieren immer.</target>
+      </trans-unit>
       <trans-unit id="config.allowedVideoDomains">
         <source>Allowed domains for external videos</source>
         <target>Zulässige Domains für externe Videos</target>
@@ -22,10 +26,6 @@
       <trans-unit id="config.playIcon">
         <source>Play button icon (EXT: path, URL, or public path)</source>
         <target>Play-Button Icon (EXT: Pfad, URL oder öffentlicher Pfad)</target>
-      </trans-unit>
-      <trans-unit id="config.allowedPlayIconDomains">
-        <source>Allow-list for external play-icon domains (comma or newline separated; e.g. cdn.example.com, *.example.com). External URLs are rejected if empty — EXT:/relative paths always work.</source>
-        <target>Erlaubte Domains für externe Play-Icons (komma- oder zeilengetrennt; z.B. cdn.example.com, *.example.com). Externe URLs werden abgelehnt, wenn leer — EXT:/relative Pfade funktionieren immer.</target>
       </trans-unit>
       <trans-unit id="config.playPosition">
         <source>Play button position</source>
@@ -42,6 +42,70 @@
       <trans-unit id="config.useCssIcons">
         <source>Use CSS-based icons (enables icon customization via CSS variables)</source>
         <target>CSS-basierte Icons verwenden (ermöglicht Icon-Anpassung über CSS-Variablen)</target>
+      </trans-unit>
+      <trans-unit id="detail.categories">
+        <source>Categories</source>
+        <target>Kategorien</target>
+      </trans-unit>
+      <trans-unit id="detail.duration">
+        <source>Duration</source>
+        <target>Dauer</target>
+      </trans-unit>
+      <trans-unit id="detail.not_found.description">
+        <source>The requested media is no longer available.</source>
+        <target>Der angeforderte Inhalt ist nicht mehr verfügbar.</target>
+      </trans-unit>
+      <trans-unit id="detail.not_found.title">
+        <source>Media not found</source>
+        <target>Inhalt nicht gefunden</target>
+      </trans-unit>
+      <trans-unit id="detail.related">
+        <source>You might also like</source>
+        <target>Das könnte Sie auch interessieren</target>
+      </trans-unit>
+      <trans-unit id="listview.empty">
+        <source>No media rows have been configured yet.</source>
+        <target>Es wurden noch keine Medien-Reihen konfiguriert.</target>
+      </trans-unit>
+      <trans-unit id="listview.pagination.nav">
+        <source>Pagination</source>
+        <target>Seiten</target>
+      </trans-unit>
+      <trans-unit id="listview.pagination.nav_aria">
+        <source>Pagination, page {0} of {1}</source>
+        <target>Seitennavigation, Seite {0} von {1}</target>
+      </trans-unit>
+      <trans-unit id="listview.pagination.next">
+        <source>Next</source>
+        <target>Weiter</target>
+      </trans-unit>
+      <trans-unit id="listview.pagination.page_of">
+        <source>Page {0} of {1}</source>
+        <target>Seite {0} von {1}</target>
+      </trans-unit>
+      <trans-unit id="listview.pagination.previous">
+        <source>Previous</source>
+        <target>Zurück</target>
+      </trans-unit>
+      <trans-unit id="listview.row.all">
+        <source>Show all</source>
+        <target>Alle anzeigen</target>
+      </trans-unit>
+      <trans-unit id="listview.row.untitled">
+        <source>Selection</source>
+        <target>Auswahl</target>
+      </trans-unit>
+      <trans-unit id="listview.shelf.next">
+        <source>Next items</source>
+        <target>Nächste Einträge</target>
+      </trans-unit>
+      <trans-unit id="listview.shelf.prev">
+        <source>Previous items</source>
+        <target>Vorherige Einträge</target>
+      </trans-unit>
+      <trans-unit id="listview.sort.label">
+        <source>Sort by</source>
+        <target>Sortieren</target>
       </trans-unit>
       <trans-unit id="player.captions">
         <source>Captions</source>
@@ -95,17 +159,17 @@
         <source>Load and play content</source>
         <target>Inhalt laden und abspielen</target>
       </trans-unit>
-      <trans-unit id="privacy.load_content.youtube">
-        <source>Load and play YouTube content</source>
-        <target>YouTube-Inhalt laden und abspielen</target>
+      <trans-unit id="privacy.load_content.soundcloud">
+        <source>Load and play SoundCloud content</source>
+        <target>SoundCloud-Inhalt laden und abspielen</target>
       </trans-unit>
       <trans-unit id="privacy.load_content.vimeo">
         <source>Load and play Vimeo content</source>
         <target>Vimeo-Inhalt laden und abspielen</target>
       </trans-unit>
-      <trans-unit id="privacy.load_content.soundcloud">
-        <source>Load and play SoundCloud content</source>
-        <target>SoundCloud-Inhalt laden und abspielen</target>
+      <trans-unit id="privacy.load_content.youtube">
+        <source>Load and play YouTube content</source>
+        <target>YouTube-Inhalt laden und abspielen</target>
       </trans-unit>
       <trans-unit id="privacy.opens_new_window">
         <source>opens in new window</source>
@@ -122,70 +186,6 @@
       <trans-unit id="privacy.youtube.policy_link">
         <source>Google's privacy policy</source>
         <target>die Datenschutzerklärung von Google</target>
-      </trans-unit>
-      <trans-unit id="listview.empty">
-        <source>No media rows have been configured yet.</source>
-        <target>Es wurden noch keine Medien-Reihen konfiguriert.</target>
-      </trans-unit>
-      <trans-unit id="listview.row.untitled">
-        <source>Selection</source>
-        <target>Auswahl</target>
-      </trans-unit>
-      <trans-unit id="listview.row.all">
-        <source>Show all</source>
-        <target>Alle anzeigen</target>
-      </trans-unit>
-      <trans-unit id="listview.shelf.prev">
-        <source>Previous items</source>
-        <target>Vorherige Einträge</target>
-      </trans-unit>
-      <trans-unit id="listview.shelf.next">
-        <source>Next items</source>
-        <target>Nächste Einträge</target>
-      </trans-unit>
-      <trans-unit id="listview.sort.label">
-        <source>Sort by</source>
-        <target>Sortieren</target>
-      </trans-unit>
-      <trans-unit id="listview.pagination.nav">
-        <source>Pagination</source>
-        <target>Seiten</target>
-      </trans-unit>
-      <trans-unit id="listview.pagination.nav_aria">
-        <source>Pagination, page {0} of {1}</source>
-        <target>Seitennavigation, Seite {0} von {1}</target>
-      </trans-unit>
-      <trans-unit id="listview.pagination.previous">
-        <source>Previous</source>
-        <target>Zurück</target>
-      </trans-unit>
-      <trans-unit id="listview.pagination.next">
-        <source>Next</source>
-        <target>Weiter</target>
-      </trans-unit>
-      <trans-unit id="listview.pagination.page_of">
-        <source>Page {0} of {1}</source>
-        <target>Seite {0} von {1}</target>
-      </trans-unit>
-      <trans-unit id="detail.duration">
-        <source>Duration</source>
-        <target>Dauer</target>
-      </trans-unit>
-      <trans-unit id="detail.categories">
-        <source>Categories</source>
-        <target>Kategorien</target>
-      </trans-unit>
-      <trans-unit id="detail.related">
-        <source>You might also like</source>
-        <target>Das könnte Sie auch interessieren</target>
-      </trans-unit>
-      <trans-unit id="detail.not_found.title">
-        <source>Media not found</source>
-        <target>Inhalt nicht gefunden</target>
-      </trans-unit>
-      <trans-unit id="detail.not_found.description">
-        <source>The requested media is no longer available.</source>
-        <target>Der angeforderte Inhalt ist nicht mehr verfügbar.</target>
       </trans-unit>
     </body>
   </file>
