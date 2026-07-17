@@ -7,3 +7,12 @@ parameters:
     paths:
         - Classes
     treatPhpDocTypesAsCertain: false
+    ignoreErrors:
+        # TYPO3 14 System Resource API is resolved via runtime class-strings so the
+        # extension also builds on TYPO3 13.4, where these classes do not exist.
+        # On TYPO3 14 the class-strings resolve and the error is not reported.
+        -
+            identifier: argument.type
+            message: '#expects class-string<TYPO3\\CMS\\Core\\SystemResource\\#'
+            path: Classes/DataProcessing/VidPlyProcessor.php
+            reportUnmatched: false

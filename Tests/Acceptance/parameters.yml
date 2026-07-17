@@ -1,0 +1,3 @@
+typo3TestingAcceptanceBaseUrl: http://web:80
+typo3TestingAcceptanceAdminPassword: password
+typo3TestingAcceptanceEditorPassword: password

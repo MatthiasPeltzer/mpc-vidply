@@ -13,6 +13,7 @@ $config->getFinder()
         'vendor',
         '.Build',
         'Resources/Vendor',
+        'Tests/Acceptance/Support/_generated',
     ])
 ;
 

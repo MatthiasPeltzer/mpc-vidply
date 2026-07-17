@@ -27,3 +27,7 @@ npm-debug.log*
 /.Build/
 /.php-cs-fixer.cache
 composer.lock
+
+# Codeception generated output
+/Tests/Acceptance/_output/
+/Tests/Acceptance/Support/_generated/
