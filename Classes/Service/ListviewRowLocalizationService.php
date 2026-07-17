@@ -56,6 +56,18 @@ final class ListviewRowLocalizationService
         'hidden',
     ];
 
+    /**
+     * @var list<string>
+     */
+    private const STRING_ROW_FIELDS = [
+        'headline',
+        'headline_link',
+        'layout',
+        'card_style',
+        'selection_mode',
+        'sort_by',
+    ];
+
     private readonly ConnectionPool $connectionPool;
 
     public function __construct(
@@ -98,7 +110,7 @@ final class ListviewRowLocalizationService
                     'deleted' => 0,
                 ];
                 foreach (self::COPY_ON_CREATE as $field) {
-                    $insert[$field] = $defaultRow[$field] ?? '';
+                    $insert[$field] = $this->normalizeRowFieldValue($field, $defaultRow);
                 }
                 $connection->insert(self::ROW_TABLE, $insert);
                 continue;
@@ -190,7 +202,7 @@ final class ListviewRowLocalizationService
 
         $update = ['tstamp' => $timestamp];
         foreach (self::SYNC_FROM_SOURCE as $field) {
-            $update[$field] = $defaultRow[$field] ?? '';
+            $update[$field] = $this->normalizeRowFieldValue($field, $defaultRow);
         }
 
         $this->connectionPool->getConnectionForTable(self::ROW_TABLE)->update(
@@ -198,5 +210,19 @@ final class ListviewRowLocalizationService
             $update,
             ['uid' => $localizedRowUid]
         );
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     */
+    private function normalizeRowFieldValue(string $field, array $row): string|int
+    {
+        $value = $row[$field] ?? null;
+
+        if (in_array($field, self::STRING_ROW_FIELDS, true)) {
+            return (string)($value ?? '');
+        }
+
+        return (int)($value ?? 0);
     }
 }

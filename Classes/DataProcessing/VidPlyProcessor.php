@@ -18,8 +18,6 @@ use TYPO3\CMS\Core\Resource\Exception\ResourceDoesNotExistException;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Resource\FileRepository;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
-use TYPO3\CMS\Core\SystemResource\Publishing\SystemResourcePublisherInterface;
-use TYPO3\CMS\Core\SystemResource\SystemResourceFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -1529,15 +1527,19 @@ class VidPlyProcessor implements DataProcessorInterface
      */
     private function resolvePublicResourceWebPath(string $resourcePath): string
     {
-        if (class_exists(SystemResourceFactory::class)) {
-            try {
-                $factory = GeneralUtility::makeInstance(SystemResourceFactory::class);
-                $publisher = GeneralUtility::makeInstance(SystemResourcePublisherInterface::class);
+        $factoryClass = 'TYPO3\\CMS\\Core\\SystemResource\\SystemResourceFactory';
+        $publisherInterface = 'TYPO3\\CMS\\Core\\SystemResource\\Publishing\\SystemResourcePublisherInterface';
 
-                return (string)$publisher->generateUri(
-                    $factory->createPublicResource($resourcePath),
-                    null
-                );
+        if (class_exists($factoryClass) && interface_exists($publisherInterface)) {
+            try {
+                $factory = GeneralUtility::makeInstance($factoryClass);
+                $publisher = GeneralUtility::makeInstance($publisherInterface);
+                if (method_exists($factory, 'createPublicResource') && method_exists($publisher, 'generateUri')) {
+                    return (string)$publisher->generateUri(
+                        $factory->createPublicResource($resourcePath),
+                        null
+                    );
+                }
             } catch (\Throwable) {
                 return '';
             }

@@ -11,6 +11,7 @@ use TYPO3\CMS\Core\Resource\Exception\ExistingTargetFileNameException;
 use TYPO3\CMS\Core\Resource\Exception\OnlineMediaAlreadyExistsException;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\Folder;
+use TYPO3\CMS\Core\Resource\FolderInterface;
 use TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\OnlineMediaHelperInterface;
 use TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\OnlineMediaHelperRegistry;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -172,7 +173,7 @@ final class MediaFromUrlService
     private function resolvePosterFileUid(
         OnlineMediaHelperInterface $helper,
         File $file,
-        Folder $targetFolder,
+        FolderInterface $targetFolder,
         string $thumbnailUrl,
     ): int {
         $previewPath = (string)$helper->getPreviewImage($file);
@@ -233,7 +234,7 @@ final class MediaFromUrlService
         };
     }
 
-    private function importPosterBinary(Folder $targetFolder, string $binary, File $sourceFile): ?File
+    private function importPosterBinary(FolderInterface $targetFolder, string $binary, File $sourceFile): ?File
     {
         if ($binary === '') {
             return null;
