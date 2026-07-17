@@ -236,7 +236,7 @@ final class MediaFromUrlService
 
     private function importPosterBinary(FolderInterface $targetFolder, string $binary, File $sourceFile): ?File
     {
-        if ($binary === '') {
+        if ($binary === '' || !$targetFolder instanceof Folder) {
             return null;
         }
 
