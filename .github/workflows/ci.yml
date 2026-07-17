@@ -9,13 +9,14 @@ permissions:
   contents: read
 
 jobs:
-  php:
-    name: PHP ${{ matrix.php }}
+  quality:
+    name: Quality PHP ${{ matrix.php }} / TYPO3 ${{ matrix.typo3 }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         php: ['8.2', '8.3', '8.4', '8.5']
+        typo3: ['^13.4', '^14.3']
     steps:
       - uses: actions/checkout@v6
 
@@ -23,12 +24,21 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: dom, json, simplexml, libxml, mbstring, pdo_sqlite
+          extensions: dom, intl, json, simplexml, libxml, mbstring, pdo_sqlite
           tools: composer:v2
           coverage: none
 
-      - name: Install dependencies
-        run: composer install --no-interaction --no-progress
+      - name: Install dependencies for TYPO3 ${{ matrix.typo3 }}
+        run: |
+          TYPO3_MAJOR=$(echo "${{ matrix.typo3 }}" | cut -d. -f1 | tr -d '^')
+          composer require --no-update \
+            typo3/cms-core:"${{ matrix.typo3 }}" \
+            typo3/cms-fluid:"${{ matrix.typo3 }}" \
+            typo3/cms-extbase:"${{ matrix.typo3 }}" \
+            typo3/cms-backend:"${{ matrix.typo3 }}" \
+            typo3/cms-install:"${{ matrix.typo3 }}" \
+            typo3/testing-framework:^9.3
+          composer update --no-interaction --no-progress
 
       - name: Coding standards
         run: composer cs
@@ -36,12 +46,51 @@ jobs:
       - name: PHPStan
         run: composer phpstan
 
+      - name: Linters
+        run: composer lint:all
+
       - name: Unit tests
         run: composer test:unit
 
   functional:
-    name: Functional (PHP 8.2)
+    name: Functional (${{ matrix.db }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        db: [sqlite, mariadb, mysql, postgres]
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MYSQL_ROOT_PASSWORD: funcp
+          MYSQL_DATABASE: func_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s --health-timeout=5s --health-retries=5
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: funcp
+          MYSQL_DATABASE: func_test
+        ports:
+          - 3307:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pfuncp"
+          --health-interval=10s --health-timeout=5s --health-retries=5
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: funcp
+          POSTGRES_USER: postgres
+          POSTGRES_DB: bamboo
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d bamboo"
+          --health-interval=10s --health-timeout=5s --health-retries=5
     steps:
       - uses: actions/checkout@v6
 
@@ -49,18 +98,54 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          extensions: dom, json, simplexml, libxml, mbstring, pdo_sqlite
+          extensions: dom, intl, json, simplexml, libxml, mbstring, pdo_sqlite, pdo_mysql, pdo_pgsql
           tools: composer:v2
           coverage: none
 
       - name: Install dependencies
-        run: composer install --no-interaction --no-progress
+        run: |
+          composer require --no-update typo3/testing-framework:^9.3
+          composer update --no-interaction --no-progress
 
-      - name: Functional tests
+      - name: Functional tests (sqlite)
+        if: matrix.db == 'sqlite'
         run: composer test:functional
 
-  typo3-13:
-    name: TYPO3 13.4 (PHP 8.2)
+      - name: Functional tests (mariadb)
+        if: matrix.db == 'mariadb'
+        env:
+          typo3DatabaseDriver: pdo_mysql
+          typo3DatabaseName: func_test
+          typo3DatabaseUsername: root
+          typo3DatabasePassword: funcp
+          typo3DatabaseHost: 127.0.0.1
+          typo3DatabasePort: 3306
+        run: composer test:functional
+
+      - name: Functional tests (mysql)
+        if: matrix.db == 'mysql'
+        env:
+          typo3DatabaseDriver: pdo_mysql
+          typo3DatabaseName: func_test
+          typo3DatabaseUsername: root
+          typo3DatabasePassword: funcp
+          typo3DatabaseHost: 127.0.0.1
+          typo3DatabasePort: 3307
+        run: composer test:functional
+
+      - name: Functional tests (postgres)
+        if: matrix.db == 'postgres'
+        env:
+          typo3DatabaseDriver: pdo_pgsql
+          typo3DatabaseName: bamboo
+          typo3DatabaseUsername: postgres
+          typo3DatabasePassword: funcp
+          typo3DatabaseHost: 127.0.0.1
+          typo3DatabasePort: 5432
+        run: composer test:functional
+
+  acceptance:
+    name: Acceptance (Docker)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -73,19 +158,13 @@ jobs:
           tools: composer:v2
           coverage: none
 
-      - name: Install dependencies for TYPO3 13.4
+      - name: Install dependencies
         run: |
-          composer config audit.block-insecure false
-          composer require \
-            typo3/cms-core:^13.4 \
-            typo3/cms-fluid:^13.4 \
-            typo3/cms-extbase:^13.4 \
-            --with-all-dependencies \
-            --no-interaction \
-            --no-progress
+          composer require --no-update typo3/testing-framework:^9.3
+          composer update --no-interaction --no-progress
 
-      - name: Unit tests
-        run: composer test:unit
+      - name: Build Codeception actors
+        run: .Build/bin/codecept build -c codeception.yml
 
-      - name: Functional tests
-        run: composer test:functional
+      - name: Acceptance tests via runTests.sh
+        run: bash Build/Scripts/runTests.sh -b docker -s acceptance -d sqlite

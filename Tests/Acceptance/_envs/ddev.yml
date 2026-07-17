@@ -1,0 +1,5 @@
+# DDEV local acceptance (ddev mpc-acceptance). Base URL is set via typo3TestingAcceptanceBaseUrl env var.
+modules:
+    config:
+        WebDriver:
+            host: chrome

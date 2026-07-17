@@ -1,0 +1,32 @@
+actor: BackendTester
+modules:
+    enabled:
+        - WebDriver:
+            url: '%typo3TestingAcceptanceBaseUrl%'
+            browser: chrome
+            host: chrome
+            port: 4444
+            path: /wd/hub
+            wait: 2
+            window_size: 1280x1024
+            capabilities:
+                goog:chromeOptions:
+                    args: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage']
+        - Mpc\MpcVidply\Tests\Acceptance\Helper\PasswordLogin:
+            passwords:
+                admin: '%typo3TestingAcceptanceAdminPassword%'
+                editor: '%typo3TestingAcceptanceEditorPassword%'
+        - \TYPO3\TestingFramework\Core\Acceptance\Helper\Acceptance
+        - Asserts
+extensions:
+    enabled:
+        - Mpc\MpcVidply\Tests\Acceptance\Support\Extension\BackendEnvironment
+
+env:
+    headless:
+        modules:
+            config:
+                WebDriver:
+                    capabilities:
+                        goog:chromeOptions:
+                            args: ['--headless=new', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage', '--window-size=1280,1024']
