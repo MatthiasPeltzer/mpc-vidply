@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.20] - 2026-07-18
+
+### Changed
+- Detail view now sets the `description`, OpenGraph/Twitter `title`/`description` and `og:image`/`twitter:image` meta tags from the media element (title, description falling back to the long description, and the media poster) instead of the generic detail page record, matching the existing `<title>` override. Search snippets and social previews now show the media element.
+
+### Tests
+- Core-parity test infrastructure: Docker `Build/Scripts/runTests.sh`, multi-DB functional CI matrix, TYPO3 13/14 quality matrix, PHP/YAML/TypoScript linters, and Codeception acceptance smoke tests.
+- Acceptance: add extension test that VidPly backend preview renders in the page module (seeded CE without media).
+- Functional CI matrix reduced to sqlite/mariadb/mysql (drop PostgreSQL axis).
+
+### Fixed
+- Codeception acceptance: set `support_namespace: Support`, add Docker `--network-alias chrome`, and pass `TYPO3_PATH_*` to the acceptance PHP stack only (not the Codeception bootstrap container).
+- Functional CI: require `typo3/testing-framework` ^9.3 for TYPO3 14; acceptance CI prefers Docker on GHA.
+- PHPStan (TYPO3 13 matrix): guard poster imports on `Folder` before `createFile()`; ignore the runtime class-string `makeInstance()` calls used for the TYPO3 14 System Resource API.
+
 ## [1.2.19] - 2026-07-15
 
 ### Changed
@@ -697,6 +712,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.20]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.19...v1.2.20
 [1.2.19]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.18...v1.2.19
 [1.2.18]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.17...v1.2.18
 [1.2.17]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.16...v1.2.17
