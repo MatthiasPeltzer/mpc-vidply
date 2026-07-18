@@ -41,6 +41,12 @@ services:
   Mpc\MpcVidply\Service\DetailRequestResolver:
     public: true
 
+  # Singleton shared between the detail DataProcessor and the post-EXT:seo
+  # `generateMetaTags` handler (resolved via GeneralUtility::makeInstance()), so
+  # it must be public for the container to hand back the same instance.
+  Mpc\MpcVidply\Service\DetailMetaTagService:
+    public: true
+
   # DataHandler hooks are instantiated via GeneralUtility::makeInstance(); public
   # services are resolved from the container with autowired dependencies.
   Mpc\MpcVidply\Hooks\SrtCaptionConversionHook:

@@ -14,6 +14,7 @@ use Mpc\MpcVidply\OnlineMedia\Helpers\ExternalVideoHelper;
 use Mpc\MpcVidply\OnlineMedia\Helpers\HlsHelper;
 use Mpc\MpcVidply\OnlineMedia\Helpers\SoundCloudHelper;
 use Mpc\MpcVidply\Routing\Aspect\VidPlyMediaRouteAspect;
+use Mpc\MpcVidply\Service\DetailMetaTagService;
 use TYPO3\CMS\Backend\Form\FormDataProvider\DatabaseRecordTypeValue;
 use TYPO3\CMS\Backend\Form\FormDataProvider\DatabaseRowDefaultAsReadonly;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
@@ -34,6 +35,14 @@ $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['proc
 
 // Custom route aspect for `route-enhancers.yaml` (slug optional → query fallback).
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['routing']['aspects']['MpcVidplyMediaRoute'] = VidPlyMediaRouteAspect::class;
+
+// Replace the OpenGraph image on VidPly detail views with the media poster.
+// og:image allows multiple occurrences, so it must run after EXT:seo (registered
+// earlier as a system extension) to replace the page-record image rather than
+// emit a second tag. The poster is resolved during the detail data flow (see
+// DetailProcessor → DetailMetaTagService).
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['TYPO3\\CMS\\Frontend\\Page\\PageGenerator']['generateMetaTags']['mpcVidplyDetailOgImage']
+    = DetailMetaTagService::class . '->replaceOpenGraphImage';
 
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1740000001] = [
     'nodeName' => 'vidplyMediaUrlImport',

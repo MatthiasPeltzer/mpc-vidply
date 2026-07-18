@@ -6,6 +6,7 @@ namespace Mpc\MpcVidply\DataProcessing;
 
 use Mpc\MpcVidply\Repository\MediaRepository;
 use Mpc\MpcVidply\Service\CategoryTitleResolver;
+use Mpc\MpcVidply\Service\DetailMetaTagService;
 use Mpc\MpcVidply\Service\FrontendLanguageResolver;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Database\Connection;
@@ -31,19 +32,22 @@ final class DetailProcessor implements DataProcessorInterface
     private readonly ConnectionPool $connectionPool;
     private readonly ResourceFactory $resourceFactory;
     private readonly CategoryTitleResolver $categoryTitleResolver;
+    private readonly DetailMetaTagService $metaTagService;
 
     public function __construct(
         ?MediaRepository $mediaRepository = null,
         ?VidPlyProcessor $vidPlyProcessor = null,
         ?ConnectionPool $connectionPool = null,
         ?ResourceFactory $resourceFactory = null,
-        ?CategoryTitleResolver $categoryTitleResolver = null
+        ?CategoryTitleResolver $categoryTitleResolver = null,
+        ?DetailMetaTagService $metaTagService = null
     ) {
         $this->mediaRepository = $mediaRepository ?? GeneralUtility::makeInstance(MediaRepository::class);
         $this->vidPlyProcessor = $vidPlyProcessor ?? GeneralUtility::makeInstance(VidPlyProcessor::class);
         $this->connectionPool = $connectionPool ?? GeneralUtility::makeInstance(ConnectionPool::class);
         $this->resourceFactory = $resourceFactory ?? GeneralUtility::makeInstance(ResourceFactory::class);
         $this->categoryTitleResolver = $categoryTitleResolver ?? GeneralUtility::makeInstance(CategoryTitleResolver::class);
+        $this->metaTagService = $metaTagService ?? GeneralUtility::makeInstance(DetailMetaTagService::class);
     }
 
     /**
@@ -79,6 +83,11 @@ final class DetailProcessor implements DataProcessorInterface
             $processedData['vidply'] = null;
             return $processedData;
         }
+
+        // Override description + OpenGraph/Twitter meta tags with the media
+        // element's own title/description/poster (the HTML <title> is handled by
+        // VidPlyDetailPageTitleProvider). Runs before EXT:seo's meta tag hook.
+        $this->metaTagService->applyForMedia($media, $this->resolvePosterReference((int)($media['uid'] ?? 0)));
 
         // Delegate the full player assembly to the existing VidPlyProcessor so we inherit
         // every capability (privacy layer, playlist detection, HLS/DASH, etc.) without duplication.
@@ -265,6 +274,19 @@ final class DetailProcessor implements DataProcessorInterface
             return '?media=' . $mediaUid;
         }
         return $url;
+    }
+
+    /**
+     * Resolve the first poster FileReference for a media record (used for the
+     * OpenGraph/Twitter image meta tags).
+     */
+    private function resolvePosterReference(int $mediaUid): ?FileReference
+    {
+        if ($mediaUid <= 0) {
+            return null;
+        }
+        $refs = $this->prefetchPosterRefs([$mediaUid])[$mediaUid] ?? [];
+        return $refs[0] ?? null;
     }
 
     /**
