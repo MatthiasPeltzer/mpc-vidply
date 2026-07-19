@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.21] - 2026-07-19
+
+### Added
+- Backend List module: **View** action for VidPly media records in storage folders opens the item on the configured detail page (slug or UID), including translated records.
+
+### Fixed
+- Media record preview failed silently because the detail-page lookup query used an invalid `innerJoin()` condition; preview now resolves detail pages inside the media storage folder before falling back site-wide.
+
 ## [1.2.20] - 2026-07-18
 
 ### Changed
@@ -712,6 +720,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.21]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.20...v1.2.21
 [1.2.20]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.19...v1.2.20
 [1.2.19]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.18...v1.2.19
 [1.2.18]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.17...v1.2.18

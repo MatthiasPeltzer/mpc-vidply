@@ -5,6 +5,7 @@ node_modules/
 .idea/
 .vscode/
 .cursor/
+.cache/
 *.swp
 *.swo
 *~
