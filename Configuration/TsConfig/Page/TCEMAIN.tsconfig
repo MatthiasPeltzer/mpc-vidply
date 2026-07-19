@@ -1,0 +1,9 @@
+# Enable the "View" action for VidPly media records in the List module.
+# The detail page and pretty slug are resolved at runtime by
+# MediaPreviewUriEventListener (BeforePagePreviewUriGeneratedEvent).
+TCEMAIN.preview.tx_mpcvidply_media {
+  useDefaultLanguageRecord = 0
+  fieldToParameterMap {
+    uid = media
+  }
+}

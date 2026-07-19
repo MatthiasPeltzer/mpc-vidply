@@ -1,1 +1,2 @@
 @import 'EXT:mpc_vidply/Configuration/TsConfig/Page/TCEFORM.tsconfig'
+@import 'EXT:mpc_vidply/Configuration/TsConfig/Page/TCEMAIN.tsconfig'

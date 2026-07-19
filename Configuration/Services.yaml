@@ -91,6 +91,12 @@ services:
         identifier: 'mpc/mpc-vidply/streaming-content-security-policy'
         event: TYPO3\CMS\Core\Security\ContentSecurityPolicy\Event\PolicyMutatedEvent
 
+  Mpc\MpcVidply\EventListener\MediaPreviewUriEventListener:
+    tags:
+      - name: event.listener
+        identifier: 'mpc/mpc-vidply/media-preview-uri'
+        event: TYPO3\CMS\Backend\Routing\Event\BeforePagePreviewUriGeneratedEvent
+
   Mpc\MpcVidply\Command\ConvertSrtCaptionsCommand:
     tags:
       - name: 'console.command'
