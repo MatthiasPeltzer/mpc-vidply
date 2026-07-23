@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.22] - 2026-07-23
+
+### Changed
+- Updated the bundled VidPly player assets (JS/CSS) to the audit-remediation build v1.2.5
+
+### Security
+- Player now CSS-escapes poster URLs, scopes menu queries to the player container, and loads pinned hls.js/dash.js with default Subresource Integrity hashes.
+
+### Accessibility
+- Resume prompt now traps keyboard focus; drag/resize keyboard shortcuts no longer fire while typing in form controls.
+
 ## [1.2.21] - 2026-07-19
 
 ### Added
@@ -720,6 +731,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.22]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.21...v1.2.22
 [1.2.21]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.20...v1.2.21
 [1.2.20]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.19...v1.2.20
 [1.2.19]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.18...v1.2.19
