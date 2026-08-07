@@ -187,6 +187,26 @@
         <source>Auto (detect from page language)</source>
         <target>Automatisch (aus Seitensprache ermitteln)</target>
       </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_layout">
+        <source>Layout</source>
+        <target>Layout</target>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_layout.description">
+        <source>How the player is presented. "Episode card" adds a square cover with title, date, duration and description around the player.</source>
+        <target>Darstellung des Players. „Episoden-Karte“ ergänzt den Player um ein quadratisches Cover mit Titel, Datum, Dauer und Beschreibung.</target>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_layout.default">
+        <source>Player only (default)</source>
+        <target>Nur Player (Standard)</target>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_layout.card">
+        <source>Episode card</source>
+        <target>Episoden-Karte</target>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_layout.episodes">
+        <source>Episode card with episode list</source>
+        <target>Episoden-Karte mit Episodenliste</target>
+      </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_listview_rows">
         <source>Listview Rows</source>
         <target>Listview-Reihen</target>

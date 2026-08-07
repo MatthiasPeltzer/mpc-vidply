@@ -8,6 +8,7 @@ use Mpc\MpcVidply\Enums\MediaType;
 use Mpc\MpcVidply\Enums\RenderMode;
 use Mpc\MpcVidply\Repository\MediaRepository;
 use Mpc\MpcVidply\Service\FrontendLanguageResolver;
+use Mpc\MpcVidply\Service\MediaCategoryResolver;
 use Mpc\MpcVidply\Service\PrivacySettingsService;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
@@ -53,12 +54,16 @@ class VidPlyProcessor implements DataProcessorInterface
     private const OPT_KEYBOARD = 64;
     private const OPT_AUTO_ADVANCE = 256;
 
+    /** Presentation layouts of the player content element (tt_content.tx_mpcvidply_layout). */
+    private const LAYOUTS = ['default', 'card', 'episodes'];
+
     private readonly FileRepository $fileRepository;
     private readonly ResourceFactory $resourceFactory;
     private readonly ConnectionPool $connectionPool;
     private readonly PrivacySettingsService $privacySettingsService;
     private readonly ExtensionConfiguration $extensionConfiguration;
     private readonly MediaRepository $mediaRepository;
+    private readonly MediaCategoryResolver $mediaCategoryResolver;
 
     /** @var array<string, string> */
     private array $inferredMimeTypeByUrl = [];
@@ -76,6 +81,12 @@ class VidPlyProcessor implements DataProcessorInterface
     private array $describedSourceByFileReferenceUid = [];
 
     /**
+     * Locale used to pre-format publish dates for the frontend, e.g. "de-DE".
+     * Null while no request context has been resolved (structured-data path).
+     */
+    private ?string $dateLocale = null;
+
+    /**
      * Parameters are optional to support GeneralUtility::makeInstance() calls.
      * When autowired (e.g., in tests or TYPO3 14), dependencies are injected.
      */
@@ -85,7 +96,8 @@ class VidPlyProcessor implements DataProcessorInterface
         ?ConnectionPool $connectionPool = null,
         ?PrivacySettingsService $privacySettingsService = null,
         ?ExtensionConfiguration $extensionConfiguration = null,
-        ?MediaRepository $mediaRepository = null
+        ?MediaRepository $mediaRepository = null,
+        ?MediaCategoryResolver $mediaCategoryResolver = null
     ) {
         $this->fileRepository = $fileRepository ?? GeneralUtility::makeInstance(FileRepository::class);
         $this->resourceFactory = $resourceFactory ?? GeneralUtility::makeInstance(ResourceFactory::class);
@@ -93,6 +105,7 @@ class VidPlyProcessor implements DataProcessorInterface
         $this->privacySettingsService = $privacySettingsService ?? GeneralUtility::makeInstance(PrivacySettingsService::class);
         $this->extensionConfiguration = $extensionConfiguration ?? GeneralUtility::makeInstance(ExtensionConfiguration::class);
         $this->mediaRepository = $mediaRepository ?? GeneralUtility::makeInstance(MediaRepository::class);
+        $this->mediaCategoryResolver = $mediaCategoryResolver ?? GeneralUtility::makeInstance(MediaCategoryResolver::class);
     }
 
     /**
@@ -144,6 +157,7 @@ class VidPlyProcessor implements DataProcessorInterface
     ): array {
         $this->resetCaches();
 
+        $this->dateLocale = $this->resolveDateLocale($request);
         $playerOptions = $this->buildPlayerOptions($data);
         $languageId = $languageIdOverride ?? FrontendLanguageResolver::resolveLanguageId($request, $data);
 
@@ -170,6 +184,11 @@ class VidPlyProcessor implements DataProcessorInterface
         $renderMode = $this->determineRenderMode($serviceType, $trackResult, $resolvedMediaType);
         $assetFlags = $this->resolveAssetFlags($serviceType, $trackResult);
 
+        $layout = $this->resolveLayout($data);
+        $episodes = $layout === 'default'
+            ? []
+            : $this->buildEpisodeData($mediaRecords, $this->resolveEpisodeCategories($mediaRecords, $languageId));
+
         return $this->assembleTemplateData(
             $data,
             $playerOptions,
@@ -181,7 +200,9 @@ class VidPlyProcessor implements DataProcessorInterface
             $uiConfig,
             $resolvedMediaType,
             $renderMode,
-            $assetFlags
+            $assetFlags,
+            $layout,
+            $episodes
         );
     }
 
@@ -245,6 +266,7 @@ class VidPlyProcessor implements DataProcessorInterface
         $this->mimeTypeByFileReferenceUid = [];
         $this->fileReferencesByMediaUid = [];
         $this->describedSourceByFileReferenceUid = [];
+        $this->dateLocale = null;
     }
 
     /**
@@ -880,6 +902,7 @@ class VidPlyProcessor implements DataProcessorInterface
      *     themeSyncEnabled: bool
      * } $uiConfig
      * @param array{needsPrivacyLayer: bool, needsVidPlay: bool, needsPlaylist: bool, needsHLS: bool, needsDASH: bool} $assetFlags
+     * @param list<array<string, mixed>> $episodes
      * @return array<string, mixed>
      */
     private function assembleTemplateData(
@@ -893,12 +916,17 @@ class VidPlyProcessor implements DataProcessorInterface
         array $uiConfig,
         string $resolvedMediaType,
         RenderMode $renderMode,
-        array $assetFlags
+        array $assetFlags,
+        string $layout = 'default',
+        array $episodes = []
     ): array {
         $audioDescriptionTracks = $singleTrackData['audioDescriptionTracks'];
         $signLanguage = $singleTrackData['signLanguage'];
 
         $vidplyData = [
+            'layout' => $layout,
+            'episodes' => $episodes,
+            'episode' => $episodes[0] ?? null,
             'renderMode' => $renderMode->value,
             'mediaType' => $resolvedMediaType,
             'serviceType' => $serviceType,
@@ -1315,8 +1343,190 @@ class VidPlyProcessor implements DataProcessorInterface
         if (!empty($mediaRecord['description'])) {
             $track['description'] = $mediaRecord['description'];
         }
+        // The player renders the date verbatim — it has no locale knowledge.
+        $publishDate = $this->formatPublishDate((int)($mediaRecord['publish_date'] ?? 0));
+        if ($publishDate !== '') {
+            $track['date'] = $publishDate;
+        }
+        $episodeNumber = trim((string)($mediaRecord['episode_number'] ?? ''));
+        if ($episodeNumber !== '') {
+            $track['episodeNumber'] = $episodeNumber;
+        }
 
         return $track;
+    }
+
+    // -----------------------------------------------------------------------
+    // Episode layout
+    // -----------------------------------------------------------------------
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function resolveLayout(array $data): string
+    {
+        $layout = trim((string)($data['tx_mpcvidply_layout'] ?? ''));
+
+        return in_array($layout, self::LAYOUTS, true) ? $layout : 'default';
+    }
+
+    /**
+     * Server-rendered episode metadata (cover, title, date, duration, …) for the
+     * card layouts. Everything the player itself renders is built by JavaScript
+     * from the playlist JSON and would not be in the HTML source.
+     *
+     * @param list<array<string, mixed>> $mediaRecords
+     * @param list<list<array{uid: int, title: string}>> $categories Aligned with $mediaRecords
+     * @return list<array<string, mixed>>
+     */
+    private function buildEpisodeData(array $mediaRecords, array $categories): array
+    {
+        $episodes = [];
+
+        foreach (array_values($mediaRecords) as $index => $mediaRecord) {
+            if (!is_array($mediaRecord)) {
+                continue;
+            }
+
+            $mediaUid = (int)($mediaRecord['uid'] ?? 0);
+            $title = (string)($mediaRecord['title'] ?? '');
+            [$posterReferenceUid, $posterAlt] = $this->resolveEpisodePoster($mediaUid, $title);
+            $duration = (int)($mediaRecord['duration'] ?? 0);
+
+            $episodes[] = [
+                'index' => $index,
+                'uid' => $mediaUid,
+                'title' => $title,
+                'artist' => (string)($mediaRecord['artist'] ?? ''),
+                'episodeNumber' => trim((string)($mediaRecord['episode_number'] ?? '')),
+                'dateFormatted' => $this->formatPublishDate((int)($mediaRecord['publish_date'] ?? 0)),
+                'dateIso' => $this->formatPublishDateIso((int)($mediaRecord['publish_date'] ?? 0)),
+                'duration' => $duration,
+                'durationFormatted' => $this->formatDuration($duration),
+                'description' => (string)($mediaRecord['description'] ?? ''),
+                'longDescription' => (string)($mediaRecord['long_description'] ?? ''),
+                'categories' => $categories[$index] ?? [],
+                'posterReferenceUid' => $posterReferenceUid,
+                'posterAlt' => $posterAlt,
+            ];
+        }
+
+        return $episodes;
+    }
+
+    /**
+     * Categories of every media record, in the order of $mediaRecords.
+     *
+     * @param list<array<string, mixed>> $mediaRecords
+     * @return list<list<array{uid: int, title: string}>>
+     */
+    private function resolveEpisodeCategories(array $mediaRecords, int $languageId): array
+    {
+        $categoryMap = $this->mediaCategoryResolver->fetchForMediaRecords($mediaRecords, $languageId);
+
+        $categories = [];
+        foreach (array_values($mediaRecords) as $mediaRecord) {
+            $categories[] = is_array($mediaRecord)
+                ? $this->mediaCategoryResolver->resolveForMedia($mediaRecord, $categoryMap)
+                : [];
+        }
+
+        return $categories;
+    }
+
+    /**
+     * @return array{0: ?int, 1: string}
+     */
+    private function resolveEpisodePoster(int $mediaUid, string $title): array
+    {
+        $posterRefs = $this->getFileReferencesForMedia($mediaUid, 'poster');
+        if ($posterRefs === []) {
+            return [null, $title];
+        }
+
+        $reference = $posterRefs[0];
+        $referenceUid = (int)$reference->getUid();
+        if ($referenceUid <= 0) {
+            return [null, $title];
+        }
+
+        $alternative = trim((string)$reference->getAlternative());
+
+        return [$referenceUid, $alternative !== '' ? $alternative : $title];
+    }
+
+    /**
+     * Format a date-only timestamp for the current site language.
+     *
+     * TYPO3 stores date-only `datetime` fields as midnight **UTC**, so the
+     * formatter is pinned to UTC as well — otherwise 2021-05-18 renders as
+     * 17 May in any timezone behind UTC.
+     */
+    private function formatPublishDate(int $timestamp): string
+    {
+        if ($timestamp <= 0) {
+            return '';
+        }
+
+        $locale = $this->dateLocale;
+        if ($locale !== null && class_exists(\IntlDateFormatter::class)) {
+            try {
+                $formatter = new \IntlDateFormatter(
+                    $locale,
+                    \IntlDateFormatter::LONG,
+                    \IntlDateFormatter::NONE,
+                    'UTC'
+                );
+                $formatted = $formatter->format($timestamp);
+                if (is_string($formatted) && $formatted !== '') {
+                    return $formatted;
+                }
+            } catch (\Throwable) {
+                // Fall through to the locale-independent format below.
+            }
+        }
+
+        return gmdate('Y-m-d', $timestamp);
+    }
+
+    private function formatPublishDateIso(int $timestamp): string
+    {
+        return $timestamp > 0 ? gmdate('Y-m-d', $timestamp) : '';
+    }
+
+    private function formatDuration(int $seconds): string
+    {
+        if ($seconds <= 0) {
+            return '';
+        }
+        $hours = intdiv($seconds, 3600);
+        $minutes = intdiv($seconds % 3600, 60);
+        $secs = $seconds % 60;
+        if ($hours > 0) {
+            return sprintf('%d:%02d:%02d', $hours, $minutes, $secs);
+        }
+
+        return sprintf('%d:%02d', $minutes, $secs);
+    }
+
+    /**
+     * Locale of the current site language (e.g. "de-DE"), used to pre-format
+     * dates in PHP so templates and the player only print ready-made strings.
+     */
+    private function resolveDateLocale(ServerRequestInterface $request): ?string
+    {
+        $language = $request->getAttribute('language');
+        if ($language !== null && method_exists($language, 'getLocale')) {
+            try {
+                $locale = (string)$language->getLocale();
+                if ($locale !== '') {
+                    return $locale;
+                }
+            } catch (\Throwable) {
+            }
+        }
+
+        return null;
     }
 
     /**

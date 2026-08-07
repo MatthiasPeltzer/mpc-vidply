@@ -34,6 +34,8 @@ CREATE TABLE tx_mpcvidply_media (
 	duration int DEFAULT '0' NOT NULL,
 	audio_description_duration int DEFAULT '0' NOT NULL,
 	audio_description_mode varchar(20) DEFAULT 'auto' NOT NULL,
+	publish_date int unsigned DEFAULT '0' NOT NULL,
+	episode_number varchar(20) DEFAULT '' NOT NULL,
 	
 	# Poster/Thumbnail
 	poster int unsigned DEFAULT '0' NOT NULL,
@@ -166,7 +168,8 @@ CREATE TABLE tx_mpcvidply_listview_row_media_mm (
 CREATE TABLE tt_content (
 	tx_mpcvidply_listview_rows int unsigned DEFAULT '0' NOT NULL,
 	tx_mpcvidply_detail_page int unsigned DEFAULT '0' NOT NULL,
-	tx_mpcvidply_show_related smallint unsigned DEFAULT '1' NOT NULL
+	tx_mpcvidply_show_related smallint unsigned DEFAULT '1' NOT NULL,
+	tx_mpcvidply_layout varchar(20) DEFAULT 'default' NOT NULL
 );
 
 #

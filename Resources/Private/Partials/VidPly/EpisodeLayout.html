@@ -1,0 +1,22 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+
+<f:asset.css href="EXT:mpc_vidply/Resources/Public/Css/episode.min.css" identifier="vidplyEpisodeCSS"/>
+<f:asset.script identifier="vidplyEpisodeJs" src="EXT:mpc_vidply/Resources/Public/JavaScript/EpisodeInit.min.js" type="module"/>
+
+<article class="mpc-episode mpc-episode-layout-{vidply.layout}" id="{vidply.uniqueId}-episode">
+    <f:if condition="{vidply.episode}">
+        <f:render partial="VidPly/EpisodeCover" arguments="{episode: vidply.episode}" />
+    </f:if>
+
+    <div class="mpc-episode-main">
+        <f:if condition="{vidply.episode}">
+            <f:render partial="VidPly/EpisodeCard" arguments="{episode: vidply.episode, vidply: vidply, data: data}" />
+        </f:if>
+
+        <div class="mpc-episode-player">
+            <f:render partial="VidPly/Player" arguments="{_all}" />
+        </div>
+    </div>
+</article>
+
+</html>

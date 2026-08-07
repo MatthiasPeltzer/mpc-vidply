@@ -246,6 +246,12 @@
       <trans-unit id="tx_mpcvidply_media.enable_transcript">
         <source>Enable Transcript</source>
       </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.episode_number">
+        <source>Episode Number</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.episode_number.description">
+        <source>Optional free text shown above the title in the episode card (e.g. "11" or "S2E4").</source>
+      </trans-unit>
       <trans-unit id="tx_mpcvidply_media.hide_help_button">
         <source>Hide keyboard shortcuts help</source>
       </trans-unit>
@@ -290,6 +296,12 @@
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.poster">
         <source>Poster / Thumbnail</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.publish_date">
+        <source>Publish Date</source>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.publish_date.description">
+        <source>Date the episode was published. Shown in the episode card and playlist, and used for the structured data publication date.</source>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.sign_language">
         <source>Sign Language Video</source>

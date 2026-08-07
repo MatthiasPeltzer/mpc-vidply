@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Episode card layout for the VidPly Player content element. A new **Layout**
+  field (`tx_mpcvidply_layout`) offers *Player only* (unchanged default),
+  *Episode card* and *Episode card with episode list*. The card renders a
+  square cover with a play button next to episode number, title, publish date,
+  duration and description, with the player below — laid out with intrinsic
+  flex wrapping so it also fits narrow columns, sidebars and modals.
+- Media records have **Publish date** and **Episode number** fields. Dates are
+  formatted for the site language in PHP (`IntlDateFormatter`, pinned to UTC
+  because date-only fields are stored as midnight UTC) and handed to the
+  player, which prints them verbatim in the playlist and now-playing panel.
+- Structured data uses the publish date for `uploadDate` and adds
+  `datePublished`; the record's creation date remains the fallback.
+
+### Changed
+- Updated the bundled VidPly player assets to include the new playlist date
+  rendering and the optional big play button on audio players.
+
+### Fixed
+- The player's keyboard help and settings dialogs were clipped to the height
+  of the control bar on audio players, hiding their content. They now open as
+  viewport-centered dialogs.
+
 ## [1.2.22] - 2026-07-23
 
 ### Changed

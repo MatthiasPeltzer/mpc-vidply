@@ -176,7 +176,7 @@ return [
     ],
     'palettes' => [
         'metadata' => [
-            'showitem' => 'title,slug,--linebreak--,artist,--linebreak--,description,--linebreak--,long_description,--linebreak--,duration,audio_description_duration',
+            'showitem' => 'title,slug,--linebreak--,artist,--linebreak--,description,--linebreak--,long_description,--linebreak--,duration,audio_description_duration,--linebreak--,publish_date,episode_number',
         ],
         'ui' => [
             'showitem' => 'hide_speed_button,hide_help_button,allow_download,enable_floating_player',
@@ -399,6 +399,38 @@ return [
                 'range' => [
                     'lower' => 0,
                 ],
+            ],
+        ],
+        'publish_date' => [
+            'exclude' => true,
+            'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.publish_date',
+            'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.publish_date.description',
+            'config' => [
+                'type' => 'datetime',
+                'format' => 'date',
+                'size' => 12,
+                'default' => 0,
+                'range' => [
+                    'lower' => 0,
+                ],
+            ],
+            // Translations inherit the date until an editor unlinks the field.
+            'behaviour' => [
+                'allowLanguageSynchronization' => true,
+            ],
+        ],
+        'episode_number' => [
+            'exclude' => true,
+            'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.episode_number',
+            'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.episode_number.description',
+            'config' => [
+                'type' => 'input',
+                'size' => 10,
+                'max' => 20,
+                'eval' => 'trim',
+            ],
+            'behaviour' => [
+                'allowLanguageSynchronization' => true,
             ],
         ],
         'audio_description_mode' => [

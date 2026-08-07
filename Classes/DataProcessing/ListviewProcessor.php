@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\DataProcessing;
 
-use Mpc\MpcVidply\Service\CategoryTitleResolver;
 use Mpc\MpcVidply\Service\FrontendLanguageResolver;
 use Mpc\MpcVidply\Service\ListviewMediaResolver;
+use Mpc\MpcVidply\Service\MediaCategoryResolver;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Resource\Exception\ResourceDoesNotExistException;
@@ -31,18 +31,18 @@ final class ListviewProcessor implements DataProcessorInterface
     private readonly ConnectionPool $connectionPool;
     private readonly ResourceFactory $resourceFactory;
     private readonly ListviewMediaResolver $mediaResolver;
-    private readonly CategoryTitleResolver $categoryTitleResolver;
+    private readonly MediaCategoryResolver $mediaCategoryResolver;
 
     public function __construct(
         ?ConnectionPool $connectionPool = null,
         ?ResourceFactory $resourceFactory = null,
         ?ListviewMediaResolver $mediaResolver = null,
-        ?CategoryTitleResolver $categoryTitleResolver = null
+        ?MediaCategoryResolver $mediaCategoryResolver = null
     ) {
         $this->connectionPool = $connectionPool ?? GeneralUtility::makeInstance(ConnectionPool::class);
         $this->resourceFactory = $resourceFactory ?? GeneralUtility::makeInstance(ResourceFactory::class);
         $this->mediaResolver = $mediaResolver ?? GeneralUtility::makeInstance(ListviewMediaResolver::class);
-        $this->categoryTitleResolver = $categoryTitleResolver ?? GeneralUtility::makeInstance(CategoryTitleResolver::class);
+        $this->mediaCategoryResolver = $mediaCategoryResolver ?? GeneralUtility::makeInstance(MediaCategoryResolver::class);
     }
 
     /**
@@ -125,10 +125,7 @@ final class ListviewProcessor implements DataProcessorInterface
                 static fn (int $uid): bool => $uid > 0
             ));
             $posterRefsByMediaUid = $this->prefetchPosterReferences($mediaUids);
-            $categoryMap = $this->fetchCategoriesByForeignMediaUids(
-                $this->collectCategoryRelationMediaUids($mediaRecords),
-                $languageId
-            );
+            $categoryMap = $this->mediaCategoryResolver->fetchForMediaRecords($mediaRecords, $languageId);
 
             $cards = [];
             foreach ($mediaRecords as $media) {
@@ -216,10 +213,7 @@ final class ListviewProcessor implements DataProcessorInterface
 
         $mediaType = (string)($media['media_type'] ?? 'video');
         $isExternal = in_array($mediaType, ['youtube', 'vimeo', 'soundcloud'], true);
-        $categories = $this->categoryTitleResolver->localizeCategories(
-            $this->resolveCategoriesForMedia($media, $categoryMap),
-            $languageId
-        );
+        $categories = $this->mediaCategoryResolver->resolveForMedia($media, $categoryMap);
 
         return [
             'uid' => $uid,
@@ -238,118 +232,6 @@ final class ListviewProcessor implements DataProcessorInterface
             'isExternal' => $isExternal,
             'categories' => $categories,
         ];
-    }
-
-    /**
-     * @param list<array<string, mixed>> $mediaRecords
-     * @return list<int>
-     */
-    private function collectCategoryRelationMediaUids(array $mediaRecords): array
-    {
-        $ids = [];
-        foreach ($mediaRecords as $m) {
-            $fk = $this->resolveCategoryMmForeignMediaUid($m);
-            if ($fk > 0) {
-                $ids[] = $fk;
-            }
-            $uid = (int)($m['uid'] ?? 0);
-            if ((int)($m['l10n_parent'] ?? 0) > 0 && $uid > 0) {
-                $ids[] = $uid;
-            }
-        }
-        return array_values(array_unique($ids, SORT_NUMERIC));
-    }
-
-    /**
-     * @param array<string, mixed> $media
-     */
-    private function resolveCategoryMmForeignMediaUid(array $media): int
-    {
-        $l10nParent = (int)($media['l10n_parent'] ?? 0);
-        $uid = (int)($media['uid'] ?? 0);
-        return $l10nParent > 0 ? $l10nParent : $uid;
-    }
-
-    /**
-     * @param array<string, mixed> $media
-     * @param array<int, list<array{uid: int, title: string}>> $categoryMap
-     * @return list<array{uid: int, title: string}>
-     */
-    private function resolveCategoriesForMedia(array $media, array $categoryMap): array
-    {
-        $fk = $this->resolveCategoryMmForeignMediaUid($media);
-        $list = $categoryMap[$fk] ?? [];
-        if ($list === [] && (int)($media['l10n_parent'] ?? 0) > 0) {
-            $list = $categoryMap[(int)($media['uid'] ?? 0)] ?? [];
-        }
-        $list = array_values(
-            array_filter(
-                $list,
-                static fn (array $c): bool => trim((string)($c['title'] ?? '')) !== ''
-            )
-        );
-        return $list;
-    }
-
-    /**
-     * @param list<int> $foreignMediaUids `sys_category_record_mm.uid_foreign` targets
-     * @return array<int, list<array{uid: int, title: string}>>
-     */
-    private function fetchCategoriesByForeignMediaUids(array $foreignMediaUids, int $languageId): array
-    {
-        $foreignMediaUids = array_values(array_filter(
-            array_map(static fn (int|string $v): int => (int)$v, $foreignMediaUids),
-            static fn (int $u): bool => $u > 0
-        ));
-        if ($foreignMediaUids === []) {
-            return [];
-        }
-
-        $qb = $this->connectionPool->getQueryBuilderForTable('sys_category');
-        $rows = $qb
-            ->select('mm.uid_foreign', 'sys_category.uid', 'sys_category.title', 'mm.sorting')
-            ->from('sys_category')
-            ->join(
-                'sys_category',
-                'sys_category_record_mm',
-                'mm',
-                (string)$qb->expr()->and(
-                    $qb->expr()->eq('mm.uid_local', $qb->quoteIdentifier('sys_category.uid')),
-                    $qb->expr()->eq('mm.tablenames', $qb->createNamedParameter('tx_mpcvidply_media')),
-                    $qb->expr()->eq('mm.fieldname', $qb->createNamedParameter('categories')),
-                    $qb->expr()->in('mm.uid_foreign', $qb->createNamedParameter($foreignMediaUids, Connection::PARAM_INT_ARRAY))
-                )
-            )
-            ->where(
-                $qb->expr()->eq('sys_category.deleted', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-                $qb->expr()->eq('sys_category.hidden', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-                $qb->expr()->lte('sys_category.sys_language_uid', $qb->createNamedParameter(0, Connection::PARAM_INT))
-            )
-            ->orderBy('mm.uid_foreign', 'ASC')
-            ->addOrderBy('mm.sorting', 'ASC')
-            ->addOrderBy('sys_category.title', 'ASC')
-            ->executeQuery()
-            ->fetchAllAssociative();
-
-        /** @var array<int, list<array{uid: int, title: string}>> $out */
-        $out = [];
-        $seen = [];
-        foreach ($rows as $row) {
-            $foreign = (int)($row['uid_foreign'] ?? 0);
-            $cUid = (int)($row['uid'] ?? 0);
-            if ($foreign <= 0 || $cUid <= 0) {
-                continue;
-            }
-            $title = (string)($row['title'] ?? '');
-            $k = $foreign . '-' . $cUid;
-            if (isset($seen[$k])) {
-                continue;
-            }
-            $seen[$k] = true;
-            $out[$foreign] ??= [];
-            $out[$foreign][] = ['uid' => $cUid, 'title' => $title];
-        }
-        return $out;
     }
 
     /**

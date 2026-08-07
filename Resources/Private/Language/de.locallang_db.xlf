@@ -327,6 +327,14 @@
         <source>Enable Transcript</source>
         <target>Transkript aktivieren</target>
       </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.episode_number">
+        <source>Episode Number</source>
+        <target>Folgennummer</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.episode_number.description">
+        <source>Optional free text shown above the title in the episode card (e.g. "11" or "S2E4").</source>
+        <target>Optionaler Freitext, der in der Episoden-Karte über dem Titel angezeigt wird (z. B. „11“ oder „S2E4“).</target>
+      </trans-unit>
       <trans-unit id="tx_mpcvidply_media.hide_help_button">
         <source>Hide keyboard shortcuts help</source>
         <target>Tastaturkürzel-Hilfe ausblenden</target>
@@ -386,6 +394,14 @@
       <trans-unit id="tx_mpcvidply_media.poster">
         <source>Poster / Thumbnail</source>
         <target>Vorschaubild / Thumbnail</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.publish_date">
+        <source>Publish Date</source>
+        <target>Veröffentlichungsdatum</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.publish_date.description">
+        <source>Date the episode was published. Shown in the episode card and playlist, and used for the structured data publication date.</source>
+        <target>Datum der Veröffentlichung der Folge. Wird in der Episoden-Karte und in der Wiedergabeliste angezeigt und als Veröffentlichungsdatum in den strukturierten Daten verwendet.</target>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.sign_language">
         <source>Sign Language Video</source>

@@ -87,6 +87,26 @@ $vidplyFields = [
         ],
     ],
 
+    // Presentation layout of the player content element.
+    // Named tx_mpcvidply_layout to avoid colliding with the core `layout` field.
+    'tx_mpcvidply_layout' => [
+        'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_layout',
+        'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_layout.description',
+        'config' => [
+            'type' => 'select',
+            'renderType' => 'selectSingle',
+            'items' => [
+                ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_layout.default', 'value' => 'default'],
+                ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_layout.card', 'value' => 'card'],
+                ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_layout.episodes', 'value' => 'episodes'],
+            ],
+            'default' => 'default',
+        ],
+        'behaviour' => [
+            'allowLanguageSynchronization' => true,
+        ],
+    ],
+
     // Player Options
     'tx_mpcvidply_options' => [
         'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_options',
@@ -223,6 +243,7 @@ $GLOBALS['TCA']['tt_content']['types']['mpc_vidply'] = [
         --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tabs.media,
             tx_mpcvidply_media_items,
         --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tabs.settings,
+            tx_mpcvidply_layout,
             tx_mpcvidply_options,
             tx_mpcvidply_volume,
             tx_mpcvidply_playback_speed,

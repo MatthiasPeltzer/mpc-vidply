@@ -159,6 +159,21 @@
       <trans-unit id="tt_content.tx_mpcvidply_language.auto">
         <source>Auto (detect from page language)</source>
       </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_layout">
+        <source>Layout</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_layout.description">
+        <source>How the player is presented. "Episode card" adds a square cover with title, date, duration and description around the player.</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_layout.default">
+        <source>Player only (default)</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_layout.card">
+        <source>Episode card</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_layout.episodes">
+        <source>Episode card with episode list</source>
+      </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_listview_rows">
         <source>Listview Rows</source>
       </trans-unit>

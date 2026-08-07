@@ -155,6 +155,8 @@ Every media record has a **metadata palette**:
 | **Long description** | Rich text (CKEditor); shown on the **VidPly Detail** page below the short description | No |
 | **Slug** | URL segment for listview detail links (auto-generated from title; override on Metadata tab) | No |
 | **Duration** | Length in seconds (for display) | No |
+| **Publish date** | Release date of the episode; shown in the episode card and playlist, and used as publication date in the structured data | No |
+| **Episode number** | Free text above the title in the episode card (e.g. `11`, `S2E4`) | No |
 | **Poster** | Thumbnail image | Recommended |
 | **Categories** | TYPO3 categories (shown as chips on listview cards; used for automatic listview row selection) | No |
 
@@ -335,6 +337,7 @@ Generate searchable text transcript from captions:
 
 | Option | Default | Description |
 |--------|---------|-------------|
+| **Layout** | Player only | Presentation of the element — see below |
 | **Autoplay** | Off | Start playing automatically |
 | **Loop** | Off | Loop when finished |
 | **Muted** | Off | Start muted |
@@ -351,6 +354,22 @@ Generate searchable text transcript from captions:
 **Transcript (per media item):**
 - Enable transcript per media record: **Media record → Captions tab → “Enable Transcript”**
 - The transcript panel is shown if **at least one** selected item has transcript enabled.
+
+### Episode card layout (podcasts)
+
+The **Layout** field controls how the element is presented:
+
+| Layout | Result |
+|--------|--------|
+| **Player only** | The plain player — unchanged default |
+| **Episode card** | Square cover with a large play button, episode number, title, publish date, duration and description; the player sits below |
+| **Episode card with episode list** | Same card, plus the player's playlist panel for all selected media items |
+
+The card is filled from the **first** selected media record. Publish date and
+episode number come from that record's metadata palette, and the cover is its
+poster — so give podcast episodes a square poster for the best result. The card
+reflows to a single column when the content column is narrow, so it works in
+sidebars and modals as well.
 
 ---
 

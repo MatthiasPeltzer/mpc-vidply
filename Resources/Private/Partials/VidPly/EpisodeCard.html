@@ -1,0 +1,62 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+
+<f:variable name="playLabel"><f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:player.play" default="Play" /></f:variable>
+<f:variable name="pauseLabel"><f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:player.pause" default="Pause" /></f:variable>
+
+<div class="mpc-episode-header">
+    <button type="button"
+            class="mpc-episode-play"
+            data-mpc-episode-play="{vidply.uniqueId}"
+            data-mpc-episode-label-play="{playLabel}"
+            data-mpc-episode-label-pause="{pauseLabel}"
+            data-mpc-episode-title="{episode.title}"
+            aria-label="{playLabel}{f:if(condition: episode.title, then: ': {episode.title}')}">
+        <span class="mpc-episode-play-icon" aria-hidden="true"></span>
+    </button>
+
+    <div class="mpc-episode-body">
+        <h3 class="mpc-episode-title"><f:if condition="{episode.episodeNumber}"><span class="mpc-episode-number">{episode.episodeNumber}</span> </f:if>{episode.title}</h3>
+
+        <f:if condition="{episode.dateFormatted} || {episode.durationFormatted} || {episode.categories}">
+            <div class="mpc-episode-meta">
+                <f:if condition="{episode.dateFormatted}">
+                    <span class="mpc-episode-date">
+                        <svg class="mpc-episode-icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+                            <path fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"
+                                  d="M2.7 3.4h10.6a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H2.7a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1ZM1.7 6.9h12.6M5.2 1.6v2.6M10.8 1.6v2.6" />
+                        </svg>
+                        <time datetime="{episode.dateIso}">{episode.dateFormatted}</time>
+                    </span>
+                </f:if>
+                <f:if condition="{episode.durationFormatted}">
+                    <span class="mpc-episode-duration">
+                        <svg class="mpc-episode-icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+                            <path fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"
+                                  d="M8 1.9a6.1 6.1 0 1 1 0 12.2A6.1 6.1 0 0 1 8 1.9ZM8 4.6v3.7l2.4 1.6" />
+                        </svg>
+                        <span class="mpc-episode-sr-only"><f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:detail.duration" default="Duration" />:</span>
+                        {episode.durationFormatted}
+                    </span>
+                </f:if>
+                <f:if condition="{episode.categories}">
+                    <ul class="mpc-episode-category-list"
+                        aria-label="{f:translate(key: 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:detail.categories', default: 'Categories')}">
+                        <f:for each="{episode.categories}" as="category">
+                            <li class="mpc-episode-category">{category.title}</li>
+                        </f:for>
+                    </ul>
+                </f:if>
+            </div>
+        </f:if>
+
+        <f:if condition="{episode.artist}">
+            <p class="mpc-episode-artist">{episode.artist}</p>
+        </f:if>
+
+        <f:if condition="{episode.description}">
+            <p class="mpc-episode-description">{episode.description -> f:format.nl2br()}</p>
+        </f:if>
+    </div>
+</div>
+
+</html>

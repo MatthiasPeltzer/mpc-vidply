@@ -100,6 +100,46 @@ final class MediaObjectJsonLdBuilderTest extends TestCase
     }
 
     #[Test]
+    public function buildGraphNodePrefersThePublishDateOverTheCreationDate(): void
+    {
+        $node = $this->subject->buildGraphNode(
+            [
+                'title' => 'Podcast episode',
+                'media_type' => 'audio',
+                'crdate' => 1_704_067_200,
+                // 2021-05-18 00:00 UTC
+                'publish_date' => 1_621_296_000,
+            ],
+            $this->requestWithStructuredDataEnabled(true),
+            null,
+            'https://example.com/audio/episode',
+            null,
+        );
+
+        self::assertSame('2021-05-18T00:00:00Z', $node['uploadDate']);
+        self::assertSame('2021-05-18', $node['datePublished']);
+    }
+
+    #[Test]
+    public function buildGraphNodeOmitsDatePublishedWithoutAPublishDate(): void
+    {
+        $node = $this->subject->buildGraphNode(
+            [
+                'title' => 'Podcast episode',
+                'media_type' => 'audio',
+                'crdate' => 1_704_067_200,
+            ],
+            $this->requestWithStructuredDataEnabled(true),
+            null,
+            'https://example.com/audio/episode',
+            null,
+        );
+
+        self::assertSame('2024-01-01T00:00:00Z', $node['uploadDate']);
+        self::assertArrayNotHasKey('datePublished', $node);
+    }
+
+    #[Test]
     #[DataProvider('youtubeUrlProvider')]
     public function resolveMediaUrlsBuildsYouTubeWatchAndEmbedUrls(string $src): void
     {

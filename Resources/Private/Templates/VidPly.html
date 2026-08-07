@@ -3,7 +3,14 @@
 <f:layout name="Default" />
 
 <f:section name="Main">
-    <f:render partial="VidPly/Player" arguments="{_all}" />
+    <f:if condition="{vidply.layout} && {vidply.layout} != 'default'">
+        <f:then>
+            <f:render partial="VidPly/EpisodeLayout" arguments="{_all}" />
+        </f:then>
+        <f:else>
+            <f:render partial="VidPly/Player" arguments="{_all}" />
+        </f:else>
+    </f:if>
 </f:section>
 
 </html>

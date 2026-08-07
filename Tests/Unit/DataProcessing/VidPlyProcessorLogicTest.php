@@ -284,4 +284,145 @@ final class VidPlyProcessorLogicTest extends TestCase
 
         self::assertTrue($track['hideHelpButton']);
     }
+
+    private function setProperty(string $name, mixed $value): void
+    {
+        (new \ReflectionProperty(VidPlyProcessor::class, $name))->setValue($this->subject, $value);
+    }
+
+    #[Test]
+    #[DataProvider('layoutProvider')]
+    public function resolveLayoutFallsBackToDefaultForUnknownValues(mixed $stored, string $expected): void
+    {
+        self::assertSame($expected, $this->invoke('resolveLayout', ['tx_mpcvidply_layout' => $stored]));
+    }
+
+    /**
+     * @return array<string, array{0: mixed, 1: string}>
+     */
+    public static function layoutProvider(): array
+    {
+        return [
+            'card' => ['card', 'card'],
+            'episodes' => ['episodes', 'episodes'],
+            'explicit default' => ['default', 'default'],
+            'unknown value' => ['podcast', 'default'],
+            'empty value' => ['', 'default'],
+        ];
+    }
+
+    #[Test]
+    public function resolveLayoutDefaultsWhenFieldIsMissing(): void
+    {
+        self::assertSame('default', $this->invoke('resolveLayout', []));
+    }
+
+    #[Test]
+    public function formatPublishDateReturnsEmptyStringForUnsetDate(): void
+    {
+        self::assertSame('', $this->invoke('formatPublishDate', 0));
+    }
+
+    #[Test]
+    public function formatPublishDateUsesTheSiteLocale(): void
+    {
+        if (!class_exists(\IntlDateFormatter::class)) {
+            self::markTestSkipped('ext-intl is not available.');
+        }
+
+        // 2021-05-18 00:00 UTC — the value TYPO3 stores for a date-only field.
+        $timestamp = 1621296000;
+        $this->setProperty('dateLocale', 'de-DE');
+
+        self::assertSame('18. Mai 2021', $this->invoke('formatPublishDate', $timestamp));
+
+        $this->setProperty('dateLocale', 'en-US');
+
+        self::assertSame('May 18, 2021', $this->invoke('formatPublishDate', $timestamp));
+    }
+
+    #[Test]
+    public function formatPublishDateStaysOnTheStoredDayWithoutALocale(): void
+    {
+        $this->setProperty('dateLocale', null);
+
+        self::assertSame('2021-05-18', $this->invoke('formatPublishDate', 1621296000));
+    }
+
+    #[Test]
+    public function buildBaseTrackDataAddsFormattedDateAndEpisodeNumber(): void
+    {
+        $this->setProperty('dateLocale', 'en-US');
+
+        $track = $this->invoke('buildBaseTrackData', [
+            'title' => 'Episode 11',
+            'publish_date' => 1621296000,
+            'episode_number' => ' 11 ',
+        ]);
+
+        self::assertSame('11', $track['episodeNumber']);
+        self::assertNotSame('', $track['date']);
+        self::assertStringContainsString('2021', $track['date']);
+    }
+
+    #[Test]
+    public function buildBaseTrackDataOmitsEmptyDateAndEpisodeNumber(): void
+    {
+        $track = $this->invoke('buildBaseTrackData', [
+            'title' => 'Episode 11',
+            'publish_date' => 0,
+            'episode_number' => '   ',
+        ]);
+
+        self::assertArrayNotHasKey('date', $track);
+        self::assertArrayNotHasKey('episodeNumber', $track);
+    }
+
+    #[Test]
+    public function buildEpisodeDataExposesServerRenderedMetadata(): void
+    {
+        $this->setProperty('dateLocale', 'en-US');
+        // No poster references — avoids touching the (unconstructed) FileRepository.
+        $this->setProperty('fileReferencesByMediaUid', [7 => ['poster' => []]]);
+
+        $episodes = $this->invoke(
+            'buildEpisodeData',
+            [[
+                'uid' => 7,
+                'title' => 'Episode 11',
+                'artist' => 'MP Core',
+                'description' => 'Show notes',
+                'duration' => 3725,
+                'publish_date' => 1621296000,
+                'episode_number' => '11',
+            ]],
+            [[['uid' => 3, 'title' => 'Politics']]]
+        );
+
+        self::assertCount(1, $episodes);
+        self::assertSame(0, $episodes[0]['index']);
+        self::assertSame('Episode 11', $episodes[0]['title']);
+        self::assertSame('11', $episodes[0]['episodeNumber']);
+        self::assertSame('2021-05-18', $episodes[0]['dateIso']);
+        self::assertSame('1:02:05', $episodes[0]['durationFormatted']);
+        self::assertSame([['uid' => 3, 'title' => 'Politics']], $episodes[0]['categories']);
+        self::assertNull($episodes[0]['posterReferenceUid']);
+        self::assertSame('Episode 11', $episodes[0]['posterAlt']);
+    }
+
+    #[Test]
+    public function buildEpisodeDataLeavesDateFieldsEmptyWhenUnset(): void
+    {
+        $this->setProperty('fileReferencesByMediaUid', [7 => ['poster' => []]]);
+
+        $episodes = $this->invoke('buildEpisodeData', [[
+            'uid' => 7,
+            'title' => 'Episode 12',
+        ]], []);
+
+        self::assertSame('', $episodes[0]['dateFormatted']);
+        self::assertSame('', $episodes[0]['dateIso']);
+        self::assertSame('', $episodes[0]['durationFormatted']);
+        self::assertSame([], $episodes[0]['categories']);
+    }
 }

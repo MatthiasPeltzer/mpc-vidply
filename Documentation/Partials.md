@@ -155,6 +155,9 @@ Displays play button with privacy notice for YouTube, Vimeo, and SoundCloud. Use
 
 ```
 VidPly.html (Main)
+├── layout = card|episodes → VidPly/EpisodeLayout.html
+│   ├── VidPly/EpisodeCard.html (cover, episode number, title, date, duration, description)
+│   └── VidPly/Player.html
 └── VidPly/Player.html (wrapper + renderMode switch)
     ├── privacy → PrivacyLayer.html
     ├── mixedPlaylist → MixedPlaylistPlayer.html
@@ -205,6 +208,31 @@ Location: `Resources/Private/Partials/Listview/` and
 Override the same way with `partialRootPaths` for `mpc_vidply` listview
 TypoScript if your sitepackage needs different markup; keep `data-*`
 attributes if you rely on `Listview.js` (shelf, sort, pagination).
+
+## Episode card partials
+
+Used when the content element's **Layout** field (`tx_mpcvidply_layout`) is set
+to *Episode card* or *Episode card with episode list*; `default` renders the
+plain player exactly as before.
+
+| Partial | Role |
+|---------|------|
+| `VidPly/EpisodeLayout` | Card wrapper, loads `episode.min.css` + `EpisodeInit.min.js`, renders card and player |
+| `VidPly/EpisodeCover` | Square artwork of the first episode |
+| `VidPly/EpisodeCard` | Round play button next to episode number, title, publish date, duration, description |
+
+The card data comes from `vidply.episode` (first record) and `vidply.episodes`
+(all records) — see `VidPlyProcessor::buildEpisodeData()`. Dates are
+pre-formatted in PHP for the site language, so templates print ready-made
+strings. Keep `data-mpc-episode-play` on the play button if you override the
+card: `EpisodeInit.js` uses it to reach the player and to sync the
+play/pause state.
+
+Class names follow the Bootstrap pattern (`mpc-episode`, `mpc-episode-cover`,
+`mpc-episode-body`, `mpc-episode-play`, …) with the layout as a modifier on the
+root element (`mpc-episode-layout-card`, `mpc-episode-layout-episodes`). The
+artwork sits in `mpc-episode-cover`, everything else in `mpc-episode-main`, so
+the player lines up with the play button rather than the image.
 
 ## Benefits
 

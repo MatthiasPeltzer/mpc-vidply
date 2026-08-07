@@ -14,6 +14,11 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 | `needsHLS` | hls.js **1.6.16** (`hls.min.js`) | HLS source (.m3u8) detected in media files |
 | `needsDASH` | dash.js **5.2.0** (`dash.all.min.js`, modern UMD) | DASH source (.mpd) detected in media files |
 
+The episode layouts add two more assets, loaded by `VidPly/EpisodeLayout.html`
+rather than by a flag: `episode.min.css` and `EpisodeInit.min.js` (wires the
+card's play button to the player). They are only emitted when the content
+element's Layout field is `card` or `episodes`.
+
 **CSS always loads** — `vidply.min.css` is lightweight and always included for consistent styling. It also contains the styles for the centered buffering spinner (`.vidply-loading` / `.vidply-buffering`) and the download button.
 
 **SoundCloud uses the privacy-layer path by default** — In `mpc-vidply` SoundCloud media items load only `PrivacyLayer.js` + `privacy-layer.css` (not the VidPly core), because the SoundCloud Widget iframe brings its own UI. The bundled standalone `SoundCloudRenderer` is shipped inside the VidPly core bundle and is therefore only fetched for pages that already need the VidPly core for other reasons (local video / audio, HLS, DASH). See [PrivacyLayer.md → Switch SoundCloud to Renderer Mode](PrivacyLayer.md#switch-soundcloud-to-renderer-mode-advanced) for opting in.

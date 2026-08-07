@@ -78,7 +78,9 @@ final class MediaObjectJsonLdBuilder
         $mediaType = (string)($media['media_type'] ?? 'video');
         $description = $this->resolveDescription($media);
         $duration = (int)($media['duration'] ?? 0);
-        $uploadTimestamp = (int)($media['crdate'] ?? 0);
+        // The editorial publish date wins over the record's creation date.
+        $publishTimestamp = (int)($media['publish_date'] ?? 0);
+        $uploadTimestamp = $publishTimestamp > 0 ? $publishTimestamp : (int)($media['crdate'] ?? 0);
 
         $absolutePageUrl = $this->makeAbsoluteUrl($request, $pageUrl);
         $absolutePosterUrl = $this->makeAbsoluteUrl($request, $posterUrl);
@@ -113,6 +115,10 @@ final class MediaObjectJsonLdBuilder
         }
         if ($uploadTimestamp > 0) {
             $data['uploadDate'] = gmdate('Y-m-d\TH:i:s\Z', $uploadTimestamp);
+        }
+        if ($publishTimestamp > 0) {
+            // Date-only field: TYPO3 stores it as midnight UTC.
+            $data['datePublished'] = gmdate('Y-m-d', $publishTimestamp);
         }
         if ($contentUrl !== '') {
             $data['contentUrl'] = $contentUrl;

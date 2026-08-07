@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Mpc\MpcVidply\DataProcessing;
 
 use Mpc\MpcVidply\Repository\MediaRepository;
-use Mpc\MpcVidply\Service\CategoryTitleResolver;
 use Mpc\MpcVidply\Service\DetailMetaTagService;
 use Mpc\MpcVidply\Service\FrontendLanguageResolver;
+use Mpc\MpcVidply\Service\MediaCategoryResolver;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
@@ -31,7 +31,7 @@ final class DetailProcessor implements DataProcessorInterface
     private readonly VidPlyProcessor $vidPlyProcessor;
     private readonly ConnectionPool $connectionPool;
     private readonly ResourceFactory $resourceFactory;
-    private readonly CategoryTitleResolver $categoryTitleResolver;
+    private readonly MediaCategoryResolver $mediaCategoryResolver;
     private readonly DetailMetaTagService $metaTagService;
 
     public function __construct(
@@ -39,14 +39,14 @@ final class DetailProcessor implements DataProcessorInterface
         ?VidPlyProcessor $vidPlyProcessor = null,
         ?ConnectionPool $connectionPool = null,
         ?ResourceFactory $resourceFactory = null,
-        ?CategoryTitleResolver $categoryTitleResolver = null,
+        ?MediaCategoryResolver $mediaCategoryResolver = null,
         ?DetailMetaTagService $metaTagService = null
     ) {
         $this->mediaRepository = $mediaRepository ?? GeneralUtility::makeInstance(MediaRepository::class);
         $this->vidPlyProcessor = $vidPlyProcessor ?? GeneralUtility::makeInstance(VidPlyProcessor::class);
         $this->connectionPool = $connectionPool ?? GeneralUtility::makeInstance(ConnectionPool::class);
         $this->resourceFactory = $resourceFactory ?? GeneralUtility::makeInstance(ResourceFactory::class);
-        $this->categoryTitleResolver = $categoryTitleResolver ?? GeneralUtility::makeInstance(CategoryTitleResolver::class);
+        $this->mediaCategoryResolver = $mediaCategoryResolver ?? GeneralUtility::makeInstance(MediaCategoryResolver::class);
         $this->metaTagService = $metaTagService ?? GeneralUtility::makeInstance(DetailMetaTagService::class);
     }
 
@@ -147,13 +147,7 @@ final class DetailProcessor implements DataProcessorInterface
         $poster = $this->resolvePosterFile($mediaUid);
         $posterUrl = $poster['url'] ?? null;
 
-        $mediaUidForRel = (int)($media['l10n_parent'] ?? 0) > 0
-            ? (int)($media['l10n_parent'] ?? 0)
-            : $mediaUid;
-        $categories = $this->fetchCategoriesForMedia($mediaUidForRel, $languageId);
-        if ($categories === [] && (int)($media['l10n_parent'] ?? 0) > 0) {
-            $categories = $this->fetchCategoriesForMedia($mediaUid, $languageId);
-        }
+        $categories = $this->mediaCategoryResolver->fetchForMedia($media, $languageId);
 
         return [
             'found' => true,
@@ -349,51 +343,6 @@ final class DetailProcessor implements DataProcessorInterface
             $result[$mediaUid][] = $ref;
         }
         return $result;
-    }
-
-    /**
-     * @return list<array{uid:int,title:string}>
-     */
-    private function fetchCategoriesForMedia(int $mediaUid, int $languageId): array
-    {
-        if ($mediaUid <= 0) {
-            return [];
-        }
-        $lang = array_values(array_unique([0, -1, $languageId], SORT_REGULAR));
-        $qb = $this->connectionPool->getQueryBuilderForTable('sys_category');
-        $rows = $qb
-            ->select('sys_category.uid', 'sys_category.title')
-            ->from('sys_category')
-            ->join(
-                'sys_category',
-                'sys_category_record_mm',
-                'mm',
-                (string)$qb->expr()->and(
-                    $qb->expr()->eq('mm.uid_local', $qb->quoteIdentifier('sys_category.uid')),
-                    $qb->expr()->eq('mm.tablenames', $qb->createNamedParameter('tx_mpcvidply_media')),
-                    $qb->expr()->eq('mm.fieldname', $qb->createNamedParameter('categories')),
-                    $qb->expr()->eq('mm.uid_foreign', $qb->createNamedParameter($mediaUid, Connection::PARAM_INT))
-                )
-            )
-            ->where(
-                $qb->expr()->eq('sys_category.deleted', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-                $qb->expr()->eq('sys_category.hidden', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-                $qb->expr()->lte('sys_category.sys_language_uid', $qb->createNamedParameter(0, Connection::PARAM_INT))
-            )
-            ->groupBy('sys_category.uid', 'sys_category.title')
-            ->orderBy('mm.sorting', 'ASC')
-            ->executeQuery()
-            ->fetchAllAssociative();
-
-        $categories = array_map(
-            static fn (array $r): array => [
-                'uid' => (int)($r['uid'] ?? 0),
-                'title' => (string)($r['title'] ?? ''),
-            ],
-            $rows
-        );
-
-        return $this->categoryTitleResolver->localizeCategories($categories, $languageId);
     }
 
     private function formatDuration(int $seconds): string
