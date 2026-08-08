@@ -321,6 +321,10 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--mpc-vidply-episode-gap);
+    /* The row stacks its overlay and controls against each other below; keeping
+       that in its own context stops those values from competing with the player
+       above, whose dialogs are confined to the player's own stacking context. */
+    isolation: isolate;
     padding: 1rem;
     position: relative;
     transition: background var(--mpc-vidply-episode-transition),
