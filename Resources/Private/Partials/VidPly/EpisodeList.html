@@ -1,0 +1,23 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+
+<f:comment>
+    The episode list itself, rendered either bare or inside the pager container.
+    `data-mpc-episode-item` stays the playlist track index, so reordering and
+    paging the rows never desyncs them from the player.
+</f:comment>
+<ol class="mpc-episode-list"
+    data-mpc-episode-list
+    aria-labelledby="{vidply.uniqueId}-episode-list-heading">
+    <f:for each="{vidply.episodes}" as="episode">
+        <li class="mpc-episode-item"
+            data-mpc-episode-item="{episode.index}"
+            data-mpc-episode-date="{episode.dateIso}"
+            data-mpc-episode-sort-title="{episode.title}"
+            <f:if condition="{episode.index} == 0">aria-current="true"</f:if>>
+            <f:render partial="VidPly/EpisodeCover" arguments="{episode: episode}" />
+            <f:render partial="VidPly/EpisodeCard" arguments="{episode: episode, vidply: vidply, data: data, titleLevel: 4}" />
+        </li>
+    </f:for>
+</ol>
+
+</html>

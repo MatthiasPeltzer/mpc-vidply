@@ -377,6 +377,150 @@ final class VidPlyProcessorLogicTest extends TestCase
     }
 
     #[Test]
+    #[DataProvider('episodeSortProvider')]
+    public function resolveEpisodeSortFallsBackToManualOrder(mixed $stored, string $expected): void
+    {
+        self::assertSame($expected, $this->invoke('resolveEpisodeSort', ['tx_mpcvidply_episode_sort' => $stored]));
+    }
+
+    /**
+     * @return array<string, array{0: mixed, 1: string}>
+     */
+    public static function episodeSortProvider(): array
+    {
+        return [
+            'manual' => ['sorting', 'sorting'],
+            'newest first' => ['date_desc', 'date_desc'],
+            'oldest first' => ['date_asc', 'date_asc'],
+            'title' => ['title_asc', 'title_asc'],
+            'unknown value' => ['duration_desc', 'sorting'],
+            'empty value' => ['', 'sorting'],
+        ];
+    }
+
+    #[Test]
+    public function resolveEpisodeSortDefaultsWhenFieldIsMissing(): void
+    {
+        self::assertSame('sorting', $this->invoke('resolveEpisodeSort', []));
+    }
+
+    /**
+     * @param list<int> $expectedIndexes
+     */
+    #[Test]
+    #[DataProvider('episodeSortOrderProvider')]
+    public function sortEpisodesReordersOnlyTheDisplayList(string $sort, array $expectedIndexes): void
+    {
+        $sorted = $this->invoke('sortEpisodes', self::episodeFixtures(), $sort);
+
+        self::assertSame($expectedIndexes, array_column($sorted, 'index'));
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: list<int>}>
+     */
+    public static function episodeSortOrderProvider(): array
+    {
+        return [
+            // Undated episodes stay last in both date modes rather than counting as "oldest".
+            'manual keeps the editor order' => ['sorting', [0, 1, 2, 3]],
+            'newest first' => ['date_desc', [1, 0, 2, 3]],
+            'oldest first' => ['date_asc', [2, 0, 1, 3]],
+            'title ascending' => ['title_asc', [3, 2, 1, 0]],
+        ];
+    }
+
+    #[Test]
+    public function sortEpisodesFallsBackToTheTrackIndexOnEqualKeys(): void
+    {
+        $episodes = [
+            ['index' => 0, 'title' => 'Same', 'dateIso' => '2024-03-01'],
+            ['index' => 1, 'title' => 'same', 'dateIso' => '2024-03-01'],
+        ];
+
+        self::assertSame([0, 1], array_column($this->invoke('sortEpisodes', $episodes, 'title_asc'), 'index'));
+        self::assertSame([0, 1], array_column($this->invoke('sortEpisodes', $episodes, 'date_desc'), 'index'));
+    }
+
+    #[Test]
+    public function resolveLeadEpisodeReturnsTheFirstTrackRegardlessOfListOrder(): void
+    {
+        $episodes = $this->invoke('sortEpisodes', self::episodeFixtures(), 'title_asc');
+
+        $lead = $this->invoke('resolveLeadEpisode', $episodes);
+
+        self::assertIsArray($lead);
+        self::assertSame(0, $lead['index']);
+    }
+
+    #[Test]
+    public function resolveLeadEpisodeReturnsNullWithoutEpisodes(): void
+    {
+        self::assertNull($this->invoke('resolveLeadEpisode', []));
+    }
+
+    #[Test]
+    public function resolveEpisodeListSettingsClampsThePerPageValue(): void
+    {
+        $settings = $this->invoke('resolveEpisodeListSettings', ['tx_mpcvidply_episode_per_page' => 0], 'episodes', []);
+        self::assertSame(1, $settings['paginationPerPage']);
+
+        $settings = $this->invoke('resolveEpisodeListSettings', ['tx_mpcvidply_episode_per_page' => 5000], 'episodes', []);
+        self::assertSame(200, $settings['paginationPerPage']);
+
+        $settings = $this->invoke('resolveEpisodeListSettings', [], 'episodes', []);
+        self::assertSame(10, $settings['paginationPerPage']);
+    }
+
+    #[Test]
+    public function resolveEpisodeListSettingsActivatesPaginationOnlyAboveThePageSize(): void
+    {
+        $data = ['tx_mpcvidply_episode_pagination' => 1, 'tx_mpcvidply_episode_per_page' => 2];
+
+        $settings = $this->invoke('resolveEpisodeListSettings', $data, 'episodes', array_fill(0, 2, ['index' => 0]));
+        self::assertTrue($settings['paginationEnabled']);
+        self::assertFalse($settings['paginationActive']);
+
+        $settings = $this->invoke('resolveEpisodeListSettings', $data, 'episodes', array_fill(0, 3, ['index' => 0]));
+        self::assertTrue($settings['paginationActive']);
+    }
+
+    #[Test]
+    public function resolveEpisodeListSettingsDisablesPaginationOutsideTheEpisodeList(): void
+    {
+        $data = ['tx_mpcvidply_episode_pagination' => 1, 'tx_mpcvidply_episode_per_page' => 1];
+
+        $settings = $this->invoke('resolveEpisodeListSettings', $data, 'card', array_fill(0, 5, ['index' => 0]));
+
+        self::assertFalse($settings['paginationEnabled']);
+        self::assertFalse($settings['paginationActive']);
+    }
+
+    #[Test]
+    public function resolveEpisodeListSettingsHonoursTheDisabledToggle(): void
+    {
+        $data = ['tx_mpcvidply_episode_pagination' => 0, 'tx_mpcvidply_episode_per_page' => 1];
+
+        $settings = $this->invoke('resolveEpisodeListSettings', $data, 'episodes', array_fill(0, 5, ['index' => 0]));
+
+        self::assertFalse($settings['paginationEnabled']);
+        self::assertFalse($settings['paginationActive']);
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private static function episodeFixtures(): array
+    {
+        return [
+            ['index' => 0, 'title' => 'Charlie', 'dateIso' => '2024-02-01'],
+            ['index' => 1, 'title' => 'bravo', 'dateIso' => '2024-03-01'],
+            ['index' => 2, 'title' => 'Alpha', 'dateIso' => '2024-01-01'],
+            ['index' => 3, 'title' => 'Alfa', 'dateIso' => ''],
+        ];
+    }
+
+    #[Test]
     public function formatPublishDateReturnsEmptyStringForUnsetDate(): void
     {
         self::assertSame('', $this->invoke('formatPublishDate', 0));
@@ -488,7 +632,7 @@ final class VidPlyProcessorLogicTest extends TestCase
     #[Test]
     public function resolveEpisodesForLayoutBuildsNothingForTheDefaultLayout(): void
     {
-        self::assertSame([], $this->invoke('resolveEpisodesForLayout', 'default', $this->episodesTrackResult(1), 0));
+        self::assertSame([], $this->invoke('resolveEpisodesForLayout', 'default', $this->episodesTrackResult(1), 0, []));
     }
 
     #[Test]
@@ -496,7 +640,7 @@ final class VidPlyProcessorLogicTest extends TestCase
     {
         $this->prepareCategoryResolver();
 
-        $episodes = $this->invoke('resolveEpisodesForLayout', 'card', $this->episodesTrackResult(3), 0);
+        $episodes = $this->invoke('resolveEpisodesForLayout', 'card', $this->episodesTrackResult(3), 0, []);
 
         self::assertCount(1, $episodes);
         self::assertSame('A', $episodes[0]['title']);
@@ -507,11 +651,32 @@ final class VidPlyProcessorLogicTest extends TestCase
     {
         $this->prepareCategoryResolver();
 
-        $episodes = $this->invoke('resolveEpisodesForLayout', 'episodes', $this->episodesTrackResult(3), 0);
+        $episodes = $this->invoke('resolveEpisodesForLayout', 'episodes', $this->episodesTrackResult(3), 0, []);
 
         self::assertCount(3, $episodes);
         self::assertSame([0, 1, 2], array_column($episodes, 'index'));
         self::assertSame(['A', 'B', 'C'], array_column($episodes, 'title'));
+    }
+
+    #[Test]
+    public function resolveEpisodesForLayoutAppliesTheConfiguredOrderToTheListOnly(): void
+    {
+        $this->prepareCategoryResolver();
+
+        $trackResult = $this->episodesTrackResult(3);
+        $trackResult['records'][0]['title'] = 'Zulu';
+
+        $episodes = $this->invoke(
+            'resolveEpisodesForLayout',
+            'episodes',
+            $trackResult,
+            0,
+            ['tx_mpcvidply_episode_sort' => 'title_asc']
+        );
+
+        self::assertSame(['B', 'C', 'Zulu'], array_column($episodes, 'title'));
+        // The track indexes travel with the rows, so playback keeps its order.
+        self::assertSame([1, 2, 0], array_column($episodes, 'index'));
     }
 
     /**
@@ -527,7 +692,7 @@ final class VidPlyProcessorLogicTest extends TestCase
         $trackResult['records'][0]['allow_download'] = 1;
         $trackResult['tracks'][0] = ['src' => '/fileadmin/a.mp3', 'type' => 'audio/mpeg'];
 
-        $episodes = $this->invoke('resolveEpisodesForLayout', 'episodes', $trackResult, 0);
+        $episodes = $this->invoke('resolveEpisodesForLayout', 'episodes', $trackResult, 0, []);
 
         self::assertSame('/fileadmin/a.mp3', $episodes[0]['downloadUrl']);
         self::assertSame('MP3', $episodes[0]['downloadInfo']);
@@ -544,7 +709,7 @@ final class VidPlyProcessorLogicTest extends TestCase
         $trackResult['records'][0]['allow_download'] = 1;
         $trackResult['tracks'][0] = ['src' => '/fileadmin/a.mp3', 'type' => 'audio/mpeg'];
 
-        $episodes = $this->invoke('resolveEpisodesForLayout', 'card', $trackResult, 0);
+        $episodes = $this->invoke('resolveEpisodesForLayout', 'card', $trackResult, 0, []);
 
         self::assertSame('', $episodes[0]['downloadUrl']);
     }
@@ -562,7 +727,7 @@ final class VidPlyProcessorLogicTest extends TestCase
         $trackResult['records'][0]['allow_download'] = 1;
         $trackResult['tracks'][0] = ['src' => '/fileadmin/a.mp3', 'type' => 'audio/mpeg'];
 
-        $episodes = $this->invoke('resolveEpisodesForLayout', 'card', $trackResult, 0);
+        $episodes = $this->invoke('resolveEpisodesForLayout', 'card', $trackResult, 0, []);
 
         self::assertSame('', $episodes[0]['downloadUrl']);
     }

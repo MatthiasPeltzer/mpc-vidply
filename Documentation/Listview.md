@@ -103,6 +103,20 @@ On each **VidPly Media** record, editors can use:
 - **Long description** — rich text (CKEditor) for the detail page; rendered
   below the short description with normal HTML formatting.
 
+Cards in **grid** rows also expose the long description without leaving the
+list: a small button in the card's bottom-right corner opens it in a
+[popover](https://developer.mozilla.org/docs/Web/API/Popover_API), which the
+browser renders in the top layer — so the text is neither clipped by the card
+nor able to stretch the height of a grid row. Shelf rows deliberately skip it:
+they clip vertical overflow and are built for fast horizontal scanning.
+
+The button is a sibling of the card's stretched link, never a child of it, so
+the card never nests two controls. Toggling, light dismiss, Escape and returning
+focus to the button are all handled natively; no JavaScript is involved. Where
+the Popover API is unavailable, a `@supports not selector(:popover-open)` query
+hides both the button and the panel rather than dumping the rich text into every
+card, and the detail page remains the way to read it.
+
 ### 1.6 Detail-page title and breadcrumb
 
 On a valid detail view the extension automatically:

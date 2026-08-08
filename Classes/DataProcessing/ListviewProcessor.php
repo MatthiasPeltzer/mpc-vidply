@@ -220,6 +220,7 @@ final class ListviewProcessor implements DataProcessorInterface
             'title' => (string)($media['title'] ?? ''),
             'crdate' => (int)($media['crdate'] ?? 0),
             'description' => (string)($media['description'] ?? ''),
+            'longDescription' => (string)($media['long_description'] ?? ''),
             'artist' => (string)($media['artist'] ?? ''),
             'duration' => (int)($media['duration'] ?? 0),
             'durationFormatted' => $this->formatDuration((int)($media['duration'] ?? 0)),

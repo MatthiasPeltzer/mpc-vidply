@@ -63,6 +63,14 @@
         <source>You might also like</source>
         <target>Das könnte Sie auch interessieren</target>
       </trans-unit>
+      <trans-unit id="episode.description.hide">
+        <source>Hide description</source>
+        <target>Beschreibung ausblenden</target>
+      </trans-unit>
+      <trans-unit id="episode.description.show">
+        <source>Show description</source>
+        <target>Beschreibung anzeigen</target>
+      </trans-unit>
       <trans-unit id="episode.download">
         <source>Download</source>
         <target>Herunterladen</target>
@@ -70,6 +78,50 @@
       <trans-unit id="episodes.heading">
         <source>Episodes (%s)</source>
         <target>Episoden (%s)</target>
+      </trans-unit>
+      <trans-unit id="episodes.pagination.nav_aria">
+        <source>Episode list pagination, page {0} of {1}</source>
+        <target>Seitennavigation der Episodenliste, Seite {0} von {1}</target>
+      </trans-unit>
+      <trans-unit id="episodes.pagination.next">
+        <source>Next</source>
+        <target>Weiter</target>
+      </trans-unit>
+      <trans-unit id="episodes.pagination.page_of">
+        <source>Page {0} of {1}</source>
+        <target>Seite {0} von {1}</target>
+      </trans-unit>
+      <trans-unit id="episodes.pagination.previous">
+        <source>Previous</source>
+        <target>Zurück</target>
+      </trans-unit>
+      <trans-unit id="episodes.sort.date_asc">
+        <source>Oldest first</source>
+        <target>Älteste zuerst</target>
+      </trans-unit>
+      <trans-unit id="episodes.sort.date_desc">
+        <source>Newest first</source>
+        <target>Neueste zuerst</target>
+      </trans-unit>
+      <trans-unit id="episodes.sort.label">
+        <source>Sort by</source>
+        <target>Sortieren nach</target>
+      </trans-unit>
+      <trans-unit id="episodes.sort.sorting">
+        <source>Default order</source>
+        <target>Standardreihenfolge</target>
+      </trans-unit>
+      <trans-unit id="episodes.sort.title_asc">
+        <source>Title (A-Z)</source>
+        <target>Titel (A–Z)</target>
+      </trans-unit>
+      <trans-unit id="listview.description.close">
+        <source>Close</source>
+        <target>Schließen</target>
+      </trans-unit>
+      <trans-unit id="listview.description.show">
+        <source>Show description</source>
+        <target>Beschreibung anzeigen</target>
       </trans-unit>
       <trans-unit id="listview.empty">
         <source>No media rows have been configured yet.</source>

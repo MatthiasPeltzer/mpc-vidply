@@ -85,7 +85,7 @@ Available for YouTube, Vimeo, and SoundCloud. Supports multilingual content via 
 | Slug | URL slug for listview detail routing (auto from title) |
 | Artist | Creator/artist name |
 | Description | Short text (list cards, player) |
-| Long description | RTE copy for detail page |
+| Long description | RTE copy for the detail page and the episode card's disclosure |
 | Duration | Length in seconds |
 | Poster | Thumbnail image |
 | Categories | TYPO3 categories (listview chips + category-based rows) |

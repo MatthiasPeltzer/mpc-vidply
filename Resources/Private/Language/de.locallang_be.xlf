@@ -179,6 +179,50 @@
         <source>Target page for card links. The page should contain the "VidPly Detail" content element and be served under a route enhancer (e.g. /mediathek).</source>
         <target>Zielseite für Karten-Links. Die Seite sollte das "VidPly Detail"-Content-Element enthalten und unter einem Route-Enhancer ausgeliefert werden (z. B. /mediathek).</target>
       </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_episode_pagination">
+        <source>Paginate episode list</source>
+        <target>Episodenliste seitenweise anzeigen</target>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_episode_pagination.description">
+        <source>Split the episode list into pages when it holds more episodes than fit on one page. Playback is unaffected: the player continues to the next episode even if it sits on another page.</source>
+        <target>Teilt die Episodenliste in Seiten auf, sobald sie mehr Episoden enthält als auf eine Seite passen. Die Wiedergabe bleibt davon unberührt: Der Player springt auch dann zur nächsten Episode, wenn diese auf einer anderen Seite liegt.</target>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_episode_pagination.toggle">
+        <source>Enable pagination</source>
+        <target>Seitennavigation aktivieren</target>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_episode_per_page">
+        <source>Episodes per page</source>
+        <target>Episoden pro Seite</target>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_episode_per_page.description">
+        <source>Number of episodes shown per page (1-200).</source>
+        <target>Anzahl der Episoden, die pro Seite angezeigt werden (1–200).</target>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_episode_sort">
+        <source>Episode order</source>
+        <target>Reihenfolge der Episoden</target>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_episode_sort.description">
+        <source>Preselected order of the episode list. Visitors can change it with the sort dropdown. Playback always follows the order of the media items above.</source>
+        <target>Voreingestellte Reihenfolge der Episodenliste. Besucher können sie über das Sortier-Auswahlfeld ändern. Die Wiedergabe folgt immer der Reihenfolge der Medien-Elemente oben.</target>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_episode_sort.sorting">
+        <source>Manual (order of the media items)</source>
+        <target>Manuell (Reihenfolge der Medien-Elemente)</target>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_episode_sort.date_desc">
+        <source>Date (newest first)</source>
+        <target>Datum (neueste zuerst)</target>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_episode_sort.date_asc">
+        <source>Date (oldest first)</source>
+        <target>Datum (älteste zuerst)</target>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_episode_sort.title_asc">
+        <source>Title (A-Z)</source>
+        <target>Titel (A–Z)</target>
+      </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_language">
         <source>Player Language</source>
         <target>Player-Sprache</target>

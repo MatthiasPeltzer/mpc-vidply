@@ -493,6 +493,113 @@
 }
 
 /* ==========================================================================
+   Long description popover
+   ========================================================================== */
+
+/* Sits above the card link's stretched overlay, which would otherwise swallow
+   the click, and keeps clear of the badges in the poster's top corners. */
+.mpc-vidply-card__desc-toggle {
+    align-items: center;
+    background: var(--mpc-vidply-listview-surface);
+    border: 1px solid var(--mpc-vidply-listview-border);
+    border-radius: 50%;
+    bottom: 0.6rem;
+    color: var(--mpc-vidply-listview-text);
+    cursor: pointer;
+    display: inline-flex;
+    /* Well above the 24px minimum pointer target (WCAG 2.5.8). */
+    height: 2.25rem;
+    inset-inline-end: 0.6rem;
+    justify-content: center;
+    padding: 0;
+    position: absolute;
+    width: 2.25rem;
+    z-index: 2;
+}
+
+/* Keeps title, artist and chips clear of the button. */
+.mpc-vidply-card:has(.mpc-vidply-card__desc-toggle) .mpc-vidply-card__caption {
+    padding-inline-end: 3.5rem;
+}
+
+.mpc-vidply-card__desc-toggle:hover {
+    border-color: currentcolor;
+}
+
+.mpc-vidply-card__desc-toggle:focus-visible {
+    outline: var(--mpc-vidply-listview-focus-ring);
+    outline-offset: 2px;
+}
+
+.mpc-vidply-card__desc-icon {
+    height: 1.125rem;
+    width: 1.125rem;
+}
+
+/* The popover renders in the top layer, so neither the card's `overflow:
+   hidden` nor the height of the grid row applies to it. */
+.mpc-vidply-card__desc {
+    background: var(--mpc-vidply-listview-surface);
+    border: 1px solid var(--mpc-vidply-listview-border);
+    border-radius: var(--mpc-vidply-listview-card-radius);
+    box-shadow: 0 10px 40px rgb(0 0 0 / 35%);
+    color: var(--mpc-vidply-listview-text);
+    inline-size: min(42rem, calc(100vw - 2rem));
+    max-block-size: min(80vh, 40rem);
+    overflow: auto;
+    overflow-wrap: anywhere;
+    padding: 1.5rem;
+}
+
+.mpc-vidply-card__desc::backdrop {
+    background: rgb(0 0 0 / 45%);
+}
+
+.mpc-vidply-card__desc-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0 0 0.75rem;
+}
+
+.mpc-vidply-card__desc-body > :first-child {
+    margin-block-start: 0;
+}
+
+.mpc-vidply-card__desc-body > :last-child {
+    margin-block-end: 0;
+}
+
+.mpc-vidply-card__desc-close {
+    background: transparent;
+    border: 1px solid var(--mpc-vidply-listview-border);
+    border-radius: 0.35rem;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    margin-block-start: 1.25rem;
+    min-block-size: 2.2rem;
+    padding: 0.25rem 0.9rem;
+}
+
+.mpc-vidply-card__desc-close:hover {
+    border-color: currentcolor;
+}
+
+.mpc-vidply-card__desc-close:focus-visible {
+    outline: var(--mpc-vidply-listview-focus-ring);
+    outline-offset: 2px;
+}
+
+/* Without popover support the panel would render as visible page content, so
+   hide both halves rather than dump the rich text into every card. */
+@supports not selector(:popover-open) {
+    .mpc-vidply-card__desc,
+    .mpc-vidply-card__desc-toggle {
+        display: none;
+    }
+}
+
+/* ==========================================================================
    Detail page
    ========================================================================== */
 

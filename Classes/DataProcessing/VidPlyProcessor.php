@@ -58,6 +58,9 @@ class VidPlyProcessor implements DataProcessorInterface
     /** Presentation layouts of the player content element (tt_content.tx_mpcvidply_layout). */
     private const LAYOUTS = ['default', 'card', 'episodes'];
 
+    /** Display orders of the episode list (tt_content.tx_mpcvidply_episode_sort). */
+    private const EPISODE_SORTS = ['sorting', 'date_desc', 'date_asc', 'title_asc'];
+
     /**
      * File extensions that carry a stream manifest or an "external URL" pointer
      * instead of the media itself, so neither their MIME type nor their size can
@@ -225,7 +228,7 @@ class VidPlyProcessor implements DataProcessorInterface
         $renderMode = $this->determineRenderMode($serviceType, $trackResult, $resolvedMediaType);
         $assetFlags = $this->resolveAssetFlags($serviceType, $trackResult);
 
-        $episodes = $this->resolveEpisodesForLayout($layout, $trackResult, $languageId);
+        $episodes = $this->resolveEpisodesForLayout($layout, $trackResult, $languageId, $data);
 
         return $this->assembleTemplateData(
             $data,
@@ -1002,10 +1005,18 @@ class VidPlyProcessor implements DataProcessorInterface
         $audioDescriptionTracks = $singleTrackData['audioDescriptionTracks'];
         $signLanguage = $singleTrackData['signLanguage'];
 
+        $episodeSettings = $this->resolveEpisodeListSettings($data, $layout, $episodes);
+
         $vidplyData = [
             'layout' => $layout,
             'episodes' => $episodes,
-            'episode' => $episodes[0] ?? null,
+            // The list may be sorted, so the episode the player starts on is the
+            // one carrying track index 0 rather than the first array entry.
+            'episode' => $this->resolveLeadEpisode($episodes),
+            'episodeSort' => $episodeSettings['episodeSort'],
+            'paginationEnabled' => $episodeSettings['paginationEnabled'],
+            'paginationPerPage' => $episodeSettings['paginationPerPage'],
+            'paginationActive' => $episodeSettings['paginationActive'],
             'renderMode' => $renderMode->value,
             'mediaType' => $resolvedMediaType,
             'serviceType' => $serviceType,
@@ -1488,9 +1499,10 @@ class VidPlyProcessor implements DataProcessorInterface
      * lookups of the remaining records are skipped there.
      *
      * @param TrackResult $trackResult
+     * @param array<string, mixed> $data
      * @return list<array<string, mixed>>
      */
-    private function resolveEpisodesForLayout(string $layout, array $trackResult, int $languageId): array
+    private function resolveEpisodesForLayout(string $layout, array $trackResult, int $languageId, array $data): array
     {
         $records = $trackResult['records'];
         if ($layout === 'default' || $records === []) {
@@ -1509,11 +1521,110 @@ class VidPlyProcessor implements DataProcessorInterface
         // button — which follows the selected track — handle downloads instead.
         $downloadTracks = $trackResult['isPlaylist'] && $layout === 'episodes' ? $tracks : [];
 
-        return $this->buildEpisodeData(
+        $episodes = $this->buildEpisodeData(
             $records,
             $this->resolveEpisodeCategories($records, $languageId),
             $downloadTracks
         );
+
+        return $layout === 'episodes'
+            ? $this->sortEpisodes($episodes, $this->resolveEpisodeSort($data))
+            : $episodes;
+    }
+
+    /**
+     * The episode the player starts on, i.e. the one with playlist track index 0.
+     *
+     * @param list<array<string, mixed>> $episodes
+     * @return array<string, mixed>|null
+     */
+    private function resolveLeadEpisode(array $episodes): ?array
+    {
+        foreach ($episodes as $episode) {
+            if ((int)($episode['index'] ?? 0) === 0) {
+                return $episode;
+            }
+        }
+
+        return $episodes[0] ?? null;
+    }
+
+    /**
+     * Preselected order of the episode list. Only the display order changes:
+     * every episode keeps its `index`, which is the playlist track index the
+     * player plays by.
+     *
+     * @param array<string, mixed> $data
+     */
+    private function resolveEpisodeSort(array $data): string
+    {
+        $sort = trim((string)($data['tx_mpcvidply_episode_sort'] ?? ''));
+
+        return in_array($sort, self::EPISODE_SORTS, true) ? $sort : 'sorting';
+    }
+
+    /**
+     * Episodes without a publish date sort last in both date modes, so an
+     * incomplete record never pushes itself to the top of a "newest first" list.
+     *
+     * @param list<array<string, mixed>> $episodes
+     * @return list<array<string, mixed>>
+     */
+    private function sortEpisodes(array $episodes, string $sort): array
+    {
+        if ($sort === 'sorting' || count($episodes) < 2) {
+            return $episodes;
+        }
+
+        usort($episodes, static function (array $a, array $b) use ($sort): int {
+            if ($sort === 'title_asc') {
+                $comparison = strcasecmp((string)($a['title'] ?? ''), (string)($b['title'] ?? ''));
+            } else {
+                $dateA = (string)($a['dateIso'] ?? '');
+                $dateB = (string)($b['dateIso'] ?? '');
+
+                if ($dateA === '' || $dateB === '') {
+                    $comparison = $dateA === $dateB ? 0 : ($dateA === '' ? 1 : -1);
+                } else {
+                    $comparison = strcmp($dateA, $dateB);
+                    if ($sort === 'date_desc') {
+                        $comparison = -$comparison;
+                    }
+                }
+            }
+
+            return $comparison !== 0
+                ? $comparison
+                : (int)($a['index'] ?? 0) <=> (int)($b['index'] ?? 0);
+        });
+
+        return $episodes;
+    }
+
+    /**
+     * Sort and pagination configuration of the episode list. Pagination only
+     * becomes active once there are more episodes than fit on a page.
+     *
+     * @param array<string, mixed> $data
+     * @param list<array<string, mixed>> $episodes
+     * @return array{
+     *     episodeSort: string,
+     *     paginationEnabled: bool,
+     *     paginationPerPage: int,
+     *     paginationActive: bool
+     * }
+     */
+    private function resolveEpisodeListSettings(array $data, string $layout, array $episodes): array
+    {
+        $perPage = max(1, min(200, (int)($data['tx_mpcvidply_episode_per_page'] ?? 10)));
+        $enabled = $layout === 'episodes' && (int)($data['tx_mpcvidply_episode_pagination'] ?? 1) === 1;
+
+        return [
+            'episodeSort' => $this->resolveEpisodeSort($data),
+            'paginationEnabled' => $enabled,
+            'paginationPerPage' => $perPage,
+            'paginationActive' => $enabled && count($episodes) > $perPage,
+        ];
     }
 
     /**

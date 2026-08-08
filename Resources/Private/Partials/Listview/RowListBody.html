@@ -11,7 +11,13 @@
                     data-mpc-vidply-order="{i.index}"
                     data-mpc-vidply-crdate="{card.crdate}"
                     data-mpc-vidply-title="{card.title -> f:format.htmlspecialchars()}">
-                    <f:render partial="Listview/Card" arguments="{card: card, cardStyle: row.cardStyle}" />
+                    <f:comment>
+                        Only the grid passes an id prefix, which is what enables the
+                        long-description popover: the shelf clips vertical overflow
+                        and is built for fast horizontal scanning.
+                    </f:comment>
+                    <f:render partial="Listview/Card"
+                              arguments="{card: card, cardStyle: row.cardStyle, descriptionIdPrefix: '{row.domId}-desc'}" />
                 </li>
             </f:for>
         </ul>

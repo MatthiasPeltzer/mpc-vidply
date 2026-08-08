@@ -107,6 +107,67 @@ $vidplyFields = [
         ],
     ],
 
+    // Episode list controls. Only the episodes layout renders a list of its own;
+    // the other layouts show a single card or the bare player.
+    'tx_mpcvidply_episode_sort' => [
+        'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_episode_sort',
+        'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_episode_sort.description',
+        'displayCond' => 'FIELD:tx_mpcvidply_layout:=:episodes',
+        'config' => [
+            'type' => 'select',
+            'renderType' => 'selectSingle',
+            'items' => [
+                ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_episode_sort.sorting', 'value' => 'sorting'],
+                ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_episode_sort.date_desc', 'value' => 'date_desc'],
+                ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_episode_sort.date_asc', 'value' => 'date_asc'],
+                ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_episode_sort.title_asc', 'value' => 'title_asc'],
+            ],
+            'default' => 'sorting',
+        ],
+        'behaviour' => [
+            'allowLanguageSynchronization' => true,
+        ],
+    ],
+    'tx_mpcvidply_episode_pagination' => [
+        'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_episode_pagination',
+        'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_episode_pagination.description',
+        'displayCond' => 'FIELD:tx_mpcvidply_layout:=:episodes',
+        'config' => [
+            'type' => 'check',
+            'renderType' => 'checkboxToggle',
+            'default' => 1,
+            'items' => [
+                [
+                    'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_episode_pagination.toggle',
+                    'invertStateDisplay' => false,
+                ],
+            ],
+        ],
+        'behaviour' => [
+            'allowLanguageSynchronization' => true,
+        ],
+    ],
+    'tx_mpcvidply_episode_per_page' => [
+        'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_episode_per_page',
+        'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_episode_per_page.description',
+        'displayCond' => [
+            'AND' => [
+                'FIELD:tx_mpcvidply_layout:=:episodes',
+                'FIELD:tx_mpcvidply_episode_pagination:=:1',
+            ],
+        ],
+        'config' => [
+            'type' => 'number',
+            'format' => 'integer',
+            'size' => 6,
+            'default' => 10,
+            'range' => ['lower' => 1, 'upper' => 200],
+        ],
+        'behaviour' => [
+            'allowLanguageSynchronization' => true,
+        ],
+    ],
+
     // Player Options
     'tx_mpcvidply_options' => [
         'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_options',
@@ -244,6 +305,9 @@ $GLOBALS['TCA']['tt_content']['types']['mpc_vidply'] = [
             tx_mpcvidply_media_items,
         --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tabs.settings,
             tx_mpcvidply_layout,
+            tx_mpcvidply_episode_sort,
+            tx_mpcvidply_episode_pagination,
+            tx_mpcvidply_episode_per_page,
             tx_mpcvidply_options,
             tx_mpcvidply_volume,
             tx_mpcvidply_playback_speed,

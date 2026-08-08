@@ -26,22 +26,83 @@
     </div>
 
     <f:if condition="{vidply.layout} == 'episodes'">
-        <div class="mpc-episode-list-section">
-            <h3 class="mpc-episode-list-heading" id="{vidply.uniqueId}-episode-list-heading">
-                <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:episodes.heading"
-                             arguments="{0: '{vidply.episodes -> f:count()}'}"
-                             default="Episodes" />
-            </h3>
-            <ol class="mpc-episode-list" aria-labelledby="{vidply.uniqueId}-episode-list-heading">
-                <f:for each="{vidply.episodes}" as="episode">
-                    <li class="mpc-episode-item"
-                        data-mpc-episode-item="{episode.index}"
-                        <f:if condition="{episode.index} == 0">aria-current="true"</f:if>>
-                        <f:render partial="VidPly/EpisodeCover" arguments="{episode: episode}" />
-                        <f:render partial="VidPly/EpisodeCard" arguments="{episode: episode, vidply: vidply, data: data, titleLevel: 4}" />
-                    </li>
-                </f:for>
-            </ol>
+        <div class="mpc-episode-list-section" data-mpc-episode-default-sort="{vidply.episodeSort}">
+            <div class="mpc-episode-list-header">
+                <h3 class="mpc-episode-list-heading" id="{vidply.uniqueId}-episode-list-heading">
+                    <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:episodes.heading"
+                                 arguments="{0: '{vidply.episodes -> f:count()}'}"
+                                 default="Episodes" />
+                </h3>
+                <f:comment>
+                    Sorting only reorders the list. Playback keeps the order of the
+                    media items, so next/previous and auto-advance stay predictable.
+                </f:comment>
+                <f:if condition="{vidply.episodes -> f:count()} > 1">
+                    <div class="mpc-episode-list-sort">
+                        <label class="mpc-episode-list-sort-label" for="{vidply.uniqueId}-episode-sort">
+                            <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:episodes.sort.label"
+                                         default="Sort by" />
+                        </label>
+                        <select class="mpc-episode-list-sort-select"
+                                id="{vidply.uniqueId}-episode-sort"
+                                data-mpc-episode-sort>
+                            <option value="sorting">
+                                <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:episodes.sort.sorting"
+                                             default="Default order" />
+                            </option>
+                            <option value="date_desc">
+                                <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:episodes.sort.date_desc"
+                                             default="Newest first" />
+                            </option>
+                            <option value="date_asc">
+                                <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:episodes.sort.date_asc"
+                                             default="Oldest first" />
+                            </option>
+                            <option value="title_asc">
+                                <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:episodes.sort.title_asc"
+                                             default="Title (A-Z)" />
+                            </option>
+                        </select>
+                    </div>
+                </f:if>
+            </div>
+
+            <f:if condition="{vidply.paginationActive}">
+                <f:then>
+                    <f:variable name="pagerLblPrev">
+                        <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:episodes.pagination.previous"
+                                     default="Previous" />
+                    </f:variable>
+                    <f:variable name="pagerLblNext">
+                        <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:episodes.pagination.next"
+                                     default="Next" />
+                    </f:variable>
+                    <f:comment>
+                        No `default` for the templated labels: Fluid would read the
+                        {0}/{1} placeholders as variables. EpisodeInit.js falls back
+                        to English when an attribute comes through empty.
+                    </f:comment>
+                    <f:variable name="pagerLblPageOf">
+                        <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:episodes.pagination.page_of" />
+                    </f:variable>
+                    <f:variable name="pagerLblNavAria">
+                        <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:episodes.pagination.nav_aria" />
+                    </f:variable>
+                    <div class="mpc-episode-paginate"
+                         data-mpc-episode-paginate="1"
+                         data-mpc-episode-per-page="{vidply.paginationPerPage}"
+                         data-mpc-episode-pager-lbl-prev="{pagerLblPrev -> f:format.htmlspecialchars()}"
+                         data-mpc-episode-pager-lbl-next="{pagerLblNext -> f:format.htmlspecialchars()}"
+                         data-mpc-episode-pager-lbl-pageof="{pagerLblPageOf -> f:format.htmlspecialchars()}"
+                         data-mpc-episode-pager-lbl-nav-aria="{pagerLblNavAria -> f:format.htmlspecialchars()}">
+                        <f:render partial="VidPly/EpisodeList" arguments="{vidply: vidply, data: data}" />
+                        <nav class="mpc-episode-pager" data-mpc-episode-pager-nav aria-live="polite"></nav>
+                    </div>
+                </f:then>
+                <f:else>
+                    <f:render partial="VidPly/EpisodeList" arguments="{vidply: vidply, data: data}" />
+                </f:else>
+            </f:if>
         </div>
     </f:if>
 </article>

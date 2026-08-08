@@ -152,7 +152,7 @@ Every media record has a **metadata palette**:
 | **Title** | Display name in player/playlist | Yes |
 | **Artist** | Creator name (shown in playlist) | No |
 | **Description** | Short text (list cards, player context) | No |
-| **Long description** | Rich text (CKEditor); shown on the **VidPly Detail** page below the short description | No |
+| **Long description** | Rich text (CKEditor); shown on the **VidPly Detail** page below the short description, behind a *Show description* button in the *Episode card* layouts, and in a popover on listview grid cards | No |
 | **Slug** | URL segment for listview detail links (auto-generated from title; override on Metadata tab) | No |
 | **Duration** | Length in seconds (for display) | No |
 | **Publish date** | Release date of the episode; shown in the episode card and playlist, and used as publication date in the structured data | No |
@@ -373,6 +373,43 @@ episode number come from that record's metadata palette, and the cover is its
 poster — so give podcast episodes a square poster for the best result. The card
 reflows to a single column when the content column is narrow, so it works in
 sidebars and modals as well.
+
+#### Episode list order and pages
+
+With **Episode card with episode list**, three more fields appear in the
+**Settings** tab:
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| **Episode order** | Manual | Order the list opens in: manual (the order of your media items), date newest/oldest first, or title A–Z |
+| **Paginate episode list** | On | Split the list into pages once it holds more episodes than fit on one page |
+| **Episodes per page** | 10 | How many episodes one page shows (1–200) |
+
+Visitors can re-sort the list themselves with the dropdown next to the
+**Episodes (n)** heading. Sorting and paging only change the list: playback
+always follows the order of your media items, so next/previous and auto-advance
+stay predictable — and when playback moves to an episode on another page, the
+list jumps to that page.
+
+Episodes without a publish date are listed last in both date orders, so fill in
+the publish date if you rely on sorting by it.
+
+#### Show notes in the card and the list
+
+Whenever a media record has a **Long description**, its card and its list row
+get a *Show description* button that folds the rich text open in place. Nothing
+has to be switched on for it — fill the field and the button appears; leave it
+empty and the card looks as before. Visitors who want everything at once still
+have the detail page, which prints the same text expanded.
+
+Keep the long description well structured (paragraphs, lists, links). It is
+rendered as it is, right below the episode, so very long texts push the next
+episode far down even though they start out collapsed.
+
+The same text is reachable from the **listview** as well: cards in a *grid* row
+get a small button in their bottom-right corner that opens the description in an
+overlay. Cards in a *shelf* row do not — a shelf scrolls sideways and has no
+room for it, so there the card's link to the detail page stays the way in.
 
 ---
 

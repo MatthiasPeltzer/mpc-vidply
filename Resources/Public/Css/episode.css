@@ -272,6 +272,54 @@
     color: var(--mpc-vidply-episode-muted);
 }
 
+/* Disclosure for the medium's long description, built to match the download
+   link it shares the action row with. */
+.mpc-episode-longdesc-toggle {
+    align-items: center;
+    background: none;
+    border: 0;
+    color: var(--mpc-vidply-episode-accent);
+    cursor: pointer;
+    display: inline-flex;
+    font: inherit;
+    font-size: clamp(0.8125rem, 0.78rem + 0.15vw, 0.9375rem);
+    gap: 0.4rem;
+    /* Holds the pointer target at 24px although the label is small (WCAG 2.5.8). */
+    min-height: 1.5rem;
+    padding: 0;
+    text-align: start;
+}
+
+.mpc-episode-longdesc-toggle-text {
+    text-decoration: underline;
+}
+
+.mpc-episode-longdesc-toggle:focus-visible {
+    outline: 3px solid var(--mpc-vidply-episode-accent);
+    outline-offset: 2px;
+}
+
+.mpc-episode-longdesc {
+    border-block-start: 1px solid var(--mpc-vidply-episode-border);
+    margin: 0.75rem 0 0;
+    overflow-wrap: anywhere;
+    padding-block-start: 0.75rem;
+}
+
+/* Themes tend to give containers a display value, which would override the
+   `hidden` attribute the toggle relies on. */
+.mpc-episode-longdesc[hidden] {
+    display: none;
+}
+
+.mpc-episode-longdesc > :first-child {
+    margin-block-start: 0;
+}
+
+.mpc-episode-longdesc > :last-child {
+    margin-block-end: 0;
+}
+
 .mpc-episode-sr-only {
     block-size: 1px;
     clip-path: inset(50%);
@@ -292,10 +340,55 @@
     min-width: 0;
 }
 
+/* Heading and sort control share a line and wrap onto two in a narrow column. */
+.mpc-episode-list-header {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    justify-content: space-between;
+    margin: 0 0 0.75rem;
+}
+
 .mpc-episode-list-heading {
     font-size: clamp(1rem, 0.95rem + 0.4vw, 1.375rem);
     font-weight: 600;
-    margin: 0 0 0.75rem;
+    margin: 0;
+}
+
+.mpc-episode-list-sort {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.5rem;
+}
+
+.mpc-episode-list-sort-label {
+    color: var(--mpc-vidply-episode-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.mpc-episode-list-sort-select {
+    background: var(--mpc-vidply-episode-surface);
+    border: 1px solid var(--mpc-vidply-episode-border);
+    border-radius: 0.375rem;
+    color: var(--mpc-vidply-episode-text);
+    cursor: pointer;
+    font: inherit;
+    line-height: 1.35;
+    max-width: 100%;
+    /* Holds the pointer target at 24px (WCAG 2.5.8). */
+    min-height: 1.5rem;
+    min-width: 9.5rem;
+    padding: 0.3rem 0.45rem;
+}
+
+.mpc-episode-list-sort-select:focus-visible {
+    outline: 3px solid var(--mpc-vidply-episode-accent);
+    outline-offset: 2px;
 }
 
 .mpc-episode-list {
@@ -342,10 +435,18 @@
 }
 
 /* Any other control in the row has to sit above that overlay, or the row-wide
-   play target would swallow its clicks. */
-.mpc-episode-item .mpc-episode-download {
+   play target would swallow its clicks. The expanded description is lifted too,
+   so its text stays selectable and any link in it stays reachable. */
+.mpc-episode-item .mpc-episode-download,
+.mpc-episode-item .mpc-episode-longdesc-toggle,
+.mpc-episode-item .mpc-episode-longdesc {
     position: relative;
     z-index: 2;
+}
+
+/* The row as a whole plays, but its description reads as text, not as a target. */
+.mpc-episode-item .mpc-episode-longdesc {
+    cursor: auto;
 }
 
 .mpc-episode-item:hover,
@@ -395,4 +496,74 @@
 
 .mpc-episode-item .mpc-episode-title {
     font-size: clamp(1rem, 0.95rem + 0.3vw, 1.25rem);
+}
+
+/* ==========================================================================
+   Episode list pagination
+   ========================================================================== */
+
+.mpc-episode-pager {
+    display: block;
+    margin-block-start: 1rem;
+}
+
+.mpc-episode-pager-list {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.4rem;
+    justify-content: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.mpc-episode-pager-item--status {
+    flex: 0 0 auto;
+    padding: 0 0.4rem;
+}
+
+.mpc-episode-pager-status {
+    color: var(--mpc-vidply-episode-muted);
+    font-size: 0.9rem;
+    line-height: 1.3;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.mpc-episode-pager-button {
+    background: transparent;
+    border: 1px solid var(--mpc-vidply-episode-border);
+    border-radius: 0.35rem;
+    color: var(--mpc-vidply-episode-text);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.9rem;
+    line-height: 1.2;
+    /* Comfortably above the 24px minimum pointer target (WCAG 2.5.8). */
+    min-height: 2.2rem;
+    min-width: 2.2rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.mpc-episode-pager-button:hover:not(:disabled) {
+    background: var(--mpc-vidply-episode-surface);
+}
+
+.mpc-episode-pager-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* The current page stays readable although its button is disabled. */
+.mpc-episode-pager-button.is-current:disabled {
+    border-color: var(--mpc-vidply-episode-accent);
+    cursor: default;
+    font-weight: 600;
+    opacity: 1;
+}
+
+.mpc-episode-pager-button:focus-visible {
+    outline: 3px solid var(--mpc-vidply-episode-accent);
+    outline-offset: 2px;
 }

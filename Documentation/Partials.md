@@ -218,8 +218,9 @@ plain player exactly as before.
 | Partial | Role |
 |---------|------|
 | `VidPly/EpisodeLayout` | Layout wrapper, loads `episode.min.css` + `EpisodeInit.min.js`, renders the card or the episode list plus the player |
+| `VidPly/EpisodeList` | The `<ol>` of episode rows, rendered bare or inside the pager container |
 | `VidPly/EpisodeCover` | Square artwork of one episode |
-| `VidPly/EpisodeCard` | Round play button next to episode number, title, publish date, duration, description |
+| `VidPly/EpisodeCard` | Round play button next to episode number, title, publish date, duration, description, download link and long-description disclosure |
 
 `EpisodeCard` takes a `titleLevel` argument (3 for the single card, 4 for list
 rows) so the heading order stays gapless below the content element header.
@@ -253,6 +254,43 @@ Only records that produced a playable track make it into `vidply.episodes`, whic
 is what keeps `episode.index` usable as the playlist track index: a record whose
 source cannot be resolved is dropped from both lists at once.
 
+### Sorting and pagination of the episode list
+
+The list carries its own sort dropdown and, above a configurable page size, a
+pager — modelled on the listview's (`Listview.js`), but self-contained in
+`EpisodeInit.js`.
+
+Both only touch the list. `episode.index` stays the playlist track index no
+matter how the rows are ordered or which of them are hidden, so the player keeps
+the editor's order for next/previous and auto-advance. That also means the
+now-playing card is resolved as the episode with index `0`
+(`VidPlyProcessor::resolveLeadEpisode()`), not as the first array entry.
+
+| Field (`tt_content`) | Effect |
+|----------------------|--------|
+| `tx_mpcvidply_episode_sort` | Preselected order: `sorting` (media item order), `date_desc`, `date_asc`, `title_asc`. Applied server-side and mirrored into the `<select>` |
+| `tx_mpcvidply_episode_pagination` | Turns paging on; it only becomes visible once there are more episodes than fit on a page |
+| `tx_mpcvidply_episode_per_page` | Episodes per page, clamped to 1–200 (default 10) |
+
+Episodes without a publish date sort last in both date modes, on the server and
+in the browser, so an incomplete record never leads a "newest first" list. Ties
+fall back to the track index.
+
+Hidden rows carry the `hidden` attribute, which takes them out of the tab order
+and the accessibility tree; the heading keeps the full episode count while the
+pager states the current page. Paging moves focus to the first row of the new
+page, and a track change reveals the page holding the active row — so
+auto-advancing past the end of a page brings the list along.
+
+| Attribute | Purpose |
+|-----------|---------|
+| `data-mpc-episode-default-sort` | On the section: the editor's preselected order, applied to the `<select>` on load |
+| `data-mpc-episode-sort` | The sort `<select>` |
+| `data-mpc-episode-list` | The `<ol>` whose `<li>` children are sorted and paged |
+| `data-mpc-episode-date` / `data-mpc-episode-sort-title` | Sort keys per row (`Y-m-d`, empty when unset) |
+| `data-mpc-episode-paginate` | Pager container; carries `data-mpc-episode-per-page` and the pager labels |
+| `data-mpc-episode-pager-nav` | Empty `<nav>` the buttons are rendered into |
+
 ### Downloads in the episode list
 
 `episode.downloadUrl` and `episode.downloadInfo` ("MP3, 7.4 MB") are filled for
@@ -280,6 +318,31 @@ format alone and the player measures the file itself.
 Inside a row the link needs `position: relative` and a `z-index` above the play
 button's stretched overlay, or the row-wide play target swallows its clicks.
 
+### Long description of a medium
+
+`long_description` is the medium's RTE text. The detail page prints it in full;
+the card and every list row offer it as a disclosure instead, so a long episode
+list stays scannable. The button appears for records that have the field filled
+— there is no editor switch for it.
+
+Both halves are server-rendered: the panel ships collapsed with the `hidden`
+attribute, and `EpisodeInit.js` only flips `hidden`, `aria-expanded` and the
+button label. The panel carries no `id` and the button no `aria-controls`: the
+now-playing card is a clone of a list row, so an id here would be in the
+document twice as soon as a track is selected. `aria-expanded` on a button that
+is immediately followed by its panel expresses the same relation without that
+risk, which is also why the panel is looked up within the button's
+`mpc-episode-body` rather than by reference.
+
+| Attribute | Purpose |
+|-----------|---------|
+| `data-mpc-episode-longdesc-toggle` | The disclosure button. Carries `data-mpc-episode-label-more` / `-less` for the two states and `data-mpc-episode-title` for the accessible name |
+| `data-mpc-episode-longdesc` | The panel, collapsed through the `hidden` attribute |
+
+Inside a row the button **and** the panel need a `z-index` above the play
+overlay. Without it the row-wide play target swallows the clicks, and the
+expanded text can neither be selected nor followed into a link.
+
 If you override the card, keep these hooks — `EpisodeInit.js` relies on them:
 
 | Attribute | Purpose |
@@ -306,8 +369,10 @@ Two things to know if you restyle a row: the play button must not be given a
 `transform`, because a transformed element becomes the containing block of its
 own overlay and the click area would snap back to the bubble on hover (the row's
 hover and `:focus-within` states carry the affordance instead). And the overlay
-covers the row's text, so selecting a row's description with the mouse is not
-possible — the same trade-off the teasers make.
+covers the row's text, so selecting a row's short description with the mouse is
+not possible — the same trade-off the teasers make. The expanded long
+description is the exception: it is lifted above the overlay and stays
+selectable.
 
 ## Benefits
 
