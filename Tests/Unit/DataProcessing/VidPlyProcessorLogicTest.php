@@ -6,6 +6,7 @@ namespace Mpc\MpcVidply\Tests\Unit\DataProcessing;
 
 use Mpc\MpcVidply\DataProcessing\VidPlyProcessor;
 use Mpc\MpcVidply\Enums\RenderMode;
+use Mpc\MpcVidply\Service\MediaCategoryResolver;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -35,15 +36,23 @@ final class VidPlyProcessorLogicTest extends TestCase
     /**
      * @param array<string, mixed> $playerOptions
      * @param array<string, mixed> $trackResult
-     * @param list<array<string, mixed>> $mediaRecords
      */
-    private function invokeApplyTrackDependentOptions(
-        array &$playerOptions,
-        array $trackResult,
-        array $mediaRecords,
-    ): void {
+    private function invokeApplyTrackDependentOptions(array &$playerOptions, array $trackResult): void
+    {
         $method = new \ReflectionMethod(VidPlyProcessor::class, 'applyTrackDependentOptions');
-        $method->invokeArgs($this->subject, [&$playerOptions, $trackResult, $mediaRecords]);
+        $method->invokeArgs($this->subject, [&$playerOptions, $trackResult]);
+    }
+
+    /**
+     * Reflection drops by-reference semantics for spread arguments, so methods
+     * that write into their first parameter need `invokeArgs`.
+     *
+     * @param array<string, mixed> $subjectArgument
+     */
+    private function invokeByReference(string $method, array &$subjectArgument, mixed ...$args): void
+    {
+        (new \ReflectionMethod(VidPlyProcessor::class, $method))
+            ->invokeArgs($this->subject, [&$subjectArgument, ...$args]);
     }
 
     #[Test]
@@ -254,24 +263,74 @@ final class VidPlyProcessorLogicTest extends TestCase
     public function applyTrackDependentOptionsHidesHelpButtonForSingleItem(): void
     {
         $playerOptions = ['speedButton' => true];
-        $trackResult = ['isPlaylist' => false, 'tracks' => [['title' => 'Test']]];
-        $mediaRecords = [['hide_help_button' => 1, 'media_type' => 'video']];
+        $trackResult = [
+            'isPlaylist' => false,
+            'tracks' => [['title' => 'Test']],
+            'records' => [['hide_help_button' => 1, 'media_type' => 'video']],
+        ];
 
-        $this->invokeApplyTrackDependentOptions($playerOptions, $trackResult, $mediaRecords);
+        $this->invokeApplyTrackDependentOptions($playerOptions, $trackResult);
 
         self::assertFalse($playerOptions['helpButton']);
     }
 
+    /**
+     * PlaylistInit.js hides and shows both buttons per track, which only works as
+     * long as the option leaves them rendered.
+     */
     #[Test]
-    public function applyTrackDependentOptionsDoesNotHideHelpButtonForPlaylist(): void
+    public function applyTrackDependentOptionsLeavesPlaylistButtonsToThePerTrackHandler(): void
     {
         $playerOptions = [];
-        $trackResult = ['isPlaylist' => true, 'tracks' => [['title' => 'A'], ['title' => 'B']]];
-        $mediaRecords = [['hide_help_button' => 1, 'media_type' => 'video']];
+        $trackResult = [
+            'isPlaylist' => true,
+            'tracks' => [['title' => 'A'], ['title' => 'B']],
+            'records' => [
+                ['hide_help_button' => 1, 'hide_speed_button' => 1, 'media_type' => 'video'],
+                ['media_type' => 'video'],
+            ],
+        ];
 
-        $this->invokeApplyTrackDependentOptions($playerOptions, $trackResult, $mediaRecords);
+        $this->invokeApplyTrackDependentOptions($playerOptions, $trackResult);
 
         self::assertArrayNotHasKey('helpButton', $playerOptions);
+        self::assertArrayNotHasKey('speedButton', $playerOptions);
+    }
+
+    #[Test]
+    public function applyTrackDependentOptionsTakesAudioDescriptionModeFromTheFirstRecord(): void
+    {
+        $playerOptions = [];
+        $trackResult = [
+            'isPlaylist' => true,
+            'tracks' => [['title' => 'A'], ['title' => 'B']],
+            'records' => [
+                ['audio_description_mode' => 'swap', 'media_type' => 'video'],
+                ['audio_description_mode' => 'vtt_speech', 'media_type' => 'video'],
+            ],
+        ];
+
+        $this->invokeApplyTrackDependentOptions($playerOptions, $trackResult);
+
+        self::assertSame('swap', $playerOptions['audioDescriptionMode']);
+    }
+
+    #[Test]
+    public function applyTrackDependentOptionsKeepsFloatingPlayerOutOfPlaylists(): void
+    {
+        $playerOptions = [];
+        $trackResult = [
+            'isPlaylist' => true,
+            'tracks' => [['title' => 'A'], ['title' => 'B']],
+            'records' => [
+                ['enable_floating_player' => 1, 'media_type' => 'video'],
+                ['media_type' => 'video'],
+            ],
+        ];
+
+        $this->invokeApplyTrackDependentOptions($playerOptions, $trackResult);
+
+        self::assertArrayNotHasKey('floating', $playerOptions);
     }
 
     #[Test]
@@ -332,11 +391,11 @@ final class VidPlyProcessorLogicTest extends TestCase
 
         // 2021-05-18 00:00 UTC — the value TYPO3 stores for a date-only field.
         $timestamp = 1621296000;
-        $this->setProperty('dateLocale', 'de-DE');
+        $this->setProperty('formattingLocale', 'de-DE');
 
         self::assertSame('18. Mai 2021', $this->invoke('formatPublishDate', $timestamp));
 
-        $this->setProperty('dateLocale', 'en-US');
+        $this->setProperty('formattingLocale', 'en-US');
 
         self::assertSame('May 18, 2021', $this->invoke('formatPublishDate', $timestamp));
     }
@@ -344,7 +403,7 @@ final class VidPlyProcessorLogicTest extends TestCase
     #[Test]
     public function formatPublishDateStaysOnTheStoredDayWithoutALocale(): void
     {
-        $this->setProperty('dateLocale', null);
+        $this->setProperty('formattingLocale', null);
 
         self::assertSame('2021-05-18', $this->invoke('formatPublishDate', 1621296000));
     }
@@ -352,7 +411,7 @@ final class VidPlyProcessorLogicTest extends TestCase
     #[Test]
     public function buildBaseTrackDataAddsFormattedDateAndEpisodeNumber(): void
     {
-        $this->setProperty('dateLocale', 'en-US');
+        $this->setProperty('formattingLocale', 'en-US');
 
         $track = $this->invoke('buildBaseTrackData', [
             'title' => 'Episode 11',
@@ -381,7 +440,7 @@ final class VidPlyProcessorLogicTest extends TestCase
     #[Test]
     public function buildEpisodeDataExposesServerRenderedMetadata(): void
     {
-        $this->setProperty('dateLocale', 'en-US');
+        $this->setProperty('formattingLocale', 'en-US');
         // No poster references — avoids touching the (unconstructed) FileRepository.
         $this->setProperty('fileReferencesByMediaUid', [7 => ['poster' => []]]);
 
@@ -424,5 +483,310 @@ final class VidPlyProcessorLogicTest extends TestCase
         self::assertSame('', $episodes[0]['dateIso']);
         self::assertSame('', $episodes[0]['durationFormatted']);
         self::assertSame([], $episodes[0]['categories']);
+    }
+
+    #[Test]
+    public function resolveEpisodesForLayoutBuildsNothingForTheDefaultLayout(): void
+    {
+        self::assertSame([], $this->invoke('resolveEpisodesForLayout', 'default', $this->episodesTrackResult(1), 0));
+    }
+
+    #[Test]
+    public function resolveEpisodesForLayoutOnlyBuildsTheFirstRecordForTheCardLayout(): void
+    {
+        $this->prepareCategoryResolver();
+
+        $episodes = $this->invoke('resolveEpisodesForLayout', 'card', $this->episodesTrackResult(3), 0);
+
+        self::assertCount(1, $episodes);
+        self::assertSame('A', $episodes[0]['title']);
+    }
+
+    #[Test]
+    public function resolveEpisodesForLayoutBuildsEveryRecordForTheEpisodesLayout(): void
+    {
+        $this->prepareCategoryResolver();
+
+        $episodes = $this->invoke('resolveEpisodesForLayout', 'episodes', $this->episodesTrackResult(3), 0);
+
+        self::assertCount(3, $episodes);
+        self::assertSame([0, 1, 2], array_column($episodes, 'index'));
+        self::assertSame(['A', 'B', 'C'], array_column($episodes, 'title'));
+    }
+
+    /**
+     * Every episode is on the page in that layout, so each row offers its own
+     * file — no episode has to be selected first to be saved.
+     */
+    #[Test]
+    public function resolveEpisodesForLayoutOffersADownloadPerEpisodeForPlaylists(): void
+    {
+        $this->prepareCategoryResolver();
+
+        $trackResult = $this->episodesTrackResult(2);
+        $trackResult['records'][0]['allow_download'] = 1;
+        $trackResult['tracks'][0] = ['src' => '/fileadmin/a.mp3', 'type' => 'audio/mpeg'];
+
+        $episodes = $this->invoke('resolveEpisodesForLayout', 'episodes', $trackResult, 0);
+
+        self::assertSame('/fileadmin/a.mp3', $episodes[0]['downloadUrl']);
+        self::assertSame('MP3', $episodes[0]['downloadInfo']);
+        self::assertSame('', $episodes[1]['downloadUrl']);
+    }
+
+    #[Test]
+    public function resolveEpisodesForLayoutLeavesTheDownloadToThePlayerForASingleMedium(): void
+    {
+        $this->prepareCategoryResolver();
+
+        $trackResult = $this->episodesTrackResult(1);
+        $trackResult['isPlaylist'] = false;
+        $trackResult['records'][0]['allow_download'] = 1;
+        $trackResult['tracks'][0] = ['src' => '/fileadmin/a.mp3', 'type' => 'audio/mpeg'];
+
+        $episodes = $this->invoke('resolveEpisodesForLayout', 'card', $trackResult, 0);
+
+        self::assertSame('', $episodes[0]['downloadUrl']);
+    }
+
+    /**
+     * The card shows one episode while the player may be on another, so a link
+     * printed there would age. The player's button follows the track instead.
+     */
+    #[Test]
+    public function resolveEpisodesForLayoutLeavesTheDownloadToThePlayerForTheCardLayout(): void
+    {
+        $this->prepareCategoryResolver();
+
+        $trackResult = $this->episodesTrackResult(3);
+        $trackResult['records'][0]['allow_download'] = 1;
+        $trackResult['tracks'][0] = ['src' => '/fileadmin/a.mp3', 'type' => 'audio/mpeg'];
+
+        $episodes = $this->invoke('resolveEpisodesForLayout', 'card', $trackResult, 0);
+
+        self::assertSame('', $episodes[0]['downloadUrl']);
+    }
+
+    #[Test]
+    public function enrichTrackWithDownloadDataOffersTheFileWithItsFormat(): void
+    {
+        $track = ['allowDownload' => true, 'src' => '/fileadmin/a.mp3', 'type' => 'audio/mpeg'];
+
+        $this->invokeByReference('enrichTrackWithDownloadData', $track, 0);
+
+        self::assertSame('/fileadmin/a.mp3', $track['downloadUrl']);
+        self::assertSame('MP3', $track['downloadFormat']);
+        // Records without a uid have no measurable file behind them.
+        self::assertArrayNotHasKey('downloadFileSize', $track);
+    }
+
+    #[Test]
+    public function enrichTrackWithDownloadDataPrefersAProgressiveSourceOverAManifest(): void
+    {
+        $track = [
+            'allowDownload' => true,
+            'src' => 'https://cdn.example.com/a.m3u8',
+            'type' => 'application/x-mpegurl',
+            'sources' => [
+                ['src' => 'https://cdn.example.com/a.m3u8', 'type' => 'application/x-mpegurl'],
+                ['src' => 'https://cdn.example.com/a.mp4', 'type' => 'video/mp4'],
+            ],
+        ];
+
+        $this->invokeByReference('enrichTrackWithDownloadData', $track, 0);
+
+        self::assertSame('https://cdn.example.com/a.mp4', $track['downloadUrl']);
+        self::assertSame('MP4', $track['downloadFormat']);
+    }
+
+    #[Test]
+    public function enrichTrackWithDownloadDataStaysEmptyWithoutTheRecordsPermission(): void
+    {
+        $track = ['src' => '/fileadmin/a.mp3', 'type' => 'audio/mpeg'];
+
+        $this->invokeByReference('enrichTrackWithDownloadData', $track, 0);
+
+        self::assertArrayNotHasKey('downloadUrl', $track);
+    }
+
+    #[Test]
+    public function resolveEpisodeDownloadPrefersAProgressiveSourceOverAManifest(): void
+    {
+        $download = $this->invoke(
+            'resolveEpisodeDownload',
+            ['uid' => 0, 'allow_download' => 1],
+            [
+                'src' => 'https://cdn.example.com/a.m3u8',
+                'type' => 'application/x-mpegurl',
+                'sources' => [
+                    ['src' => 'https://cdn.example.com/a.m3u8', 'type' => 'application/x-mpegurl'],
+                    ['src' => 'https://cdn.example.com/a.mp4', 'type' => 'video/mp4'],
+                ],
+            ]
+        );
+
+        self::assertSame('https://cdn.example.com/a.mp4', $download['url']);
+        self::assertSame('MP4', $download['info']);
+    }
+
+    #[Test]
+    public function resolveEpisodeDownloadStaysEmptyWithoutTheRecordsPermission(): void
+    {
+        $download = $this->invoke(
+            'resolveEpisodeDownload',
+            ['uid' => 0],
+            ['src' => '/fileadmin/a.mp3', 'type' => 'audio/mpeg']
+        );
+
+        self::assertSame(['url' => '', 'info' => ''], $download);
+    }
+
+    /**
+     * @return array<string, array{0: int, 1: string}>
+     */
+    public static function fileSizeProvider(): array
+    {
+        return [
+            'unknown size' => [0, ''],
+            'bytes stay whole' => [512, '512 B'],
+            'kilobytes stay whole' => [2048, '2 KB'],
+            'megabytes get one decimal' => [7_759_462, '7.4 MB'],
+            'gigabytes get one decimal' => [3_221_225_472, '3.0 GB'],
+        ];
+    }
+
+    #[Test]
+    #[DataProvider('fileSizeProvider')]
+    public function formatFileSizeMatchesThePlayersLabels(int $bytes, string $expected): void
+    {
+        $this->setProperty('formattingLocale', 'en-US');
+
+        self::assertSame($expected, $this->invoke('formatFileSize', $bytes));
+    }
+
+    #[Test]
+    public function formatFileSizeUsesTheSiteLocale(): void
+    {
+        if (!class_exists(\NumberFormatter::class)) {
+            self::markTestSkipped('ext-intl is not available.');
+        }
+
+        $this->setProperty('formattingLocale', 'de-DE');
+
+        self::assertSame('7,4 MB', $this->invoke('formatFileSize', 7_759_462));
+    }
+
+    #[Test]
+    public function buildPlaylistDataKeepsThePlayerPanelForTheCardLayout(): void
+    {
+        $result = $this->invoke('buildPlaylistData', $this->playlistTrackResult(), $this->playlistPlayerOptions(), 'card');
+
+        self::assertTrue($result['playlistData']['options']['showPanel']);
+        self::assertArrayNotHasKey('playlistToggleButton', $result['optionOverrides']);
+    }
+
+    /**
+     * The episode list is the track list in that layout, so the player's own
+     * panel — and the control-bar button that opens it — must stay out.
+     */
+    #[Test]
+    public function buildPlaylistDataSuppressesThePlayerPanelForTheEpisodesLayout(): void
+    {
+        $result = $this->invoke('buildPlaylistData', $this->playlistTrackResult(), $this->playlistPlayerOptions(), 'episodes');
+
+        self::assertFalse($result['playlistData']['options']['showPanel']);
+        self::assertFalse($result['optionOverrides']['playlistToggleButton']);
+    }
+
+    /**
+     * Layouts without an episode list have nowhere else to put a download, and
+     * the player resolves the file per track — so one button serves them all.
+     */
+    #[Test]
+    public function buildPlaylistDataEnablesTheDownloadButtonWhenATrackOffersAFile(): void
+    {
+        $trackResult = $this->playlistTrackResult();
+        $trackResult['tracks'][1]['downloadUrl'] = '/fileadmin/b.mp3';
+
+        $result = $this->invoke('buildPlaylistData', $trackResult, $this->playlistPlayerOptions(), 'default');
+
+        self::assertTrue($result['optionOverrides']['downloadButton']);
+    }
+
+    #[Test]
+    public function buildPlaylistDataLeavesTheDownloadButtonOffWithoutADownloadableTrack(): void
+    {
+        $result = $this->invoke('buildPlaylistData', $this->playlistTrackResult(), $this->playlistPlayerOptions(), 'default');
+
+        self::assertArrayNotHasKey('downloadButton', $result['optionOverrides']);
+    }
+
+    #[Test]
+    public function buildPlaylistDataLeavesTheDownloadToTheRowsInTheEpisodesLayout(): void
+    {
+        $trackResult = $this->playlistTrackResult();
+        $trackResult['tracks'][0]['downloadUrl'] = '/fileadmin/a.mp3';
+
+        $result = $this->invoke('buildPlaylistData', $trackResult, $this->playlistPlayerOptions(), 'episodes');
+
+        self::assertArrayNotHasKey('downloadButton', $result['optionOverrides']);
+    }
+
+    /**
+     * Records without a uid resolve to no categories and no poster, which keeps
+     * the episode builder away from the (unconstructed) database services.
+     */
+    private function prepareCategoryResolver(): void
+    {
+        $this->setProperty(
+            'mediaCategoryResolver',
+            (new \ReflectionClass(MediaCategoryResolver::class))->newInstanceWithoutConstructor()
+        );
+    }
+
+    /**
+     * Track result of a playlist of $count media, titled "A", "B", "C", … with
+     * records that carry no uid so poster and category lookups stay away from the
+     * (unconstructed) database services.
+     *
+     * @return array<string, mixed>
+     */
+    private function episodesTrackResult(int $count): array
+    {
+        $records = [];
+        $tracks = [];
+        for ($index = 0; $index < $count; $index++) {
+            $title = chr(ord('A') + $index);
+            $records[] = ['title' => $title];
+            $tracks[] = ['title' => $title, 'src' => '/fileadmin/' . strtolower($title) . '.mp3', 'type' => 'audio/mpeg'];
+        }
+
+        return [
+            'isPlaylist' => $count > 1,
+            'tracks' => $tracks,
+            'records' => $records,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function playlistTrackResult(): array
+    {
+        return [
+            'isPlaylist' => true,
+            'tracks' => [['title' => 'A'], ['title' => 'B']],
+            'isMixedPlaylist' => false,
+            'hasExternalMedia' => false,
+            'externalServiceTypes' => [],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function playlistPlayerOptions(): array
+    {
+        return ['autoplay' => false, 'autoAdvance' => true, 'loop' => false];
     }
 }

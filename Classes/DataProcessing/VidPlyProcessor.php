@@ -36,6 +36,7 @@ use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
  *
  * @phpstan-type TrackResult array{
  *     tracks: list<array<string, mixed>>,
+ *     records: list<array<string, mixed>>,
  *     mediaType: ?string,
  *     hasExternalMedia: bool,
  *     hasLocalMedia: bool,
@@ -56,6 +57,36 @@ class VidPlyProcessor implements DataProcessorInterface
 
     /** Presentation layouts of the player content element (tt_content.tx_mpcvidply_layout). */
     private const LAYOUTS = ['default', 'card', 'episodes'];
+
+    /**
+     * File extensions that carry a stream manifest or an "external URL" pointer
+     * instead of the media itself, so neither their MIME type nor their size can
+     * be taken at face value.
+     */
+    private const NON_PROGRESSIVE_EXTENSIONS = ['externalaudio', 'externalvideo', 'hls', 'm3u8', 'dash', 'mpd'];
+
+    /**
+     * Format labels for download links, kept in sync with the player's own
+     * download button (see vidply's utils/DownloadInfo.ts).
+     */
+    private const DOWNLOAD_FORMAT_BY_MIME = [
+        'video/mp4' => 'MP4',
+        'video/webm' => 'WebM',
+        'video/ogg' => 'Ogg',
+        'video/quicktime' => 'MOV',
+        'audio/mpeg' => 'MP3',
+        'audio/mp3' => 'MP3',
+        'audio/mp4' => 'M4A',
+        'audio/x-m4a' => 'M4A',
+        'audio/aac' => 'AAC',
+        'audio/ogg' => 'Ogg',
+        'audio/opus' => 'Opus',
+        'audio/wav' => 'WAV',
+        'audio/x-wav' => 'WAV',
+        'audio/flac' => 'FLAC',
+        'audio/x-flac' => 'FLAC',
+        'audio/webm' => 'WebM',
+    ];
 
     private readonly FileRepository $fileRepository;
     private readonly ResourceFactory $resourceFactory;
@@ -81,10 +112,18 @@ class VidPlyProcessor implements DataProcessorInterface
     private array $describedSourceByFileReferenceUid = [];
 
     /**
-     * Locale used to pre-format publish dates for the frontend, e.g. "de-DE".
+     * Byte sizes already read from the storage, keyed by "mediaUid|downloadUrl".
+     * Playlist tracks and episode rows ask for the same files.
+     *
+     * @var array<string, int>
+     */
+    private array $downloadSizeByMediaAndUrl = [];
+
+    /**
+     * Locale used to pre-format dates and file sizes for the frontend, e.g. "de-DE".
      * Null while no request context has been resolved (structured-data path).
      */
-    private ?string $dateLocale = null;
+    private ?string $formattingLocale = null;
 
     /**
      * Parameters are optional to support GeneralUtility::makeInstance() calls.
@@ -157,7 +196,7 @@ class VidPlyProcessor implements DataProcessorInterface
     ): array {
         $this->resetCaches();
 
-        $this->dateLocale = $this->resolveDateLocale($request);
+        $this->formattingLocale = $this->resolveFormattingLocale($request);
         $playerOptions = $this->buildPlayerOptions($data);
         $languageId = $languageIdOverride ?? FrontendLanguageResolver::resolveLanguageId($request, $data);
 
@@ -165,9 +204,11 @@ class VidPlyProcessor implements DataProcessorInterface
 
         $siteDefaultLanguageCode = $this->resolveSiteDefaultLanguageCode($request);
         $trackResult = $this->buildTracksResult($mediaRecords, $siteDefaultLanguageCode);
-        $this->applyTrackDependentOptions($playerOptions, $trackResult, $mediaRecords);
+        $this->applyTrackDependentOptions($playerOptions, $trackResult);
 
-        $playlistResult = $this->buildPlaylistData($trackResult, $playerOptions);
+        $layout = $this->resolveLayout($data);
+
+        $playlistResult = $this->buildPlaylistData($trackResult, $playerOptions, $layout);
         $playlistData = $playlistResult['playlistData'];
         $playerOptions = array_merge($playerOptions, $playlistResult['optionOverrides']);
 
@@ -184,10 +225,7 @@ class VidPlyProcessor implements DataProcessorInterface
         $renderMode = $this->determineRenderMode($serviceType, $trackResult, $resolvedMediaType);
         $assetFlags = $this->resolveAssetFlags($serviceType, $trackResult);
 
-        $layout = $this->resolveLayout($data);
-        $episodes = $layout === 'default'
-            ? []
-            : $this->buildEpisodeData($mediaRecords, $this->resolveEpisodeCategories($mediaRecords, $languageId));
+        $episodes = $this->resolveEpisodesForLayout($layout, $trackResult, $languageId);
 
         return $this->assembleTemplateData(
             $data,
@@ -266,7 +304,8 @@ class VidPlyProcessor implements DataProcessorInterface
         $this->mimeTypeByFileReferenceUid = [];
         $this->fileReferencesByMediaUid = [];
         $this->describedSourceByFileReferenceUid = [];
-        $this->dateLocale = null;
+        $this->downloadSizeByMediaAndUrl = [];
+        $this->formattingLocale = null;
     }
 
     /**
@@ -331,6 +370,7 @@ class VidPlyProcessor implements DataProcessorInterface
     private function buildTracksResult(array $mediaRecords, string $siteDefaultLanguageCode = 'en'): array
     {
         $tracks = [];
+        $records = [];
         $mediaType = null;
         $externalServiceTypes = [];
         $hasLocalMedia = false;
@@ -342,6 +382,10 @@ class VidPlyProcessor implements DataProcessorInterface
                 continue;
             }
             $tracks[] = $track;
+            // Records without a resolvable source are dropped above. Keeping the
+            // surviving ones lets the episode list use the same indexes as the
+            // playlist, so its play buttons cannot point at the wrong track.
+            $records[] = $mediaRecord;
 
             if ($mediaType === null) {
                 $mediaType = (($mediaRecord['media_type'] ?? '') === MediaType::Audio->value) ? 'audio' : 'video';
@@ -363,6 +407,7 @@ class VidPlyProcessor implements DataProcessorInterface
 
         return [
             'tracks' => $tracks,
+            'records' => $records,
             'mediaType' => $mediaType,
             'hasExternalMedia' => $hasExternalMedia,
             'hasLocalMedia' => $hasLocalMedia,
@@ -377,9 +422,8 @@ class VidPlyProcessor implements DataProcessorInterface
      *
      * @param array<string, mixed> $playerOptions
      * @param TrackResult $trackResult
-     * @param list<array<string, mixed>> $mediaRecords
      */
-    private function applyTrackDependentOptions(array &$playerOptions, array $trackResult, array $mediaRecords): void
+    private function applyTrackDependentOptions(array &$playerOptions, array $trackResult): void
     {
         $playerOptions['transcript'] = false;
         foreach ($trackResult['tracks'] as $t) {
@@ -390,12 +434,29 @@ class VidPlyProcessor implements DataProcessorInterface
         }
         $playerOptions['transcriptButton'] = $playerOptions['transcript'];
 
-        if (!$trackResult['isPlaylist'] && isset($mediaRecords[0]) && !empty($mediaRecords[0]['hide_speed_button'])) {
-            $playerOptions['speedButton'] = false;
+        $firstRecord = $trackResult['records'][0] ?? null;
+
+        // Playlists carry these two per track: PlaylistInit.js hides and shows the
+        // rendered buttons on every track change. Switching the option off here
+        // would stop them from being built at all, leaving nothing to show again.
+        if (!$trackResult['isPlaylist'] && $firstRecord !== null) {
+            if (!empty($firstRecord['hide_speed_button'])) {
+                $playerOptions['speedButton'] = false;
+            }
+
+            if (!empty($firstRecord['hide_help_button'])) {
+                $playerOptions['helpButton'] = false;
+            }
         }
 
-        if (!$trackResult['isPlaylist'] && isset($mediaRecords[0]) && !empty($mediaRecords[0]['hide_help_button'])) {
-            $playerOptions['helpButton'] = false;
+        // The audio-description manager, in contrast, is shared and nothing swaps
+        // its mode per track — so the first playable record decides for all of them
+        // instead of silently falling back to "auto".
+        if ($firstRecord !== null) {
+            $audioDescriptionMode = (string)($firstRecord['audio_description_mode'] ?? 'auto');
+            if (in_array($audioDescriptionMode, ['auto', 'swap', 'vtt_speech'], true)) {
+                $playerOptions['audioDescriptionMode'] = $audioDescriptionMode;
+            }
         }
 
         // MSE-based streams (DASH via dash.js, HLS via hls.js) handle
@@ -420,9 +481,9 @@ class VidPlyProcessor implements DataProcessorInterface
         // for v1) and requires the player to render <video>, so we skip audio.
         if (
             !$trackResult['isPlaylist']
-            && isset($mediaRecords[0])
-            && !empty($mediaRecords[0]['enable_floating_player'])
-            && ($mediaRecords[0]['media_type'] ?? '') === 'video'
+            && $firstRecord !== null
+            && !empty($firstRecord['enable_floating_player'])
+            && ($firstRecord['media_type'] ?? '') === 'video'
         ) {
             $playerOptions['floating'] = true;
             $playerOptions['floatingPosition'] = 'bottom-right';
@@ -466,11 +527,16 @@ class VidPlyProcessor implements DataProcessorInterface
      * @param array<string, mixed> $playerOptions
      * @return array{playlistData: ?array<string, mixed>, optionOverrides: array<string, mixed>}
      */
-    private function buildPlaylistData(array $trackResult, array $playerOptions): array
+    private function buildPlaylistData(array $trackResult, array $playerOptions, string $layout = 'default'): array
     {
         if (!$trackResult['isPlaylist']) {
             return ['playlistData' => null, 'optionOverrides' => []];
         }
+
+        // The "episodes" layout renders the track list server-side, so the
+        // player's own panel would repeat the same records with a second set of
+        // formatters. Suppress the panel and its toggle to keep one list.
+        $showPanel = $layout !== 'episodes';
 
         $tracks = $trackResult['tracks'];
         $playlistData = [
@@ -479,14 +545,27 @@ class VidPlyProcessor implements DataProcessorInterface
                 'autoplay' => $playerOptions['autoplay'],
                 'autoAdvance' => $playerOptions['autoAdvance'],
                 'loop' => $playerOptions['loop'],
-                'showPanel' => true,
+                'showPanel' => $showPanel,
                 'isMixedPlaylist' => $trackResult['isMixedPlaylist'],
                 'hasExternalMedia' => $trackResult['hasExternalMedia'],
                 'externalServiceTypes' => $trackResult['externalServiceTypes'],
             ],
         ];
 
-        $optionOverrides = [];
+        $optionOverrides = $showPanel ? [] : ['playlistToggleButton' => false];
+
+        // Without a server-rendered episode list, the control bar is the only
+        // place a download can be offered. The player resolves the file per
+        // track, so one button serves every downloadable track.
+        if ($layout !== 'episodes') {
+            foreach ($tracks as $track) {
+                if (!empty($track['downloadUrl'])) {
+                    $optionOverrides['downloadButton'] = true;
+                    break;
+                }
+            }
+        }
+
         foreach ($tracks as $track) {
             if (!empty($track['signLanguageSrc'])) {
                 $optionOverrides['signLanguageButton'] = true;
@@ -1304,8 +1383,41 @@ class VidPlyProcessor implements DataProcessorInterface
 
         $track = array_merge($track, $sourceData);
         $this->enrichTrackWithAccessibilityData($track, $mediaUid, $mediaRecord, $siteDefaultLanguageCode);
+        $this->enrichTrackWithDownloadData($track, $mediaUid);
 
         return $track;
+    }
+
+    /**
+     * Download target of a track, so the player's button can follow the selected
+     * one in a playlist. Format and size travel with it because the button would
+     * otherwise have to measure the file with a HEAD request — and could then
+     * announce a different size than the episode list on the same page.
+     *
+     * @param array<string, mixed> $track
+     */
+    private function enrichTrackWithDownloadData(array &$track, int $mediaUid): void
+    {
+        if (empty($track['allowDownload'])) {
+            return;
+        }
+
+        $source = $this->resolveDownloadSource($track);
+        if ($source === null) {
+            return;
+        }
+
+        $track['downloadUrl'] = $source['src'];
+
+        $format = $this->resolveDownloadFormat($source['src'], $source['type']);
+        if ($format !== '') {
+            $track['downloadFormat'] = $format;
+        }
+
+        $sizeBytes = $this->resolveDownloadSizeBytes($mediaUid, $source['src']);
+        if ($sizeBytes > 0) {
+            $track['downloadFileSize'] = $sizeBytes;
+        }
     }
 
     /**
@@ -1371,15 +1483,52 @@ class VidPlyProcessor implements DataProcessorInterface
     }
 
     /**
+     * Episode metadata for the layouts that print it. "episodes" lists every
+     * record, "card" only ever shows the first one — so the poster and category
+     * lookups of the remaining records are skipped there.
+     *
+     * @param TrackResult $trackResult
+     * @return list<array<string, mixed>>
+     */
+    private function resolveEpisodesForLayout(string $layout, array $trackResult, int $languageId): array
+    {
+        $records = $trackResult['records'];
+        if ($layout === 'default' || $records === []) {
+            return [];
+        }
+
+        $tracks = $trackResult['tracks'];
+        if ($layout === 'card') {
+            $records = array_slice($records, 0, 1);
+            $tracks = array_slice($tracks, 0, 1);
+        }
+
+        // Only the episode list offers downloads per row: every episode is
+        // visible there, so each one can be saved without selecting it first.
+        // The card layout shows a single episode and lets the player's own
+        // button — which follows the selected track — handle downloads instead.
+        $downloadTracks = $trackResult['isPlaylist'] && $layout === 'episodes' ? $tracks : [];
+
+        return $this->buildEpisodeData(
+            $records,
+            $this->resolveEpisodeCategories($records, $languageId),
+            $downloadTracks
+        );
+    }
+
+    /**
      * Server-rendered episode metadata (cover, title, date, duration, …) for the
      * card layouts. Everything the player itself renders is built by JavaScript
      * from the playlist JSON and would not be in the HTML source.
      *
      * @param list<array<string, mixed>> $mediaRecords
      * @param list<list<array{uid: int, title: string}>> $categories Aligned with $mediaRecords
+     * @param list<array<string, mixed>> $downloadTracks Tracks whose download URL should be
+     *        printed per episode, aligned with $mediaRecords. Empty when the player renders
+     *        its own download button.
      * @return list<array<string, mixed>>
      */
-    private function buildEpisodeData(array $mediaRecords, array $categories): array
+    private function buildEpisodeData(array $mediaRecords, array $categories, array $downloadTracks = []): array
     {
         $episodes = [];
 
@@ -1392,6 +1541,7 @@ class VidPlyProcessor implements DataProcessorInterface
             $title = (string)($mediaRecord['title'] ?? '');
             [$posterReferenceUid, $posterAlt] = $this->resolveEpisodePoster($mediaUid, $title);
             $duration = (int)($mediaRecord['duration'] ?? 0);
+            $download = $this->resolveEpisodeDownload($mediaRecord, $downloadTracks[$index] ?? null);
 
             $episodes[] = [
                 'index' => $index,
@@ -1408,10 +1558,47 @@ class VidPlyProcessor implements DataProcessorInterface
                 'categories' => $categories[$index] ?? [],
                 'posterReferenceUid' => $posterReferenceUid,
                 'posterAlt' => $posterAlt,
+                'downloadUrl' => $download['url'],
+                'downloadInfo' => $download['info'],
             ];
         }
 
         return $episodes;
+    }
+
+    /**
+     * Download target of a single episode row, together with a ready-made
+     * "MP3, 7.4 MB" hint. Returns empty values when the record does not allow
+     * downloads or no progressive source can be offered.
+     *
+     * @param array<string, mixed> $mediaRecord
+     * @param array<string, mixed>|null $track
+     * @return array{url: string, info: string}
+     */
+    private function resolveEpisodeDownload(array $mediaRecord, ?array $track): array
+    {
+        $empty = ['url' => '', 'info' => ''];
+
+        if ($track === null || empty($mediaRecord['allow_download'])) {
+            return $empty;
+        }
+
+        $source = $this->resolveDownloadSource($track);
+        if ($source === null) {
+            return $empty;
+        }
+
+        $parts = [];
+        $format = $this->resolveDownloadFormat($source['src'], $source['type']);
+        if ($format !== '') {
+            $parts[] = $format;
+        }
+        $size = $this->resolveDownloadSize((int)($mediaRecord['uid'] ?? 0), $source['src']);
+        if ($size !== '') {
+            $parts[] = $size;
+        }
+
+        return ['url' => $source['src'], 'info' => implode(', ', $parts)];
     }
 
     /**
@@ -1468,7 +1655,7 @@ class VidPlyProcessor implements DataProcessorInterface
             return '';
         }
 
-        $locale = $this->dateLocale;
+        $locale = $this->formattingLocale;
         if ($locale !== null && class_exists(\IntlDateFormatter::class)) {
             try {
                 $formatter = new \IntlDateFormatter(
@@ -1511,9 +1698,10 @@ class VidPlyProcessor implements DataProcessorInterface
 
     /**
      * Locale of the current site language (e.g. "de-DE"), used to pre-format
-     * dates in PHP so templates and the player only print ready-made strings.
+     * dates and file sizes in PHP so templates and the player only print
+     * ready-made strings.
      */
-    private function resolveDateLocale(ServerRequestInterface $request): ?string
+    private function resolveFormattingLocale(ServerRequestInterface $request): ?string
     {
         $language = $request->getAttribute('language');
         if ($language !== null && method_exists($language, 'getLocale')) {
@@ -1534,19 +1722,147 @@ class VidPlyProcessor implements DataProcessorInterface
      */
     private function resolveDownloadUrl(array $track): ?string
     {
+        $source = $this->resolveDownloadSource($track);
+
+        return $source !== null ? $source['src'] : null;
+    }
+
+    /**
+     * The source a download should point at, with the MIME type it was
+     * announced with so a format label can be derived from it.
+     *
+     * @param array<string, mixed> $track
+     * @return array{src: string, type: string}|null
+     */
+    private function resolveDownloadSource(array $track): ?array
+    {
         $progressiveTypes = ['video/mp4', 'video/webm', 'audio/mpeg', 'audio/ogg'];
 
         // Prefer a progressive source from multi-source tracks
         if (!empty($track['sources'])) {
             foreach ($track['sources'] as $source) {
                 if (in_array($source['type'] ?? '', $progressiveTypes, true)) {
-                    return $source['src'];
+                    return [
+                        'src' => (string)$source['src'],
+                        'type' => (string)$source['type'],
+                    ];
                 }
             }
         }
 
-        $src = $track['src'] ?? '';
-        return $src !== '' ? $src : null;
+        $src = (string)($track['src'] ?? '');
+
+        return $src !== '' ? ['src' => $src, 'type' => (string)($track['type'] ?? '')] : null;
+    }
+
+    /**
+     * Human-readable format label ("MP3", "MP4", …) for a download, matching the
+     * labels the player's own download button prints.
+     */
+    private function resolveDownloadFormat(string $url, string $mimeType): string
+    {
+        $normalizedMime = strtolower(trim(explode(';', $mimeType)[0]));
+        if (isset(self::DOWNLOAD_FORMAT_BY_MIME[$normalizedMime])) {
+            return self::DOWNLOAD_FORMAT_BY_MIME[$normalizedMime];
+        }
+
+        $path = (string)parse_url($url, PHP_URL_PATH);
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
+        return preg_match('/^[a-z0-9]{2,5}$/', $extension) === 1 ? strtoupper($extension) : '';
+    }
+
+    /**
+     * Size of the file a download points at, pre-formatted for the current site
+     * language. Streaming and "external URL" placeholder files are skipped: their
+     * own size says nothing about the media behind them.
+     */
+    private function resolveDownloadSize(int $mediaUid, string $downloadUrl): string
+    {
+        return $this->formatFileSize($this->resolveDownloadSizeBytes($mediaUid, $downloadUrl));
+    }
+
+    /**
+     * Byte size of the file a download points at, or 0 when it cannot be
+     * measured. Streaming and "external URL" placeholder files count as
+     * unmeasurable: their own size says nothing about the media behind them.
+     */
+    private function resolveDownloadSizeBytes(int $mediaUid, string $downloadUrl): int
+    {
+        $cacheKey = $mediaUid . '|' . $downloadUrl;
+        if (isset($this->downloadSizeByMediaAndUrl[$cacheKey])) {
+            return $this->downloadSizeByMediaAndUrl[$cacheKey];
+        }
+
+        $size = 0;
+        foreach ($this->getFileReferencesForMedia($mediaUid, 'media_file') as $fileReference) {
+            if ($this->getPublicUrlCached($fileReference) !== $downloadUrl) {
+                continue;
+            }
+            if (!in_array($fileReference->getExtension(), self::NON_PROGRESSIVE_EXTENSIONS, true)) {
+                $size = $this->resolveCurrentFileSize($fileReference);
+            }
+            break;
+        }
+
+        return $this->downloadSizeByMediaAndUrl[$cacheKey] = $size;
+    }
+
+    /**
+     * Size the file has on its storage right now, rather than the one sys_file has
+     * indexed. A file replaced without re-indexing would otherwise be announced
+     * with its predecessor's size — and contradict the size the player measures
+     * for its own download button on the very same page.
+     */
+    private function resolveCurrentFileSize(FileReference $fileReference): int
+    {
+        try {
+            $file = $fileReference->getOriginalFile();
+
+            return (int)($file->getStorage()->getFileInfo($file)['size'] ?? 0);
+        } catch (\Throwable) {
+            // Storage offline or file gone: no size reads better than a wrong one.
+            return 0;
+        }
+    }
+
+    /**
+     * Byte count as "7.4 MB", localised like the player does: no decimals below
+     * megabytes, one from there on.
+     */
+    private function formatFileSize(int $bytes): string
+    {
+        if ($bytes <= 0) {
+            return '';
+        }
+
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $lastUnit = count($units) - 1;
+        $value = (float)$bytes;
+        $unitIndex = 0;
+        while ($value >= 1024 && $unitIndex < $lastUnit) {
+            $value /= 1024;
+            $unitIndex++;
+        }
+
+        $decimals = $unitIndex < 2 ? 0 : 1;
+        $locale = $this->formattingLocale;
+
+        if ($locale !== null && class_exists(\NumberFormatter::class)) {
+            try {
+                $formatter = new \NumberFormatter($locale, \NumberFormatter::DECIMAL);
+                $formatter->setAttribute(\NumberFormatter::MIN_FRACTION_DIGITS, $decimals);
+                $formatter->setAttribute(\NumberFormatter::MAX_FRACTION_DIGITS, $decimals);
+                $formatted = $formatter->format($value);
+                if (is_string($formatted) && $formatted !== '') {
+                    return $formatted . ' ' . $units[$unitIndex];
+                }
+            } catch (\Throwable) {
+                // Fall through to the locale-independent format below.
+            }
+        }
+
+        return number_format($value, $decimals) . ' ' . $units[$unitIndex];
     }
 
     /** @return array{src: string, type: string, kind: string}|null */
@@ -1596,7 +1912,7 @@ class VidPlyProcessor implements DataProcessorInterface
             foreach ($mediaFiles as $mediaFile) {
                 $publicUrl = $this->getPublicUrlCached($mediaFile);
                 $mimeType = $this->getMimeTypeCached($mediaFile);
-                if (in_array($mediaFile->getExtension(), ['externalaudio', 'externalvideo', 'hls', 'm3u8', 'dash', 'mpd'], true)) {
+                if (in_array($mediaFile->getExtension(), self::NON_PROGRESSIVE_EXTENSIONS, true)) {
                     $mimeType = $this->inferMimeTypeFromUrlCached($publicUrl, $mimeType);
                 }
                 $sources[] = [
@@ -1624,7 +1940,7 @@ class VidPlyProcessor implements DataProcessorInterface
             $mediaFile = $mediaFiles[0];
             $result['src'] = $this->getPublicUrlCached($mediaFile);
             $result['type'] = $this->getMimeTypeCached($mediaFile);
-            if (in_array($mediaFile->getExtension(), ['externalaudio', 'externalvideo', 'hls', 'm3u8', 'dash', 'mpd'], true)) {
+            if (in_array($mediaFile->getExtension(), self::NON_PROGRESSIVE_EXTENSIONS, true)) {
                 $result['type'] = $this->inferMimeTypeFromUrlCached((string)$result['src'], (string)$result['type']);
             }
         }

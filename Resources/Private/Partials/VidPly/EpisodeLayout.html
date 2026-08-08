@@ -3,20 +3,47 @@
 <f:asset.css href="EXT:mpc_vidply/Resources/Public/Css/episode.min.css" identifier="vidplyEpisodeCSS"/>
 <f:asset.script identifier="vidplyEpisodeJs" src="EXT:mpc_vidply/Resources/Public/JavaScript/EpisodeInit.min.js" type="module"/>
 
-<article class="mpc-episode mpc-episode-layout-{vidply.layout}" id="{vidply.uniqueId}-episode">
+<article class="mpc-episode mpc-episode-layout-{vidply.layout}"
+         id="{vidply.uniqueId}-episode"
+         data-mpc-episode-current="0">
+    <f:comment>
+        Both layouts open with the same card. In the "episodes" layout it shows
+        the episode that is playing, which EpisodeInit.js keeps in sync with the
+        list below by cloning the selected row.
+    </f:comment>
     <f:if condition="{vidply.episode}">
         <f:render partial="VidPly/EpisodeCover" arguments="{episode: vidply.episode}" />
     </f:if>
 
     <div class="mpc-episode-main">
         <f:if condition="{vidply.episode}">
-            <f:render partial="VidPly/EpisodeCard" arguments="{episode: vidply.episode, vidply: vidply, data: data}" />
+            <f:render partial="VidPly/EpisodeCard" arguments="{episode: vidply.episode, vidply: vidply, data: data, titleLevel: 3}" />
         </f:if>
 
         <div class="mpc-episode-player">
             <f:render partial="VidPly/Player" arguments="{_all}" />
         </div>
     </div>
+
+    <f:if condition="{vidply.layout} == 'episodes'">
+        <div class="mpc-episode-list-section">
+            <h3 class="mpc-episode-list-heading" id="{vidply.uniqueId}-episode-list-heading">
+                <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:episodes.heading"
+                             arguments="{0: '{vidply.episodes -> f:count()}'}"
+                             default="Episodes" />
+            </h3>
+            <ol class="mpc-episode-list" aria-labelledby="{vidply.uniqueId}-episode-list-heading">
+                <f:for each="{vidply.episodes}" as="episode">
+                    <li class="mpc-episode-item"
+                        data-mpc-episode-item="{episode.index}"
+                        <f:if condition="{episode.index} == 0">aria-current="true"</f:if>>
+                        <f:render partial="VidPly/EpisodeCover" arguments="{episode: episode}" />
+                        <f:render partial="VidPly/EpisodeCard" arguments="{episode: episode, vidply: vidply, data: data, titleLevel: 4}" />
+                    </li>
+                </f:for>
+            </ol>
+        </div>
+    </f:if>
 </article>
 
 </html>

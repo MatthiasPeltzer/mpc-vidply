@@ -163,7 +163,7 @@
         <source>Layout</source>
       </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_layout.description">
-        <source>How the player is presented. "Episode card" adds a square cover with title, date, duration and description around the player.</source>
+        <source>How the player is presented. "Episode card" adds a square cover with title, date, duration and description around the player. "Episode card with episode list" puts the player on top and lists every selected medium below it, replacing the player's own playlist panel.</source>
       </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_layout.default">
         <source>Player only (default)</source>

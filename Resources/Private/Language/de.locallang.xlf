@@ -63,6 +63,14 @@
         <source>You might also like</source>
         <target>Das könnte Sie auch interessieren</target>
       </trans-unit>
+      <trans-unit id="episode.download">
+        <source>Download</source>
+        <target>Herunterladen</target>
+      </trans-unit>
+      <trans-unit id="episodes.heading">
+        <source>Episodes (%s)</source>
+        <target>Episoden (%s)</target>
+      </trans-unit>
       <trans-unit id="listview.empty">
         <source>No media rows have been configured yet.</source>
         <target>Es wurden noch keine Medien-Reihen konfiguriert.</target>

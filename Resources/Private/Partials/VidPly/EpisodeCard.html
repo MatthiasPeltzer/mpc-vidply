@@ -7,6 +7,7 @@
     <button type="button"
             class="mpc-episode-play"
             data-mpc-episode-play="{vidply.uniqueId}"
+            data-mpc-episode-index="{episode.index}"
             data-mpc-episode-label-play="{playLabel}"
             data-mpc-episode-label-pause="{pauseLabel}"
             data-mpc-episode-title="{episode.title}"
@@ -15,7 +16,13 @@
     </button>
 
     <div class="mpc-episode-body">
-        <h3 class="mpc-episode-title"><f:if condition="{episode.episodeNumber}"><span class="mpc-episode-number">{episode.episodeNumber}</span> </f:if>{episode.title}</h3>
+        <!-- Captured through f:variable, so the accessors below are already
+             escaped by the time f:format.raw prints the shared title markup. -->
+        <f:variable name="episodeTitle"><f:if condition="{episode.episodeNumber}"><span class="mpc-episode-number">{episode.episodeNumber}</span> </f:if>{episode.title}</f:variable>
+        <f:switch expression="{titleLevel}">
+            <f:case value="4"><h4 class="mpc-episode-title">{episodeTitle -> f:format.raw()}</h4></f:case>
+            <f:defaultCase><h3 class="mpc-episode-title">{episodeTitle -> f:format.raw()}</h3></f:defaultCase>
+        </f:switch>
 
         <f:if condition="{episode.dateFormatted} || {episode.durationFormatted} || {episode.categories}">
             <div class="mpc-episode-meta">
@@ -55,6 +62,26 @@
 
         <f:if condition="{episode.description}">
             <p class="mpc-episode-description">{episode.description -> f:format.nl2br()}</p>
+        </f:if>
+
+        <f:comment>
+            Only set for playlists: a single medium keeps the download button in the
+            player's own control bar, so printing both would offer the same file twice.
+        </f:comment>
+        <f:if condition="{episode.downloadUrl}">
+            <f:variable name="downloadLabel"><f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:episode.download" default="Download" /></f:variable>
+            <p class="mpc-episode-actions">
+                <a class="mpc-episode-download"
+                   href="{episode.downloadUrl}"
+                   download="download"
+                   aria-label="{downloadLabel}{f:if(condition: episode.downloadInfo, then: ' {episode.downloadInfo}')}{f:if(condition: episode.title, then: ': {episode.title}')}">
+                    <svg class="mpc-episode-icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+                        <path fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"
+                              d="M8 1.9v8.2m0 0L4.9 7M8 10.1 11.1 7M2.2 12.1v1a1 1 0 0 0 1 1h9.6a1 1 0 0 0 1-1v-1" />
+                    </svg>
+                    {downloadLabel -> f:format.raw()}<f:if condition="{episode.downloadInfo}"> <span class="mpc-episode-download-info">{episode.downloadInfo}</span></f:if>
+                </a>
+            </p>
         </f:if>
     </div>
 </div>

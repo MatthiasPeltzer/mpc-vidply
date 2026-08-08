@@ -236,8 +236,8 @@
         <target>Download erlauben</target>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.allow_download.description">
-        <source>When enabled, a download button is shown in the player control bar, allowing the user to download the media file.</source>
-        <target>Wenn aktiviert, wird eine Download-Schaltfläche in der Player-Steuerleiste angezeigt, mit der die Mediendatei heruntergeladen werden kann.</target>
+        <source>When enabled, the media file is offered for download: as a button in the player control bar, which follows the selected track in a playlist, and as a link on the episode itself in the "Episode list" layout.</source>
+        <target>Wenn aktiviert, wird die Mediendatei zum Herunterladen angeboten: als Schaltfläche in der Player-Steuerleiste, die in einer Wiedergabeliste dem ausgewählten Titel folgt, und im Layout „Episodenliste“ als Link an der jeweiligen Episode.</target>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.artist">
         <source>Artist / Creator</source>

@@ -164,8 +164,8 @@
     }
 }
 
-/* The card already shows the cover, so the player's own artwork strip would
-   only duplicate it. */
+/* Both layouts show the cover next to the player, so the player's own artwork
+   strip would only duplicate it. */
 .mpc-episode .vidply-track-artwork {
     display: none;
 }
@@ -246,6 +246,32 @@
     overflow-wrap: anywhere;
 }
 
+.mpc-episode-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    margin: 0.75rem 0 0;
+}
+
+.mpc-episode-download {
+    align-items: center;
+    color: var(--mpc-vidply-episode-accent);
+    display: inline-flex;
+    font-size: clamp(0.8125rem, 0.78rem + 0.15vw, 0.9375rem);
+    gap: 0.4rem;
+    /* Holds the pointer target at 24px although the label is small (WCAG 2.5.8). */
+    min-height: 1.5rem;
+}
+
+.mpc-episode-download:focus-visible {
+    outline: 3px solid var(--mpc-vidply-episode-accent);
+    outline-offset: 2px;
+}
+
+.mpc-episode-download-info {
+    color: var(--mpc-vidply-episode-muted);
+}
+
 .mpc-episode-sr-only {
     block-size: 1px;
     clip-path: inset(50%);
@@ -253,4 +279,116 @@
     overflow: hidden;
     position: absolute;
     white-space: nowrap;
+}
+
+/* ==========================================================================
+   Episode list
+   ========================================================================== */
+
+/* The episodes layout is the card plus a track list, so the list breaks to a
+   full-width row of its own below the cover and player columns. */
+.mpc-episode-layout-episodes .mpc-episode-list-section {
+    flex: 1 0 100%;
+    min-width: 0;
+}
+
+.mpc-episode-list-heading {
+    font-size: clamp(1rem, 0.95rem + 0.4vw, 1.375rem);
+    font-weight: 600;
+    margin: 0 0 0.75rem;
+}
+
+.mpc-episode-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Rows shrink the cover and the play bubble through the shared custom
+   properties, so a long list stays scannable. */
+.mpc-episode-item {
+    --mpc-vidply-episode-cover: 6rem;
+    --mpc-vidply-episode-gap: 1rem;
+    --mpc-vidply-episode-play-size: 3rem;
+
+    align-items: flex-start;
+    border: 1px solid var(--mpc-vidply-episode-border);
+    border-radius: var(--mpc-vidply-episode-radius);
+    cursor: pointer;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--mpc-vidply-episode-gap);
+    padding: 1rem;
+    position: relative;
+    transition: background var(--mpc-vidply-episode-transition),
+        box-shadow var(--mpc-vidply-episode-transition);
+}
+
+/* The whole row is the click target, like the teasers: the play button's
+   overlay covers the row, so the row stays a single control with one tab stop
+   and one accessible name instead of a second, competing click handler. */
+.mpc-episode-item .mpc-episode-play::after {
+    content: "";
+    inset: 0;
+    position: absolute;
+    z-index: 1;
+}
+
+/* Any other control in the row has to sit above that overlay, or the row-wide
+   play target would swallow its clicks. */
+.mpc-episode-item .mpc-episode-download {
+    position: relative;
+    z-index: 2;
+}
+
+.mpc-episode-item:hover,
+.mpc-episode-item:focus-within {
+    background: var(--mpc-vidply-episode-surface);
+    box-shadow: rgb(0 0 0 / 20%) 0 2px 8px -2px;
+}
+
+/* A transformed button would become the containing block of its own overlay,
+   collapsing it back to the bubble as soon as the row is hovered. The row's
+   own hover state carries the affordance instead. */
+.mpc-episode-item .mpc-episode-play:hover {
+    transform: none;
+}
+
+.mpc-episode-item[aria-current="true"] {
+    background: var(--mpc-vidply-episode-surface);
+    border-color: var(--mpc-vidply-episode-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mpc-episode-item {
+        transition: none;
+    }
+}
+
+.mpc-episode-item .mpc-episode-cover {
+    flex: 0 0 var(--mpc-vidply-episode-cover);
+}
+
+.mpc-episode-item .mpc-episode-header {
+    flex: 1 1 16rem;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.mpc-episode-item .mpc-episode-play-icon {
+    border-width: 0.4rem 0 0.4rem 0.65rem;
+    margin-left: 0.15rem;
+}
+
+.mpc-episode-item .mpc-episode-play[data-state="playing"] .mpc-episode-play-icon {
+    border-width: 0 0 0 0.6rem;
+    height: 0.8rem;
+    margin-left: 0;
+}
+
+.mpc-episode-item .mpc-episode-title {
+    font-size: clamp(1rem, 0.95rem + 0.3vw, 1.25rem);
 }

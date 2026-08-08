@@ -178,7 +178,7 @@
         <source>Allow download</source>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.allow_download.description">
-        <source>When enabled, a download button is shown in the player control bar, allowing the user to download the media file.</source>
+        <source>When enabled, the media file is offered for download: as a button in the player control bar, which follows the selected track in a playlist, and as a link on the episode itself in the "Episode list" layout.</source>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.artist">
         <source>Artist / Creator</source>

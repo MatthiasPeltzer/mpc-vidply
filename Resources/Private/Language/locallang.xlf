@@ -48,6 +48,12 @@
       <trans-unit id="detail.related">
         <source>You might also like</source>
       </trans-unit>
+      <trans-unit id="episode.download">
+        <source>Download</source>
+      </trans-unit>
+      <trans-unit id="episodes.heading">
+        <source>Episodes (%s)</source>
+      </trans-unit>
       <trans-unit id="listview.empty">
         <source>No media rows have been configured yet.</source>
       </trans-unit>

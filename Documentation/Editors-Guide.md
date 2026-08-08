@@ -183,7 +183,10 @@ do not want the “You might also like” row below the player.
   - **Single item**: the speed control is hidden.
   - **Playlist**: the speed control is hidden **only while this item is the active track** (it can re-appear for other tracks).
 - **Hide keyboard shortcuts help**: Hides the help button (`.vidply-help`) in the control bar for this media item. Same single-item / per-track playlist behavior as the speed button. The **`?` keyboard shortcut** still opens the shortcuts dialog when keyboard controls are enabled on the content element.
-- **Allow download**: Shows a download button in the control bar for this media item. Works automatically when a progressive file (MP4, WebM, MP3, OGG) is attached. For **HLS/DASH-only** records, add a progressive fallback file so the player can resolve a downloadable URL (manifests themselves are not downloadable).
+- **Allow download**: Offers the media file for download. Works automatically when a progressive file (MP4, WebM, MP3, OGG) is attached. For **HLS/DASH-only** records, add a progressive fallback file so a downloadable URL can be resolved (manifests themselves are not downloadable).
+  - **Single item**: a download button appears in the control bar.
+  - **Several media**: the control bar button follows the selected track — it offers the file of whatever is playing and disappears on tracks without the setting.
+  - **Episode list layout**: every episode is listed, so the download becomes a link on the episode itself and can be used without selecting the track first.
 - **Enable floating player (custom PiP)**: Replaces the browser's native Picture-in-Picture with VidPly's **draggable, resizable floating window** (also triggers when the video scrolls out of view while playing). Only applies to **single-item** players, not playlists. Distinct from the standard **PiP** toolbar button, which uses the browser's native mini-player.
 - **Buffering spinner**: A centered loading spinner is shown automatically while the player is buffering — no configuration required. Works for local files, HLS and DASH streams.
 
