@@ -127,7 +127,7 @@ button.addEventListener('click', function() {
     </f:then>
     <f:else>
         <!-- VidPly player (video/audio, including HLS/DASH sources) -->
-        <f:render section="VideoPlayer" />
+        <f:render partial="VidPly/MediaPlayer" arguments="{_all}" />
     </f:else>
 </f:if>
 ```

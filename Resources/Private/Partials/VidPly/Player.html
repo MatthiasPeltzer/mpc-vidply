@@ -40,10 +40,12 @@
             <f:render partial="VidPly/MixedPlaylistPlayer" arguments="{_all}" />
         </f:case>
         <f:case value="audio">
-            <f:render partial="VidPly/AudioPlayer" arguments="{_all}" />
+            <f:variable name="mediaKind" value="audio" />
+            <f:render partial="VidPly/MediaPlayer" arguments="{_all}" />
         </f:case>
         <f:case value="video">
-            <f:render partial="VidPly/VideoPlayer" arguments="{_all}" />
+            <f:variable name="mediaKind" value="video" />
+            <f:render partial="VidPly/MediaPlayer" arguments="{_all}" />
         </f:case>
     </f:switch>
 

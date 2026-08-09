@@ -11,6 +11,10 @@
  * No external dependencies. ESM module.
  */
 
+import { bootstrap, resolveScope } from './shared/bootstrap.js';
+import { createPagination } from './shared/pagination.js';
+import { compareText, createCollator, documentLocale, sortChildren } from './shared/sort.js';
+
 const PLAY_BUTTON_SELECTOR = '[data-mpc-episode-play]';
 const ROOT_SELECTOR = '.mpc-episode';
 const ITEM_SELECTOR = '[data-mpc-episode-item]';
@@ -29,8 +33,15 @@ const SORT_SELECT_SELECTOR = '[data-mpc-episode-sort]';
 const PAGINATE_SELECTOR = '[data-mpc-episode-paginate]';
 const PAGER_NAV_SELECTOR = '[data-mpc-episode-pager-nav]';
 
-/* Beyond this many pages the numeric buttons give way to a "Page X of Y" status. */
-const MAX_NUMERIC_PAGE_BUTTONS = 9;
+const PAGER_CLASSES = {
+    list: 'mpc-episode-pager-list',
+    item: 'mpc-episode-pager-item',
+    itemActive: '',
+    itemStatus: 'mpc-episode-pager-item--status',
+    button: 'mpc-episode-pager-button',
+    buttonActive: 'is-current',
+    status: 'mpc-episode-pager-status',
+};
 
 /**
  * PlaylistInit assigns `_vidplyPlayer` during its own DOMContentLoaded pass, so
@@ -73,24 +84,13 @@ const paintButton = (button, playing) => {
 
 const itemAt = (root, index) => root.querySelector(`[data-mpc-episode-item="${index}"]`);
 
-const listItems = (list) => Array.from(list.querySelectorAll(':scope > li'));
-
-const documentLocale = () => document.documentElement.lang?.trim() || undefined;
-
 /**
  * Rows without a publish date sort last in both date modes, mirroring the
  * server-side default order.
  */
 const compareEpisodeItems = (mode) => {
     const locale = documentLocale();
-    let collator = null;
-    if (mode === 'title_asc' && typeof Intl !== 'undefined' && typeof Intl.Collator === 'function') {
-        try {
-            collator = new Intl.Collator(locale, { sensitivity: 'base' });
-        } catch {
-            collator = null;
-        }
-    }
+    const collator = mode === 'title_asc' ? createCollator(locale) : null;
 
     const order = (item) => Number.parseInt(item.dataset.mpcEpisodeItem ?? '', 10) || 0;
     const title = (item) => (item.dataset.mpcEpisodeSortTitle ?? '').trim();
@@ -100,9 +100,7 @@ const compareEpisodeItems = (mode) => {
         let comparison = 0;
 
         if (mode === 'title_asc') {
-            comparison = collator
-                ? collator.compare(title(a), title(b))
-                : title(a).localeCompare(title(b), locale, { sensitivity: 'base' });
+            comparison = compareText(title(a), title(b), collator, locale);
         } else if (mode === 'date_desc' || mode === 'date_asc') {
             const dateA = date(a);
             const dateB = date(b);
@@ -121,31 +119,16 @@ const compareEpisodeItems = (mode) => {
 };
 
 const sortEpisodeItems = (list, mode) => {
-    const items = listItems(list);
-    if (items.length < 2) {
-        return;
-    }
-
-    items.sort(compareEpisodeItems(mode));
-    items.forEach((item) => list.appendChild(item));
-};
-
-const formatPageLabel = (template, page, total) => {
-    if (typeof template !== 'string' || template === '') {
-        return `Page ${page} of ${total}`;
-    }
-    return template.replace(/\{0\}/g, String(page)).replace(/\{1\}/g, String(total));
+    sortChildren(list, compareEpisodeItems(mode));
 };
 
 /**
- * Client-side pagination of the episode list. Rows outside the current page get
- * the `hidden` attribute, which also takes them out of the tab order and the
- * accessibility tree.
+ * Pager for the episode list of one layout.
  *
  * @param {HTMLElement} container
- * @returns {{reset: () => void, reveal: (index: number) => void}|null}
+ * @returns {{reset: () => void, reveal: (predicate: (item: Element) => boolean) => void}|null}
  */
-const createPagination = (container) => {
+const createEpisodePagination = (container) => {
     const list = container.querySelector(LIST_SELECTOR);
     const nav = container.querySelector(PAGER_NAV_SELECTOR);
     if (!list || !nav) {
@@ -155,131 +138,18 @@ const createPagination = (container) => {
     /* Fluid pads the label attributes with the whitespace of their variable block. */
     const label = (name, fallback) => (container.dataset[name] ?? '').trim() || fallback;
 
-    const perPage = Math.max(1, Number.parseInt(container.dataset.mpcEpisodePerPage ?? '', 10) || 10);
-    const labelPrev = label('mpcEpisodePagerLblPrev', 'Previous');
-    const labelNext = label('mpcEpisodePagerLblNext', 'Next');
-    const pageOfTemplate = label('mpcEpisodePagerLblPageof', 'Page {0} of {1}');
-    const navAriaTemplate = label('mpcEpisodePagerLblNavAria', 'Episode list pagination, page {0} of {1}');
-
-    let currentPage = 1;
-
-    const totalPages = (count) => Math.max(1, Math.ceil(count / perPage));
-
-    const addButton = (parent, text, { disabled, current, onClick }) => {
-        const item = document.createElement('li');
-        item.className = 'mpc-episode-pager-item';
-
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'mpc-episode-pager-button';
-        button.textContent = text;
-        button.disabled = Boolean(disabled);
-        if (current) {
-            button.setAttribute('aria-current', 'page');
-            button.classList.add('is-current');
-        }
-        if (!button.disabled) {
-            button.addEventListener('click', onClick);
-        }
-
-        item.appendChild(button);
-        parent.appendChild(item);
-    };
-
-    const renderControls = () => {
-        const pages = totalPages(listItems(list).length);
-        nav.textContent = '';
-
-        if (pages <= 1) {
-            nav.removeAttribute('aria-label');
-            return;
-        }
-
-        nav.setAttribute('aria-label', formatPageLabel(navAriaTemplate, currentPage, pages));
-
-        const pageList = document.createElement('ul');
-        pageList.className = 'mpc-episode-pager-list';
-        nav.appendChild(pageList);
-
-        addButton(pageList, labelPrev, {
-            disabled: currentPage === 1,
-            current: false,
-            onClick: () => renderPage(currentPage - 1, true),
-        });
-
-        if (pages > MAX_NUMERIC_PAGE_BUTTONS) {
-            const item = document.createElement('li');
-            item.className = 'mpc-episode-pager-item mpc-episode-pager-item--status';
-
-            const status = document.createElement('p');
-            status.className = 'mpc-episode-pager-status';
-            status.setAttribute('role', 'status');
-            status.textContent = formatPageLabel(pageOfTemplate, currentPage, pages);
-
-            item.appendChild(status);
-            pageList.appendChild(item);
-        } else {
-            for (let page = 1; page <= pages; page += 1) {
-                const isCurrent = page === currentPage;
-                addButton(pageList, String(page), {
-                    disabled: isCurrent,
-                    current: isCurrent,
-                    onClick: () => renderPage(page, true),
-                });
-            }
-        }
-
-        addButton(pageList, labelNext, {
-            disabled: currentPage === pages,
-            current: false,
-            onClick: () => renderPage(currentPage + 1, true),
-        });
-    };
-
-    function renderPage(page, focusFirstItem) {
-        const items = listItems(list);
-        const pages = totalPages(items.length);
-        currentPage = Math.min(Math.max(page, 1), pages);
-
-        const start = (currentPage - 1) * perPage;
-        const end = start + perPage;
-
-        items.forEach((item, index) => {
-            if (index >= start && index < end) {
-                item.removeAttribute('hidden');
-            } else {
-                item.setAttribute('hidden', '');
-            }
-        });
-
-        if (focusFirstItem) {
-            const control = items[start]?.querySelector('button, a');
-            if (control instanceof HTMLElement) {
-                control.focus();
-            }
-        }
-
-        renderControls();
-    }
-
-    renderPage(1, false);
-
-    return {
-        reset: () => renderPage(1, false),
-        reveal: (index) => {
-            const position = listItems(list).findIndex(
-                (item) => Number.parseInt(item.dataset.mpcEpisodeItem ?? '', 10) === index
-            );
-            if (position < 0) {
-                return;
-            }
-
-            const page = Math.floor(position / perPage) + 1;
-            if (page !== currentPage) {
-                renderPage(page, false);
-            }
+    return createPagination({
+        list,
+        nav,
+        perPage: Number.parseInt(container.dataset.mpcEpisodePerPage ?? '', 10) || 10,
+        labels: {
+            prev: label('mpcEpisodePagerLblPrev', 'Previous'),
+            next: label('mpcEpisodePagerLblNext', 'Next'),
+            pageOf: label('mpcEpisodePagerLblPageof', 'Page {0} of {1}'),
+            navAria: label('mpcEpisodePagerLblNavAria', 'Episode list pagination, page {0} of {1}'),
         },
-    };
+        classes: PAGER_CLASSES,
+    });
 };
 
 /**
@@ -295,7 +165,7 @@ const initList = (root) => {
     wiredLists.add(list);
 
     const container = section.querySelector(PAGINATE_SELECTOR);
-    const pager = container instanceof HTMLElement ? createPagination(container) : null;
+    const pager = container instanceof HTMLElement ? createEpisodePagination(container) : null;
     if (pager) {
         pagers.set(root, pager);
     }
@@ -386,7 +256,9 @@ const paint = (root, player, trackChanged = false) => {
     // Only on a track change: play/pause and the initial paint must not pull the
     // list away from the page the visitor is looking at.
     if (trackChanged) {
-        pagers.get(root)?.reveal(active);
+        pagers.get(root)?.reveal(
+            (item) => Number.parseInt(item.dataset.mpcEpisodeItem ?? '', 10) === active
+        );
     }
 
     syncCurrentEpisode(root, active);
@@ -509,7 +381,7 @@ const rootsIn = (scope) => {
  * @param {ParentNode} [root=document]
  */
 const scan = (root = document) => {
-    const scope = root instanceof Element || root instanceof Document ? root : document;
+    const scope = resolveScope(root);
     rootsIn(scope).forEach((episodeRoot) => {
         initList(episodeRoot);
         attachRoot(episodeRoot);
@@ -536,15 +408,6 @@ document.addEventListener('click', (event) => {
     }
 });
 
-document.addEventListener('mpc:dynamic-content:ready', (event) => {
-    const root = event.detail?.root;
-    scan(root instanceof Element ? root : document);
-});
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => scan());
-} else {
-    scan();
-}
+bootstrap(scan, { fallbackToDocument: true });
 
 window.MpcVidPlyEpisode = { scan };

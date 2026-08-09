@@ -151,6 +151,26 @@ Displays play button with privacy notice for YouTube, Vimeo, and SoundCloud. Use
 
 ---
 
+### 7. MediaPlayer.html
+
+**The `<video>` / `<audio>` element itself**
+
+`Player.html` sets `mediaKind` to `audio` or `video` and renders this one
+partial for both. `mediaKind` is the element name as well, so the tag, the
+default `aria-label`, the `poster` attribute (video only), the sources partial
+and `MetadataScripts.html` (video only) all follow from it.
+
+```html
+<f:variable name="mediaKind" value="video" />
+<f:render partial="VidPly/MediaPlayer" arguments="{_all}" />
+```
+
+It replaces the former `VideoPlayer.html` and `AudioPlayer.html`, which were
+identical apart from those five points. Sitepackages that override either of
+them must override `MediaPlayer.html` instead.
+
+---
+
 ## Template Structure
 
 ```
@@ -161,8 +181,7 @@ VidPly.html (Main)
 └── VidPly/Player.html (wrapper + renderMode switch)
     ├── privacy → PrivacyLayer.html
     ├── mixedPlaylist → MixedPlaylistPlayer.html
-    ├── audio → AudioPlayer.html
-    └── video → VideoPlayer.html
+    └── audio / video → MediaPlayer.html (mediaKind = audio|video)
         ├── VideoSources.html / AudioSources.html
         ├── Tracks.html
         └── MetadataScripts.html (video only)
@@ -244,9 +263,9 @@ playlist panel off (`showPanel: false`) and hides its toggle button
 (`playlistToggleButton: false`) — otherwise the same records would be rendered
 twice, by two different formatters.
 
-Episode data comes from `VidPlyProcessor::buildEpisodeData()`, scoped per layout
-by `resolveEpisodesForLayout()` so *Episode card* does not pay for poster and
-category lookups of records it never prints. Dates, durations and download sizes
+Episode data comes from `EpisodeListBuilder::build()`, scoped per layout so
+*Episode card* does not pay for poster and category lookups of records it never
+prints. Dates, durations and download sizes
 are pre-formatted in PHP for the site language, so templates print ready-made
 strings.
 
@@ -264,7 +283,7 @@ Both only touch the list. `episode.index` stays the playlist track index no
 matter how the rows are ordered or which of them are hidden, so the player keeps
 the editor's order for next/previous and auto-advance. That also means the
 now-playing card is resolved as the episode with index `0`
-(`VidPlyProcessor::resolveLeadEpisode()`), not as the first array entry.
+(`EpisodeListBuilder::resolveLeadEpisode()`), not as the first array entry.
 
 | Field (`tt_content`) | Effect |
 |----------------------|--------|
@@ -301,7 +320,7 @@ save any of them without selecting it first.
 Every other combination leaves the download to the player's own control-bar
 button, which resolves its file from the selected playlist track
 (`track.downloadUrl` / `downloadFormat` / `downloadFileSize`, see
-`VidPlyProcessor::enrichTrackWithDownloadData()`). That is also why *Episode
+`DownloadResolver::enrichTrack()`). That is also why *Episode
 card* prints no link: it shows one episode while the player may already be on
 another, so a server-rendered link there would age.
 

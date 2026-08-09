@@ -3,6 +3,10 @@
  * No external dependencies. ESM module.
  */
 
+import { bootstrap, resolveScope } from './shared/bootstrap.js';
+import { createPagination } from './shared/pagination.js';
+import { compareText, createCollator, documentLocale, sortChildren } from './shared/sort.js';
+
 const SHELF_SELECTOR = '[data-vidply-shelf]';
 const PREV_SELECTOR = '[data-vidply-shelf-prev]';
 const NEXT_SELECTOR = '[data-vidply-shelf-next]';
@@ -12,7 +16,15 @@ const SECTION_SELECTOR = '.mpc-vidply-listview-section';
 const PAGINATE_ROOT = '[data-mpc-vidply-paginate]';
 const PAGER_NAV = '[data-mpc-vidply-pager-nav]';
 
-const MAX_NUMERIC_PAGE_BUTTONS = 9;
+const PAGER_CLASSES = {
+    list: 'mpc-vidply-pager__list',
+    item: 'mpc-vidply-pager__item',
+    itemActive: 'mpc-vidply-pager__item--active',
+    itemStatus: 'mpc-vidply-pager__item--status',
+    button: 'mpc-vidply-pager__btn',
+    buttonActive: 'mpc-vidply-pager__btn--active',
+    status: 'mpc-vidply-pager__status',
+};
 
 const prefersReducedMotion = () =>
     typeof window.matchMedia === 'function' &&
@@ -52,47 +64,23 @@ const scrollByPage = (track, direction) => {
     });
 };
 
-const getSortLocale = () => {
-    const l = (typeof document !== 'undefined' && document.documentElement.lang) || '';
-    const t = l.trim();
-    return t || undefined;
-};
-
 const sortListItemNodes = (listRoot, mode) => {
-    const items = Array.from(listRoot.querySelectorAll(':scope > li'));
-    if (items.length <= 1) {
-        return;
-    }
-    const locale = getSortLocale();
-    let collator = null;
-    if (typeof Intl !== 'undefined' && typeof Intl.Collator === 'function' && mode === 'title_asc') {
-        try {
-            collator = new Intl.Collator(locale, { sensitivity: 'base' });
-        } catch {
-            collator = null;
-        }
-    }
+    const locale = documentLocale();
+    const collator = mode === 'title_asc' ? createCollator(locale) : null;
 
     const nTitle = (el) => (el.dataset.mpcVidplyTitle || '').trim();
     const nOrder = (el) => parseInt(el.dataset.mpcVidplyOrder, 10) || 0;
     const nCr = (el) => parseInt(el.dataset.mpcVidplyCrdate, 10) || 0;
 
-    const compare = (a, b) => {
+    sortChildren(listRoot, (a, b) => {
         if (mode === 'title_asc') {
-            if (collator) {
-                return collator.compare(nTitle(a), nTitle(b));
-            }
-            return nTitle(a).localeCompare(nTitle(b), locale, { sensitivity: 'base' });
+            return compareText(nTitle(a), nTitle(b), collator, locale);
         }
         if (mode === 'crdate_desc') {
             return nCr(b) - nCr(a);
         }
         return nOrder(a) - nOrder(b);
-    };
-    items.sort(compare);
-    for (const li of items) {
-        listRoot.appendChild(li);
-    }
+    });
 };
 
 const afterListReorder = (listRoot) => {
@@ -108,34 +96,21 @@ const afterListReorder = (listRoot) => {
     }
 };
 
-const formatPageOfTemplate = (template, page, total) => {
-    if (typeof template !== 'string' || template === '') {
-        return 'Page ' + String(page) + ' of ' + String(total);
-    }
-    return template.replace(/\{0\}/g, String(page)).replace(/\{1\}/g, String(total));
-};
-
 const paginateReset = new WeakMap();
 
 /**
  * @param {HTMLElement} container
  */
 const createRowPagination = (container) => {
+    if (container.dataset.mpcVidplyPagerBound === '1') {
+        return;
+    }
     const itemList = container.querySelector(LIST_ROOT);
     const nav = container.querySelector(PAGER_NAV);
     if (!itemList || !nav) {
         return;
     }
-    const perPage = Math.max(1, parseInt(container.dataset.mpcVidplyPerPage, 10) || 12);
-    const labelPrev = container.dataset.mpcPagerLblPrev || 'Previous';
-    const labelNext = container.dataset.mpcPagerLblNext || 'Next';
-    const pageOfTpl = container.dataset.mpcPagerLblPageof || 'Page {0} of {1}';
-    const navAriaTpl =
-        container.dataset.mpcPagerLblNavAria || 'Pagination, page {0} of {1}';
-
-    let currentPage = 1;
-
-    const getItems = () => Array.from(itemList.querySelectorAll(':scope > li'));
+    container.dataset.mpcVidplyPagerBound = '1';
 
     const setShelfScrollAfterPageChange = () => {
         if (!itemList.hasAttribute('data-vidply-shelf')) {
@@ -148,137 +123,33 @@ const createRowPagination = (container) => {
         requestAnimationFrame(() => updateArrows(itemList, pBtn, nBtn));
     };
 
-    const renderPage = (page, focusFirstItem) => {
-        const items = getItems();
-        const total = items.length;
-        const totalPages = Math.max(1, Math.ceil(total / perPage));
-        if (page < 1) {
-            page = 1;
-        }
-        if (page > totalPages) {
-            page = totalPages;
-        }
-        currentPage = page;
-        const start = (currentPage - 1) * perPage;
-        const end = start + perPage;
-        for (let i = 0; i < total; i++) {
-            if (i >= start && i < end) {
-                items[i].removeAttribute('hidden');
-            } else {
-                items[i].setAttribute('hidden', '');
-            }
-        }
-        if (focusFirstItem && items[start]) {
-            const link = items[start].querySelector('a, button');
-            if (link instanceof HTMLElement) {
-                link.focus();
-            }
-        }
-        setShelfScrollAfterPageChange();
-        renderControls();
-    };
+    const pager = createPagination({
+        list: itemList,
+        nav,
+        perPage: parseInt(container.dataset.mpcVidplyPerPage, 10) || 12,
+        labels: {
+            prev: container.dataset.mpcPagerLblPrev || 'Previous',
+            next: container.dataset.mpcPagerLblNext || 'Next',
+            pageOf: container.dataset.mpcPagerLblPageof || 'Page {0} of {1}',
+            navAria: container.dataset.mpcPagerLblNavAria || 'Pagination, page {0} of {1}',
+        },
+        classes: PAGER_CLASSES,
+        onPageChange: setShelfScrollAfterPageChange,
+    });
 
-    const renderControls = () => {
-        const items = getItems();
-        const total = items.length;
-        const totalPages = Math.max(1, Math.ceil(total / perPage));
-        if (totalPages <= 1) {
-            nav.innerHTML = '';
-            nav.removeAttribute('aria-label');
-            return;
-        }
-
-        nav.setAttribute(
-            'aria-label',
-            formatPageOfTemplate(navAriaTpl, currentPage, totalPages)
-        );
-
-        const ul = document.createElement('ul');
-        ul.className = 'mpc-vidply-pager__list';
-        nav.innerHTML = '';
-        nav.appendChild(ul);
-
-        const goTo = (p) => {
-            renderPage(p, true);
-        };
-
-        const addBtn = (text, disabled, isActive, isCurrent, onClick) => {
-            const li = document.createElement('li');
-            li.className = 'mpc-vidply-pager__item' + (isActive ? ' mpc-vidply-pager__item--active' : '');
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'mpc-vidply-pager__btn' + (isActive ? ' mpc-vidply-pager__btn--active' : '');
-            btn.textContent = text;
-            btn.disabled = Boolean(disabled);
-            if (isCurrent) {
-                btn.setAttribute('aria-current', 'page');
-            }
-            if (!disabled) {
-                btn.addEventListener('click', onClick);
-            }
-            li.appendChild(btn);
-            ul.appendChild(li);
-        };
-
-        const compact = totalPages > MAX_NUMERIC_PAGE_BUTTONS;
-
-        addBtn(labelPrev, currentPage === 1, false, false, () => {
-            if (currentPage > 1) {
-                goTo(currentPage - 1);
-            }
-        });
-
-        if (compact) {
-            const li = document.createElement('li');
-            li.className = 'mpc-vidply-pager__item mpc-vidply-pager__item--status';
-            const sp = document.createElement('p');
-            sp.className = 'mpc-vidply-pager__status';
-            sp.setAttribute('role', 'status');
-            sp.textContent = formatPageOfTemplate(pageOfTpl, currentPage, totalPages);
-            li.appendChild(sp);
-            ul.appendChild(li);
-        } else {
-            for (let i = 1; i <= totalPages; i++) {
-                const isCur = i === currentPage;
-                addBtn(
-                    String(i),
-                    isCur,
-                    isCur,
-                    isCur,
-                    isCur
-                        ? () => {}
-                        : () => {
-                              goTo(i);
-                          }
-                );
-            }
-        }
-
-        addBtn(labelNext, currentPage === totalPages, false, false, () => {
-            if (currentPage < totalPages) {
-                goTo(currentPage + 1);
-            }
-        });
-    };
-
-    const resetToFirst = () => {
-        renderPage(1, false);
-    };
-
-    paginateReset.set(container, resetToFirst);
-    renderPage(1, false);
+    paginateReset.set(container, pager.reset);
 };
 
-const initListPagination = () => {
-    document.querySelectorAll(PAGINATE_ROOT).forEach((el) => {
+const initListPagination = (scope) => {
+    scope.querySelectorAll(PAGINATE_ROOT).forEach((el) => {
         if (el instanceof HTMLElement) {
             createRowPagination(el);
         }
     });
 };
 
-const initSortSelectValues = () => {
-    document.querySelectorAll(SORT_SELECT).forEach((el) => {
+const initSortSelectValues = (scope) => {
+    scope.querySelectorAll(SORT_SELECT).forEach((el) => {
         if (!(el instanceof HTMLSelectElement)) {
             return;
         }
@@ -296,9 +167,9 @@ const initSortSelectValues = () => {
     });
 };
 
-const initSortSelects = () => {
-    initSortSelectValues();
-    document.querySelectorAll(SORT_SELECT).forEach((el) => {
+const initSortSelects = (scope) => {
+    initSortSelectValues(scope);
+    scope.querySelectorAll(SORT_SELECT).forEach((el) => {
         if (!(el instanceof HTMLSelectElement) || el.dataset.mpcVidplySortBound === '1') {
             return;
         }
@@ -374,7 +245,7 @@ const initShelf = (track) => {
     }
 };
 
-const initCardFadeIn = () => {
+const initCardFadeIn = (scope) => {
     if (prefersReducedMotion() || typeof IntersectionObserver === 'undefined') {
         return;
     }
@@ -389,20 +260,22 @@ const initCardFadeIn = () => {
         },
         { rootMargin: '0px 0px -10% 0px', threshold: 0.1 }
     );
-    document.querySelectorAll('.mpc-vidply-card').forEach((card) => observer.observe(card));
+    scope.querySelectorAll('.mpc-vidply-card').forEach((card) => observer.observe(card));
 };
 
-const init = () => {
-    initListPagination();
-    initSortSelects();
-    document.querySelectorAll(SHELF_SELECTOR).forEach((track) => initShelf(track));
-    initCardFadeIn();
+/**
+ * Initialize every listview feature within a DOM subtree.
+ *
+ * @param {ParentNode} [root=document]
+ */
+const init = (root = document) => {
+    const scope = resolveScope(root);
+    initListPagination(scope);
+    initSortSelects(scope);
+    scope.querySelectorAll(SHELF_SELECTOR).forEach((track) => initShelf(track));
+    initCardFadeIn(scope);
 };
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init, { once: true });
-} else {
-    init();
-}
+bootstrap(init);
 
 export { init };

@@ -1,0 +1,52 @@
+/*!
+ * VidPly shared design tokens and utilities.
+ *
+ * Not linked on its own: `npm run build` prepends this file to episode.min.css,
+ * listview.min.css and privacy-layer.min.css, so the values live in one place
+ * without costing an extra request. Edit the source files, never the minified
+ * output.
+ */
+
+:root {
+    --mpc-vidply-border: rgb(0 0 0 / 10%);
+    --mpc-vidply-muted: rgb(0 0 0 / 60%);
+    --mpc-vidply-radius: 0.75rem;
+    --mpc-vidply-text: #1a1a1a;
+    --mpc-vidply-transition: 200ms ease-out;
+}
+
+/* Component-scoped selectors as well, so a single card or listview can be
+   flipped to the dark palette independently of the page. */
+[data-bs-theme="dark"],
+[data-bs-theme="dark"] .mpc-episode,
+[data-bs-theme="dark"] .mpc-vidply-listview,
+.mpc-episode[data-theme="dark"],
+.mpc-vidply-listview[data-theme="dark"] {
+    --mpc-vidply-border: rgb(255 255 255 / 12%);
+    --mpc-vidply-muted: rgb(255 255 255 / 65%);
+    --mpc-vidply-text: #f2f2f2;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-bs-theme="light"]) {
+        --mpc-vidply-border: rgb(255 255 255 / 12%);
+        --mpc-vidply-muted: rgb(255 255 255 / 65%);
+        --mpc-vidply-text: #f2f2f2;
+    }
+}
+
+/* Visually hidden, still announced. `clip` is kept for browsers that predate
+   `clip-path: inset()`. */
+.mpc-episode-sr-only,
+.vidply-sr-only {
+    border: 0;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}

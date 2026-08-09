@@ -5,6 +5,10 @@
  */
 
 import {Player, PlaylistManager} from './vidply/vidply.esm.min.js';
+import {bootstrap, resolveScope} from './shared/bootstrap.js';
+import {privacyConsent} from './shared/consent.js';
+import {getServiceType, isExternalRendererUrl} from './shared/media-services.js';
+import {isSafeUrl, sanitizeCssUrl} from './shared/url-safety.js';
 
 // Constants
 const AUTOPLAY_TIMEOUTS = [100, 500, 1000, 2000];
@@ -17,9 +21,6 @@ const PRIVACY_POLICY_URLS = {
     vimeo: 'https://vimeo.com/privacy',
     soundcloud: 'https://soundcloud.com/pages/privacy'
 };
-
-// Known external services for consent validation
-const KNOWN_SERVICES = new Set(['youtube', 'vimeo', 'soundcloud']);
 
 // Track initialized players to prevent double-init
 const initializedPlayers = new WeakSet();
@@ -76,58 +77,7 @@ const suppressVidPlyLogs = (fn) => {
     }
 };
 
-// Initialize shared privacy consent state (if not already initialized by PrivacyLayer.js)
-window.VidPlyPrivacyConsent = window.VidPlyPrivacyConsent || {
-    _consent: new Set(),
-    hasConsent(service) {
-        return KNOWN_SERVICES.has(service) && this._consent.has(service);
-    },
-    setConsent(service) {
-        if (!KNOWN_SERVICES.has(service)) return;
-        this._consent.add(service);
-        document.dispatchEvent(new CustomEvent('vidply:privacy:consent', {detail: {service}}));
-    }
-};
-
-const privacyConsent = window.VidPlyPrivacyConsent;
-
-// URL detection utilities
-const isExternalRendererUrl = (src) => {
-    if (!src) return false;
-    const s = src.toLowerCase();
-    return s.includes('youtube.com') || s.includes('youtu.be') ||
-        s.includes('vimeo.com') || s.includes('soundcloud.com') || s.includes('.m3u8');
-};
-
-const getServiceType = (src) => {
-    if (!src) return null;
-    const s = src.toLowerCase();
-    if (s.includes('youtube.com') || s.includes('youtu.be')) return 'youtube';
-    if (s.includes('vimeo.com')) return 'vimeo';
-    if (s.includes('soundcloud.com')) return 'soundcloud';
-    return null;
-};
-
 const getPrivacyPolicyUrl = (service) => PRIVACY_POLICY_URLS[service] || '#';
-
-const isSafeUrl = (url) => {
-    if (!url || typeof url !== 'string') return false;
-    try {
-        const parsed = new URL(url, window.location.origin);
-        return parsed.protocol === 'https:' || parsed.protocol === 'http:';
-    } catch {
-        return false;
-    }
-};
-
-const CSS_URL_UNSAFE_CHARS = /[\x00-\x1f\x7f"'()\\<>`]/;
-const sanitizeCssUrl = (url) => {
-    if (typeof url !== 'string') return null;
-    const trimmed = url.trim();
-    if (trimmed === '' || CSS_URL_UNSAFE_CHARS.test(trimmed)) return null;
-    if (!isSafeUrl(trimmed)) return null;
-    return trimmed;
-};
 
 // Language utilities
 const getPageLanguage = () => (document.documentElement.lang || 'en').split('-')[0].toLowerCase();
@@ -361,7 +311,7 @@ function createPrivacyOverlay(service, track, onConsent, privacySettings = null,
         if (parsed) {
             playButton.appendChild(parsed);
         }
-    } else if (playIconUrl) {
+    } else if (isSafeUrl(playIconUrl)) {
         const img = document.createElement('img');
         img.className = 'vidply-play-overlay-image';
         img.src = playIconUrl;
@@ -752,6 +702,10 @@ function setArtworkForcedHidden(playlist, element, wrapperElement, shouldHide) {
     }
 }
 
+// ensureAutoplay runs on every track switch, so without this the player would
+// collect one more `ready` listener each time and replay them all on the next event.
+const autoplayReadyBound = new WeakSet();
+
 /**
  * Ensure autoplay after external content loads
  */
@@ -769,8 +723,17 @@ function ensureAutoplay(playlist) {
         };
 
         // For external services, wait for ready event
-        if (typeof currentPlayer.on === 'function') {
-            currentPlayer.on('ready', () => setTimeout(tryPlay, AUTOPLAY_TIMEOUTS[0]));
+        if (!autoplayReadyBound.has(currentPlayer)) {
+            if (typeof currentPlayer.once === 'function') {
+                autoplayReadyBound.add(currentPlayer);
+                currentPlayer.once('ready', () => {
+                    autoplayReadyBound.delete(currentPlayer);
+                    setTimeout(tryPlay, AUTOPLAY_TIMEOUTS[0]);
+                });
+            } else if (typeof currentPlayer.on === 'function') {
+                autoplayReadyBound.add(currentPlayer);
+                currentPlayer.on('ready', () => setTimeout(tryPlay, AUTOPLAY_TIMEOUTS[0]));
+            }
         }
 
         // Try after delays to handle different loading times
@@ -1109,7 +1072,7 @@ function setupThemeSync() {
  * @param {{ includeDuplicateSlides?: boolean }} [options]
  */
 function scanAndInitialize(root = document, options = {}) {
-    const scope = root instanceof Element || root instanceof Document ? root : document;
+    const scope = resolveScope(root);
     const includeDuplicateSlides = options.includeDuplicateSlides === true;
     const shouldSkip = (element) => {
         if (includeDuplicateSlides) {
@@ -1186,16 +1149,4 @@ window.VidPlyInit = {
     pauseOutside: pausePlayersOutside
 };
 
-document.addEventListener('mpc:dynamic-content:ready', (event) => {
-    const root = event.detail?.root;
-    if (root instanceof Element) {
-        scanAndInitialize(root);
-    }
-});
-
-// Initialize on DOM ready
-document.addEventListener('DOMContentLoaded', runInitialSetup);
-
-if (document.readyState !== 'loading') {
-    catchUpVueContainers();
-}
+bootstrap((root) => scanAndInitialize(root), {onReady: runInitialSetup});

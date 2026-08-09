@@ -8,6 +8,11 @@
  * Also provides a shared consent state for playlist integration.
  */
 
+import { bootstrap, resolveScope } from './shared/bootstrap.js';
+import { privacyConsent } from './shared/consent.js';
+import { extractMediaId } from './shared/media-services.js';
+import { sanitizeCssUrl } from './shared/url-safety.js';
+
 (function () {
     'use strict';
 
@@ -15,28 +20,7 @@
     const ASPECT_RATIO_16_9 = '56.25%';
     const SAFE_ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
     const YOUTUBE_ID_PATTERN = /^[a-zA-Z0-9_-]{1,20}$/;
-    const KNOWN_SERVICES = new Set(['youtube', 'vimeo', 'soundcloud']);
     const initializedLayers = new WeakSet();
-
-    // Reject characters that could break out of a CSS url() context.
-    const CSS_URL_UNSAFE_CHARS = /["'()\\\s<>]|[\u0000-\u001f\u007f]/;
-
-    const isSafeUrl = (url) => {
-        try {
-            const parsed = new URL(url, window.location.origin);
-            return parsed.protocol === 'https:' || parsed.protocol === 'http:';
-        } catch {
-            return false;
-        }
-    };
-
-    const sanitizeCssUrl = (url) => {
-        if (typeof url !== 'string') return null;
-        const trimmed = url.trim();
-        if (trimmed === '' || CSS_URL_UNSAFE_CHARS.test(trimmed)) return null;
-        if (!isSafeUrl(trimmed)) return null;
-        return trimmed;
-    };
 
     /**
      * Apply the poster as a background image at runtime.
@@ -52,15 +36,6 @@
         layer.style.setProperty('background-image', `url("${safe}")`);
         layer.style.setProperty('background-size', 'cover');
         layer.style.setProperty('background-position', 'center');
-    };
-
-    const URL_PATTERNS = {
-        youtube: [
-            /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\?\/]+)/,
-            /youtube\.com\/embed\/([^&\?\/]+)/,
-            /youtube\.com\/v\/([^&\?\/]+)/
-        ],
-        vimeo: /vimeo\.com\/(?:video\/)?(\d+)/
     };
 
     // Sandbox tokens retain only the capabilities each embed actually needs:
@@ -85,47 +60,6 @@
             sandbox: 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox'
         }
     };
-
-    // Shared consent state - accessible globally for playlist integration
-    window.VidPlyPrivacyConsent = window.VidPlyPrivacyConsent || {
-        _consent: new Set(),
-
-        hasConsent(service) {
-            return KNOWN_SERVICES.has(service) && this._consent.has(service);
-        },
-
-        setConsent(service) {
-            if (!KNOWN_SERVICES.has(service)) return;
-            this._consent.add(service);
-            document.dispatchEvent(new CustomEvent('vidply:privacy:consent', {
-                detail: {service}
-            }));
-        }
-    };
-
-    /**
-     * Extract video/track ID from URL
-     */
-    function extractMediaId(url, service) {
-        if (service === 'youtube') {
-            for (const pattern of URL_PATTERNS.youtube) {
-                const match = url.match(pattern);
-                if (match?.[1]) return match[1];
-            }
-            return null;
-        }
-
-        if (service === 'vimeo') {
-            const match = url.match(URL_PATTERNS.vimeo);
-            return match?.[1] || null;
-        }
-
-        if (service === 'soundcloud') {
-            return encodeURIComponent(url);
-        }
-
-        return null;
-    }
 
     /**
      * Create iframe element for a service using DOM APIs (no innerHTML)
@@ -203,7 +137,7 @@
         const titleMap = {youtube: 'YouTube video player', vimeo: 'Vimeo video player', soundcloud: 'SoundCloud audio player'};
         iframe.title = titleMap[service] || 'Embedded media player';
 
-        window.VidPlyPrivacyConsent.setConsent(service);
+        privacyConsent.setConsent(service);
         applyAspectRatioStyles(layer);
         layer.replaceChildren(iframe);
         iframe.focus();
@@ -215,7 +149,7 @@
      * @param {ParentNode} [root=document]
      */
     function initPrivacyLayers(root = document) {
-        const scope = root instanceof Element || root instanceof Document ? root : document;
+        const scope = resolveScope(root);
 
         scope.querySelectorAll('[data-vidply-privacy]').forEach(layer => {
             if (initializedLayers.has(layer)) return;
@@ -238,20 +172,10 @@
     window.VidPlyPrivacy = window.VidPlyPrivacy || {};
     window.VidPlyPrivacy.scanLayers = initPrivacyLayers;
 
-    document.addEventListener('mpc:dynamic-content:ready', (event) => {
-        const root = event.detail?.root;
-        if (root instanceof Element) {
-            initPrivacyLayers(root);
-        }
-    });
+    bootstrap(initPrivacyLayers);
 
-    // Initialize when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => initPrivacyLayers());
-    } else {
-        initPrivacyLayers();
-    }
-
+    // Vue/Swiper containers that were already hydrated before this script ran
+    // never fire the dynamic-content event, so catch up with them once.
     document.querySelectorAll('[data-container="vue"].swiper-vue-ready').forEach((root) => {
         initPrivacyLayers(root);
     });

@@ -7,43 +7,33 @@
  * instead of viewport media queries.
  */
 
+/* Colours, radius and timing shared with the listview live in shared.css. */
 :root {
     /* Shared by the play button and the episode number badge. */
     --mpc-vidply-episode-accent: #0a406e;
-    --mpc-vidply-episode-border: rgb(0 0 0 / 10%);
     --mpc-vidply-episode-cover: 14rem;
     --mpc-vidply-episode-gap: 1.5rem;
-    --mpc-vidply-episode-muted: rgb(0 0 0 / 60%);
     --mpc-vidply-episode-on-accent: #fff;
     --mpc-vidply-episode-play-fill: #fff;
     --mpc-vidply-episode-play-size: 7rem;
-    --mpc-vidply-episode-radius: 0.75rem;
     --mpc-vidply-episode-surface: rgb(0 0 0 / 6%);
-    --mpc-vidply-episode-text: #1a1a1a;
-    --mpc-vidply-episode-transition: 200ms ease-out;
 }
 
 [data-bs-theme="dark"],
 [data-bs-theme="dark"] .mpc-episode,
 .mpc-episode[data-theme="dark"] {
     --mpc-vidply-episode-accent: #e8f0f8;
-    --mpc-vidply-episode-border: rgb(255 255 255 / 12%);
-    --mpc-vidply-episode-muted: rgb(255 255 255 / 65%);
     --mpc-vidply-episode-on-accent: #0a2b47;
     --mpc-vidply-episode-play-fill: transparent;
     --mpc-vidply-episode-surface: rgb(255 255 255 / 8%);
-    --mpc-vidply-episode-text: #f2f2f2;
 }
 
 @media (prefers-color-scheme: dark) {
     :root:not([data-bs-theme="light"]) {
         --mpc-vidply-episode-accent: #e8f0f8;
-        --mpc-vidply-episode-border: rgb(255 255 255 / 12%);
-        --mpc-vidply-episode-muted: rgb(255 255 255 / 65%);
         --mpc-vidply-episode-on-accent: #0a2b47;
         --mpc-vidply-episode-play-fill: transparent;
         --mpc-vidply-episode-surface: rgb(255 255 255 / 8%);
-        --mpc-vidply-episode-text: #f2f2f2;
     }
 }
 
@@ -53,7 +43,7 @@
 
 .mpc-episode {
     align-items: flex-start;
-    color: var(--mpc-vidply-episode-text);
+    color: var(--mpc-vidply-text);
     display: flex;
     flex-wrap: wrap;
     gap: var(--mpc-vidply-episode-gap);
@@ -101,8 +91,8 @@
 
 .mpc-episode-placeholder {
     background: var(--mpc-vidply-episode-surface);
-    border: 1px solid var(--mpc-vidply-episode-border);
-    border-radius: var(--mpc-vidply-episode-radius);
+    border: 1px solid var(--mpc-vidply-border);
+    border-radius: var(--mpc-vidply-radius);
 }
 
 /* ==========================================================================
@@ -122,7 +112,7 @@
     height: var(--mpc-vidply-episode-play-size);
     justify-content: center;
     padding: 0;
-    transition: transform var(--mpc-vidply-episode-transition);
+    transition: transform var(--mpc-vidply-transition);
     width: var(--mpc-vidply-episode-play-size);
 }
 
@@ -199,7 +189,7 @@
 
 .mpc-episode-meta {
     align-items: center;
-    color: var(--mpc-vidply-episode-muted);
+    color: var(--mpc-vidply-muted);
     display: flex;
     flex-wrap: wrap;
     font-size: clamp(0.8125rem, 0.78rem + 0.15vw, 0.9375rem);
@@ -230,14 +220,14 @@
 }
 
 .mpc-episode-category {
-    border: 1px solid var(--mpc-vidply-episode-border);
+    border: 1px solid var(--mpc-vidply-border);
     border-radius: 0.25rem;
     line-height: 1.2;
     padding: 0.15rem 0.4rem;
 }
 
 .mpc-episode-artist {
-    color: var(--mpc-vidply-episode-muted);
+    color: var(--mpc-vidply-muted);
     margin: 0.5rem 0 0;
 }
 
@@ -269,7 +259,7 @@
 }
 
 .mpc-episode-download-info {
-    color: var(--mpc-vidply-episode-muted);
+    color: var(--mpc-vidply-muted);
 }
 
 /* Disclosure for the medium's long description, built to match the download
@@ -290,17 +280,13 @@
     text-align: start;
 }
 
-.mpc-episode-longdesc-toggle-text {
-    text-decoration: underline;
-}
-
 .mpc-episode-longdesc-toggle:focus-visible {
     outline: 3px solid var(--mpc-vidply-episode-accent);
     outline-offset: 2px;
 }
 
 .mpc-episode-longdesc {
-    border-block-start: 1px solid var(--mpc-vidply-episode-border);
+    border-block-start: 1px solid var(--mpc-vidply-border);
     margin: 0.75rem 0 0;
     overflow-wrap: anywhere;
     padding-block-start: 0.75rem;
@@ -318,15 +304,6 @@
 
 .mpc-episode-longdesc > :last-child {
     margin-block-end: 0;
-}
-
-.mpc-episode-sr-only {
-    block-size: 1px;
-    clip-path: inset(50%);
-    inline-size: 1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
 }
 
 /* ==========================================================================
@@ -364,7 +341,7 @@
 }
 
 .mpc-episode-list-sort-label {
-    color: var(--mpc-vidply-episode-muted);
+    color: var(--mpc-vidply-muted);
     font-size: 0.9rem;
     font-weight: 500;
     margin: 0;
@@ -373,9 +350,9 @@
 
 .mpc-episode-list-sort-select {
     background: var(--mpc-vidply-episode-surface);
-    border: 1px solid var(--mpc-vidply-episode-border);
+    border: 1px solid var(--mpc-vidply-border);
     border-radius: 0.375rem;
-    color: var(--mpc-vidply-episode-text);
+    color: var(--mpc-vidply-text);
     cursor: pointer;
     font: inherit;
     line-height: 1.35;
@@ -403,25 +380,25 @@
 /* Rows shrink the cover and the play bubble through the shared custom
    properties, so a long list stays scannable. */
 .mpc-episode-item {
-    --mpc-vidply-episode-cover: 6rem;
-    --mpc-vidply-episode-gap: 1rem;
-    --mpc-vidply-episode-play-size: 3rem;
-
     align-items: flex-start;
-    border: 1px solid var(--mpc-vidply-episode-border);
-    border-radius: var(--mpc-vidply-episode-radius);
+    border: 1px solid var(--mpc-vidply-border);
+    border-radius: var(--mpc-vidply-radius);
+
     cursor: pointer;
     display: flex;
     flex-wrap: wrap;
     gap: var(--mpc-vidply-episode-gap);
-    /* The row stacks its overlay and controls against each other below; keeping
-       that in its own context stops those values from competing with the player
-       above, whose dialogs are confined to the player's own stacking context. */
     isolation: isolate;
     padding: 1rem;
     position: relative;
-    transition: background var(--mpc-vidply-episode-transition),
-        box-shadow var(--mpc-vidply-episode-transition);
+    /* The row stacks its overlay and controls against each other below; keeping
+       that in its own context stops those values from competing with the player
+       above, whose dialogs are confined to the player's own stacking context. */
+    transition: background var(--mpc-vidply-transition),
+    box-shadow var(--mpc-vidply-transition);
+    --mpc-vidply-episode-cover: 6rem;
+    --mpc-vidply-episode-gap: 1rem;
+    --mpc-vidply-episode-play-size: 3rem;
 }
 
 /* The whole row is the click target, like the teasers: the play button's
@@ -524,7 +501,7 @@
 }
 
 .mpc-episode-pager-status {
-    color: var(--mpc-vidply-episode-muted);
+    color: var(--mpc-vidply-muted);
     font-size: 0.9rem;
     line-height: 1.3;
     margin: 0;
@@ -533,9 +510,9 @@
 
 .mpc-episode-pager-button {
     background: transparent;
-    border: 1px solid var(--mpc-vidply-episode-border);
+    border: 1px solid var(--mpc-vidply-border);
     border-radius: 0.35rem;
-    color: var(--mpc-vidply-episode-text);
+    color: var(--mpc-vidply-text);
     cursor: pointer;
     font: inherit;
     font-size: 0.9rem;
