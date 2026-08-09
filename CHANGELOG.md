@@ -5,15 +5,77 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.2.23] - 2026-08-09
 
 ### Added
+- The player's screen reader status announcements can be switched off per site
+  without touching JavaScript. The `mpc/mpc-vidply` site set declares
+  `mpcVidply.screenReaderAnnouncements` (default on), editable in Site
+  Management → Sites → Settings → VidPly Player → Accessibility, in
+  `config/sites/<id>/settings.yaml`, or readable in TypoScript as a constant.
+  Announcements are on unless a site opts out, so nothing changes for existing
+  installations.
 - Episode card layout for the VidPly Player content element. A new **Layout**
   field (`tx_mpcvidply_layout`) offers *Player only* (unchanged default),
   *Episode card* and *Episode card with episode list*. The card renders a
   square cover with a play button next to episode number, title, publish date,
   duration and description, with the player below — laid out with intrinsic
   flex wrapping so it also fits narrow columns, sidebars and modals.
+- *Episode card with episode list* now renders every selected medium below the
+  player as episode cards, instead of only the first one. Each card's play button
+  starts its own track in the shared player and doubles as its pause button; the
+  list follows along when the track is changed from the player controls or when
+  one episode runs into the next. The player's built-in playlist panel and its
+  toggle button are suppressed for this layout, so the episode list is the
+  single, server-rendered track list.
+- The card above the player is the now-playing header in that layout: it shows
+  the cover, title, publish date, duration, categories and description of the
+  track in the player and follows every track change, so the layout opens with
+  the same card as *Episode card* rather than a bare control bar.
+- Episode rows are clickable across their whole area, not just on the play
+  button, and show a hover and focus state — the same stretched-link approach the
+  teasers use, so a row stays one control with one tab stop. Selecting a row's
+  description text with the mouse is not possible as a result.
+- The episode list has a sort dropdown (manual, date newest/oldest first, title
+  A–Z) and pages itself once it holds more episodes than fit on a page. Three new
+  editor fields set the defaults: **Episode order**
+  (`tx_mpcvidply_episode_sort`), **Paginate episode list**
+  (`tx_mpcvidply_episode_pagination`) and **Episodes per page**
+  (`tx_mpcvidply_episode_per_page`, default 10). Both only reorder or hide rows —
+  playback keeps the order of the media items, so next/previous and auto-advance
+  are unaffected, and a track change reveals the page holding the active episode.
+  Hidden rows use the `hidden` attribute, so they leave the tab order and the
+  accessibility tree, and paging moves focus to the first row of the new page.
+  Episodes without a publish date are listed last in both date orders.
+- A medium's **Long description** is no longer limited to the detail page: in the
+  *Episode card* layouts, records that have the field filled get a *Show
+  description* button next to the download link that folds the rich text open
+  below the episode. The panel is server-rendered and ships collapsed with the
+  `hidden` attribute, so it costs no request and is found by the browser's page
+  search; the button reports its state through `aria-expanded` and swaps its
+  label between *Show description* and *Hide description*. Inside a list row the
+  button and the expanded text sit above the row-wide play target, so the text
+  stays selectable and links in it remain clickable.
+- Listview cards in **grid** rows expose the same **Long description**: a button
+  in the card's bottom-right corner opens it in a native popover, which the
+  browser renders in the top layer, so the text is neither clipped by the card
+  nor able to stretch the grid row's height. The button sits beside the card's
+  stretched link instead of inside it, so no two controls are nested, and
+  toggling, light dismiss, Escape and returning focus are handled by the browser
+  without any JavaScript. Shelf rows are left alone — they clip vertical
+  overflow and are meant for fast horizontal scanning — and browsers without the
+  Popover API hide the button instead of printing the text into every card.
+- **Allow download** now works in every layout, including playlists, where the
+  setting used to be dropped silently. The player's control-bar button follows
+  the selected track: it offers the file of whatever is playing, is labelled
+  with that file's format and size, and disappears on tracks without the
+  setting. In the *Episode card with episode list* layout the download sits on
+  the episode itself instead ("Herunterladen MP3, 7,9 MB"), so any episode can
+  be saved without selecting it first — leaving exactly one download affordance
+  in either case. Sizes are measured on the storage rather than read from the
+  file index, so a file replaced without re-indexing is not announced with its
+  predecessor's size, and the same byte count is handed to the player instead of
+  letting it measure the file again over the network.
 - Media records have **Publish date** and **Episode number** fields. Dates are
   formatted for the site language in PHP (`IntlDateFormatter`, pinned to UTC
   because date-only fields are stored as midnight UTC) and handed to the
@@ -23,12 +85,83 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Updated the bundled VidPly player assets to include the new playlist date
-  rendering and the optional big play button on audio players.
+  rendering, the optional big play button on audio players and the download
+  button that resolves its file from the selected playlist track.
+- A media record's **Audio description mode** is no longer ignored when the
+  content element combines several media. Nothing switches that mode per track,
+  so the first playable record now decides for the whole element instead of
+  falling back to *auto*.
+- The extension's own JavaScript is bundled with esbuild instead of minified
+  file by file, so shared code can be reused between the playlist, episode,
+  listview and privacy-layer scripts without adding a single HTTP request. CI
+  rebuilds the assets and fails when the committed minified files are stale.
+- Shared player, episode and listview styles (colour tokens, dark mode, the
+  visually-hidden utility) live in one stylesheet that is prepended to each
+  minified bundle, so the three files can no longer drift apart.
+- The video and audio player partials were near-identical and are now one
+  `MediaPlayer.html` parameterised by media kind. Overrides of
+  `VidPly/VideoPlayer.html` or `VidPly/AudioPlayer.html` need to move to it.
+- `VidPlyProcessor` is now orchestration only: track assembly, player options,
+  the episode list, downloads, inline SVG, URL sanitizing and file lookups moved
+  into dedicated services under `Classes/Service/Player/`. Extensions calling
+  the processor's public API are unaffected; subclasses relying on its protected
+  helpers are not.
+- Duration formatting, detail URLs, file-reference prefetching and the MIME-type
+  tables existed in up to four copies each and are now single services, as is
+  the shared base of the four external-media OnlineMedia helpers and of the two
+  translation-sync hooks.
+- Listview rows are read through TYPO3's frontend restrictions instead of
+  hand-written `deleted`/`hidden` checks, so hidden, scheduled and workspace
+  records are treated exactly as they are for the media behind the rows. A
+  workspace preview now shows the rows of that workspace.
 
 ### Fixed
+- Screen readers announced the stored volume of every player on the page as
+  soon as it loaded ("Lautstärke 53 Prozent", once per player), although
+  nobody had touched a control. Fixed in the bundled player: the level is
+  announced only when it really changes. The player's
+  `screenReaderAnnouncements` option switches those status announcements off
+  again as documented.
+- The listview never initialised inside dynamically loaded content: sorting,
+  row pagination and the card fade-in only ran on the initial page load, while
+  the player, episode and privacy scripts already listened for
+  `mpc:dynamic-content:ready`.
+- Initialising a listview twice appended a second pagination bar to each row.
+- Switching playlist tracks repeatedly stacked one autoplay listener per switch
+  on the player.
+- The configured play icon is validated before it is used as the image source of
+  a playlist's privacy overlay, like everywhere else it is printed. The two
+  copies of that check had drifted apart; the stricter one is now the only one.
 - The player's keyboard help and settings dialogs were clipped to the height
   of the control bar on audio players, hiding their content. They now open as
   viewport-centered dialogs.
+- Episode rows could point at the wrong track: media whose source could not be
+  resolved were skipped when the playlist was built but still counted in the
+  episode list, shifting every play button after them by one. The list is now
+  built from the records that actually produced a track.
+- An episode row's download link covered the player's keyboard help dialog. The
+  row stacks its click overlay and its controls against each other, and those
+  values competed with the player instead of staying inside the row; each row is
+  now its own stacking context. The bundled player additionally lifts itself
+  while a dialog is open, so page content cannot bury it.
+
+### Accessibility
+- The episode list is an ordered list whose heading names it and states the
+  episode count. The selected row is marked with `aria-current`, and each play
+  button carries its episode title in the accessible name and switches between
+  *Play* and *Pause* as playback changes, so the state is announced rather than
+  only shown by the icon.
+- The download link names its episode in the accessible name, keeps a 24×24
+  pointer target (WCAG 2.5.8) and sits above the row's stretched play overlay so
+  it stays operable by mouse, keyboard and touch.
+- Heading levels stay gapless when the now-playing card is swapped, and focus
+  moves to the new play button if the card is replaced while the old one had
+  focus — for example when one episode auto-advances into the next.
+- The listview shelf arrows are no longer hidden from assistive technology: the
+  wrapper carried `aria-hidden` around two focusable buttons, so keyboard users
+  could reach controls screen readers could not see.
+- The privacy layer's headline is a real `<h2>` instead of a paragraph with
+  `role="heading"`.
 
 ## [1.2.22] - 2026-07-23
 
@@ -756,6 +889,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.23]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.22...v1.2.23
 [1.2.22]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.21...v1.2.22
 [1.2.21]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.20...v1.2.21
 [1.2.20]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.19...v1.2.20

@@ -4,10 +4,10 @@
   "type": "module",
   "devDependencies": {
     "clean-css-cli": "^5.6.3",
-    "esbuild": "^0.28.1"
+    "esbuild": "^0.28.2"
   },
   "allowScripts": {
-    "esbuild@0.28.1": true
+    "esbuild@0.28.2": true
   },
   "scripts": {
     "build:js": "node Build/build-js.mjs",
