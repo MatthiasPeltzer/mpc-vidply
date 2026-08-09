@@ -30,6 +30,7 @@ final class VidPlyPageMediaResolver
     private readonly ListviewMediaResolver $listviewMediaResolver;
     private readonly FileRepository $fileRepository;
     private readonly ConnectionPool $connectionPool;
+    private readonly DetailUrlBuilder $detailUrlBuilder;
 
     private ?int $detailPageUidCache = null;
 
@@ -39,7 +40,8 @@ final class VidPlyPageMediaResolver
         ?VidPlyProcessor $vidPlyProcessor = null,
         ?ListviewMediaResolver $listviewMediaResolver = null,
         ?FileRepository $fileRepository = null,
-        ?ConnectionPool $connectionPool = null
+        ?ConnectionPool $connectionPool = null,
+        ?DetailUrlBuilder $detailUrlBuilder = null
     ) {
         $this->detailResolver = $detailResolver ?? GeneralUtility::makeInstance(DetailRequestResolver::class);
         $this->mediaRepository = $mediaRepository ?? GeneralUtility::makeInstance(MediaRepository::class);
@@ -47,6 +49,7 @@ final class VidPlyPageMediaResolver
         $this->listviewMediaResolver = $listviewMediaResolver ?? GeneralUtility::makeInstance(ListviewMediaResolver::class);
         $this->fileRepository = $fileRepository ?? GeneralUtility::makeInstance(FileRepository::class);
         $this->connectionPool = $connectionPool ?? GeneralUtility::makeInstance(ConnectionPool::class);
+        $this->detailUrlBuilder = $detailUrlBuilder ?? GeneralUtility::makeInstance(DetailUrlBuilder::class);
     }
 
     /**
@@ -201,12 +204,13 @@ final class VidPlyPageMediaResolver
         $pageId = (int)($contentElement['pid'] ?? $this->resolvePageId($request));
 
         $watchUrl = $isDetailView
-            ? $this->buildDetailUrl(
+            ? $this->detailUrlBuilder->build(
                 $cObj,
                 $pageId,
                 $defaultUid,
                 trim((string)($media['slug'] ?? '')),
-                $languageId
+                $languageId,
+                true
             )
             : $this->resolveWatchUrl(
                 $cObj,
@@ -247,7 +251,7 @@ final class VidPlyPageMediaResolver
     ): string {
         $detailPageUid = $this->resolveEffectiveDetailPageUid($detailPageUidOverride, $galleryPageId);
         if ($detailPageUid > 0) {
-            $detailUrl = $this->buildDetailUrl($cObj, $detailPageUid, $defaultMediaUid, $slug, $languageId);
+            $detailUrl = $this->detailUrlBuilder->build($cObj, $detailPageUid, $defaultMediaUid, $slug, $languageId, true);
             if ($detailUrl !== '') {
                 return $detailUrl;
             }
@@ -376,44 +380,6 @@ final class VidPlyPageMediaResolver
         return $rows[0] ?? null;
     }
 
-    private function buildDetailUrl(
-        ContentObjectRenderer $cObj,
-        int $pageUid,
-        int $mediaUid,
-        string $slug,
-        int $languageId
-    ): string {
-        if ($pageUid <= 0 || $mediaUid <= 0) {
-            return '';
-        }
-
-        $config = [
-            'parameter' => $pageUid,
-            'additionalParams' => '&media=' . rawurlencode((string)$mediaUid),
-            'forceAbsoluteUrl' => true,
-            'returnLast' => 'url',
-        ];
-        if ($languageId > 0) {
-            $config['language'] = $languageId;
-        }
-
-        try {
-            $url = (string)$cObj->typoLink_URL($config);
-        } catch (\Throwable) {
-            $url = '';
-        }
-
-        if ($url !== '') {
-            return $url;
-        }
-
-        if ($slug !== '') {
-            return $this->makeAbsoluteUrl($cObj, '/' . ltrim($slug, '/'));
-        }
-
-        return $this->makeAbsoluteUrl($cObj, '?media=' . $mediaUid);
-    }
-
     private function absolutePageUrl(ContentObjectRenderer $cObj, int $pageUid): string
     {
         if ($pageUid <= 0) {
@@ -428,24 +394,6 @@ final class VidPlyPageMediaResolver
         } catch (\Throwable) {
             return '';
         }
-    }
-
-    private function makeAbsoluteUrl(ContentObjectRenderer $cObj, string $url): string
-    {
-        $url = trim($url);
-        if ($url === '') {
-            return '';
-        }
-        if (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) {
-            return $url;
-        }
-
-        $normalizedParams = $cObj->getRequest()->getAttribute('normalizedParams');
-        if ($normalizedParams === null) {
-            return $url;
-        }
-
-        return rtrim($normalizedParams->getSiteUrl(), '/') . '/' . ltrim($url, '/');
     }
 
     private function resolvePageTitle(ServerRequestInterface $request): string

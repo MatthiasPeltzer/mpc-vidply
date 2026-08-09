@@ -4,11 +4,36 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\Service;
 
+use Psr\Http\Message\ServerRequestInterface;
+
 /**
  * Normalizes pasted media URLs and extracts platform identifiers.
  */
 final class MediaUrlNormalizer
 {
+    /**
+     * Expand a site-relative URL against the current site, leaving already
+     * absolute URLs untouched. Structured data and meta tags must not emit
+     * relative URLs.
+     */
+    public function makeAbsolute(?string $url, ServerRequestInterface $request): string
+    {
+        $url = trim((string)$url);
+        if ($url === '') {
+            return '';
+        }
+        if (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) {
+            return $url;
+        }
+
+        $normalizedParams = $request->getAttribute('normalizedParams');
+        if ($normalizedParams === null) {
+            return $url;
+        }
+
+        return rtrim($normalizedParams->getSiteUrl(), '/') . '/' . ltrim($url, '/');
+    }
+
     /**
      * Normalize a pasted URL for online-media import.
      */

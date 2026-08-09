@@ -14,5 +14,5 @@ parameters:
         -
             identifier: argument.type
             message: '#expects class-string<TYPO3\\CMS\\Core\\SystemResource\\#'
-            path: Classes/DataProcessing/VidPlyProcessor.php
+            path: Classes/Service/Player/PlayerOptionsBuilder.php
             reportUnmatched: false

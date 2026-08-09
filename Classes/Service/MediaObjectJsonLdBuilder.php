@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\Service;
 
+use Mpc\MpcVidply\Enums\MediaMimeType;
 use Mpc\MpcVidply\Enums\MediaType;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Site\Entity\Site;
@@ -16,29 +17,6 @@ use TYPO3\CMS\Core\Site\Entity\Site;
  */
 final class MediaObjectJsonLdBuilder
 {
-    public function __construct(
-        private readonly MediaUrlNormalizer $urlNormalizer = new MediaUrlNormalizer(),
-    ) {}
-    /** @var list<string> */
-    private const PROGRESSIVE_MIME_TYPES = [
-        'video/mp4',
-        'video/webm',
-        'audio/mpeg',
-        'audio/ogg',
-    ];
-
-    /**
-     * Adaptive-streaming manifest types. These are not progressive files and are
-     * not eligible as a {@code contentUrl} for Google video rich results.
-     *
-     * @var list<string>
-     */
-    private const STREAMING_MIME_TYPES = [
-        'application/vnd.apple.mpegurl',
-        'application/x-mpegurl',
-        'application/dash+xml',
-    ];
-
     /**
      * JSON encoding flags shared by the standalone and mp-core merge output paths so
      * both escape HTML-sensitive characters identically while keeping slashes and
@@ -51,6 +29,10 @@ final class MediaObjectJsonLdBuilder
         | JSON_UNESCAPED_SLASHES
         | JSON_UNESCAPED_UNICODE
         | JSON_THROW_ON_ERROR;
+
+    public function __construct(
+        private readonly MediaUrlNormalizer $urlNormalizer,
+    ) {}
 
     /**
      * @param array<string, mixed> $media
@@ -358,7 +340,7 @@ final class MediaObjectJsonLdBuilder
             }
         }
         foreach ($candidates as $type) {
-            if ($type !== '' && in_array(strtolower($type), self::STREAMING_MIME_TYPES, true)) {
+            if (MediaMimeType::isStreaming($type)) {
                 return true;
             }
         }
@@ -381,7 +363,7 @@ final class MediaObjectJsonLdBuilder
                 }
                 $type = (string)($source['type'] ?? '');
                 $src = trim((string)($source['src'] ?? ''));
-                if ($src !== '' && in_array($type, self::PROGRESSIVE_MIME_TYPES, true)) {
+                if ($src !== '' && in_array($type, MediaMimeType::PROGRESSIVE, true)) {
                     return $src;
                 }
             }
@@ -389,7 +371,7 @@ final class MediaObjectJsonLdBuilder
 
         $src = trim((string)($track['src'] ?? ''));
         $type = (string)($track['type'] ?? '');
-        if ($src !== '' && in_array($type, self::PROGRESSIVE_MIME_TYPES, true)) {
+        if ($src !== '' && in_array($type, MediaMimeType::PROGRESSIVE, true)) {
             return $src;
         }
 
@@ -433,19 +415,6 @@ final class MediaObjectJsonLdBuilder
 
     private function makeAbsoluteUrl(ServerRequestInterface $request, ?string $url): string
     {
-        $url = trim((string)$url);
-        if ($url === '') {
-            return '';
-        }
-        if (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) {
-            return $url;
-        }
-
-        $normalizedParams = $request->getAttribute('normalizedParams');
-        if ($normalizedParams === null) {
-            return $url;
-        }
-
-        return rtrim($normalizedParams->getSiteUrl(), '/') . '/' . ltrim($url, '/');
+        return $this->urlNormalizer->makeAbsolute($url, $request);
     }
 }

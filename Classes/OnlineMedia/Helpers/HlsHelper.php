@@ -4,101 +4,35 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\OnlineMedia\Helpers;
 
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
-use TYPO3\CMS\Core\Resource\Exception\OnlineMediaAlreadyExistsException;
-use TYPO3\CMS\Core\Resource\File;
-use TYPO3\CMS\Core\Resource\Folder;
-use TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\AbstractOnlineMediaHelper;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-
 /**
  * Online media helper for HLS playlist URLs.
  *
  * Creates a FAL container file with extension ".hls" that stores the playlist URL as online media id.
  */
-final class HlsHelper extends AbstractOnlineMediaHelper
+final class HlsHelper extends AbstractExternalMediaHelper
 {
-    use ExternalMediaDomainValidationTrait;
-
-    private readonly ExtensionConfiguration $extensionConfiguration;
-
-    public function __construct($extension, ?ExtensionConfiguration $extensionConfiguration = null)
+    protected function getSupportedFileExtensions(): array
     {
-        parent::__construct($extension);
-        $this->extensionConfiguration = $extensionConfiguration ?? GeneralUtility::makeInstance(ExtensionConfiguration::class);
+        return ['m3u8'];
     }
 
-    private function getExtensionConfiguration(): ExtensionConfiguration
+    protected function getAllowedDomainsConfigKey(): string
     {
-        return $this->extensionConfiguration;
+        return 'allowedVideoDomains';
     }
 
-    /** @return File|null */
-    public function transformUrlToFile($url, Folder $targetFolder)
+    protected function getAlreadyExistsExceptionCode(): int
     {
-        $url = trim((string)$url);
-        if ($url === '') {
-            return null;
-        }
-
-        $parts = parse_url($url);
-        if (!is_array($parts) || empty($parts['scheme']) || empty($parts['host'])) {
-            return null;
-        }
-
-        $scheme = strtolower((string)$parts['scheme']);
-        if (!in_array($scheme, ['http', 'https'], true)) {
-            return null;
-        }
-
-        $path = (string)($parts['path'] ?? '');
-        $fileExtension = strtolower((string)pathinfo($path, PATHINFO_EXTENSION));
-        // HLS playlists are typically .m3u8
-        if ($fileExtension !== 'm3u8') {
-            return null;
-        }
-
-        if (!$this->isHostAllowed($scheme, strtolower((string)$parts['host']), $this->getAllowedDomains('allowedVideoDomains'))) {
-            return null;
-        }
-
-        $onlineMediaId = $url;
-        $existing = $this->findExistingFileByOnlineMediaId($onlineMediaId, $targetFolder, $this->extension);
-        if ($existing !== null) {
-            throw new OnlineMediaAlreadyExistsException($existing, 1735063001);
-        }
-
-        $baseName = basename($path);
-        $fileName = $this->buildFileName($baseName !== '' ? $baseName : 'stream.m3u8', $this->extension, 'hls');
-        return $this->createNewFile($targetFolder, $fileName, $onlineMediaId);
+        return 1735063001;
     }
 
-    /** @return string|null */
-    public function getPublicUrl(File $file)
+    protected function getDefaultBaseNamePrefix(): string
     {
-        $url = $this->getOnlineMediaId($file);
-        return $url !== '' ? $url : null;
+        return 'stream';
     }
 
-    /** @return string */
-    public function getPreviewImage(File $file)
+    protected function getFileNameFallback(): string
     {
-        return (string)GeneralUtility::getFileAbsFileName('EXT:mpc_vidply/Resources/Public/Icons/Extension.svg');
+        return 'hls';
     }
-
-    /** @return array<string, mixed> */
-    public function getMetaData(File $file)
-    {
-        $url = $this->getOnlineMediaId($file);
-        if ($url === '') {
-            return [];
-        }
-
-        $parts = parse_url($url);
-        $path = is_array($parts) ? (string)($parts['path'] ?? '') : '';
-        $name = basename($path);
-
-        return $name !== '' ? ['title' => $name] : [];
-    }
-
 }

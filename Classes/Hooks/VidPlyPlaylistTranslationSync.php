@@ -7,7 +7,6 @@ namespace Mpc\MpcVidply\Hooks;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -20,97 +19,31 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  * 34. After every save of the source record, this hook replaces translation MM
  * with a copy of the default playlist.
  *
- * Implementation uses {@see DataHandler::processDatamap_afterAllOperations()} — not
- * `processDatamap_afterDatabaseOperations` — because group/MM relations are written
- * in {@see DataHandler::dbAnalysisStoreExec()} *after* the latter hook runs. Running
- * too early would copy the *previous* playlist from the database.
- *
  * When a **new** translation is created, only the translated `tt_content` is in the
  * request (or only the source is in a `localize` cmd) — the other hook branch runs
  * {@see self::replicateFromParentToTranslationUids} from the default-language
  * source so MM rows are created for the new CE. Saving the source alone is not
- * always enough, so we also run after `localize` / `copyToLanguage` and when a
- * translation record is saved.
+ * always enough, so the base class also runs after `localize` / `copyToLanguage`
+ * and when a translation record is saved.
  */
-final class VidPlyPlaylistTranslationSync
+final class VidPlyPlaylistTranslationSync extends AbstractContentTranslationSyncHook
 {
     private const CTYPE = 'mpc_vidply';
     private const MM_TABLE = 'tx_mpcvidply_content_media_mm';
 
-    public function processDatamap_afterAllOperations(DataHandler $dataHandler): void
+    protected function getContentType(): string
     {
-        if (!isset($dataHandler->datamap['tt_content']) || !is_array($dataHandler->datamap['tt_content'])) {
-            return;
-        }
-
-        foreach (array_keys($dataHandler->datamap['tt_content']) as $id) {
-            $uid = $this->resolveTtContentUid($id, $dataHandler);
-            if ($uid <= 0) {
-                continue;
-            }
-
-            $row = BackendUtility::getRecord(
-                'tt_content',
-                $uid,
-                'uid,CType,sys_language_uid,l18n_parent',
-            ) ?? [];
-            if ($row === []) {
-                continue;
-            }
-
-            if (($row['CType'] ?? '') !== self::CTYPE) {
-                continue;
-            }
-
-            $l18nParent = (int)($row['l18n_parent'] ?? 0);
-            if ($l18nParent > 0) {
-                $this->replicateFromParentToTranslationUids(
-                    $l18nParent,
-                    [$uid],
-                    self::CTYPE
-                );
-            } else {
-                $this->replicateSourcePlaylistToTranslations($uid);
-            }
-        }
+        return self::CTYPE;
     }
 
-    public function processCmdmap_afterFinish(DataHandler $dataHandler): void
+    protected function syncTranslation(int $sourceUid, int $translationUid, int $languageId): void
     {
-        $ttContentCmds = $dataHandler->cmdmap['tt_content'] ?? null;
-        if (!is_array($ttContentCmds)) {
-            return;
-        }
-
-        foreach ($ttContentCmds as $sourceId => $commands) {
-            if (!is_array($commands)) {
-                continue;
-            }
-            if (!isset($commands['localize']) && !isset($commands['copyToLanguage'])) {
-                continue;
-            }
-            $sourceId = (int)$sourceId;
-            if ($sourceId <= 0) {
-                continue;
-            }
-            $row = BackendUtility::getRecord('tt_content', $sourceId, 'CType') ?? [];
-            if (($row['CType'] ?? '') !== self::CTYPE) {
-                continue;
-            }
-            // New localized CE exists now: push the source playlist to all its translations
-            $this->replicateSourcePlaylistToTranslations($sourceId);
-        }
+        $this->replicateFromParentToTranslationUids($sourceUid, [$translationUid], self::CTYPE);
     }
 
-    private function resolveTtContentUid(string|int $id, DataHandler $dataHandler): int
+    protected function syncAllTranslations(int $sourceUid): void
     {
-        if (is_string($id) && str_starts_with($id, 'NEW')) {
-            $mapped = (int)($dataHandler->substNEWwithIDs[$id] ?? 0);
-
-            return $mapped;
-        }
-
-        return (int)$id;
+        $this->replicateSourcePlaylistToTranslations($sourceUid);
     }
 
     private function replicateSourcePlaylistToTranslations(int $sourceContentUid): void
@@ -141,8 +74,7 @@ final class VidPlyPlaylistTranslationSync
     /**
      * Copy playlist MM rows from the default-language `tt_content` to one or more
      * target `tt_content` uids (local sides). Used for translation saves and localize.
-     */
-    /**
+     *
      * @param list<int> $translationUids
      */
     private function replicateFromParentToTranslationUids(

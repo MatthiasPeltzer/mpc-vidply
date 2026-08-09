@@ -245,7 +245,17 @@ const AUTO_ADVANCE    = 256;  // Auto-play next in playlist
 
 ### VidPlyProcessor
 
-Processes media items for frontend rendering.
+Processes media items for frontend rendering. The processor orchestrates only;
+the work lives in `Classes/Service/Player/`:
+
+| Service | Responsibility |
+|---------|----------------|
+| `TrackAssembler` | Media records → player tracks, incl. captions, chapters, audio description and sign language |
+| `PlayerOptionsBuilder` | Option bitmask, track-dependent overrides, playlist payload, play icon and theme |
+| `EpisodeListBuilder` | Server-rendered episode metadata, sorting and pagination settings |
+| `DownloadResolver` | Download target, format label and file size of a track or episode row |
+| `MediaFileRegistry` | The `sys_file_reference` lookups of one assembly, prefetched in a single query |
+| `InlineSvgProvider` / `UrlSanitizer` / `LocaleFormatter` | Sanitized inline SVG, URL guards, localized dates and file sizes |
 
 **TypoScript:**
 
@@ -295,6 +305,7 @@ tt_content.mpc_vidply {
 | Partial | Purpose |
 |---------|---------|
 | `VidPly/Assets.html` | Conditional asset registration |
+| `VidPly/MediaPlayer.html` | The `<video>` / `<audio>` element (`mediaKind`) |
 | `VidPly/VideoSources.html` | `<source>` elements for video |
 | `VidPly/AudioSources.html` | `<source>` elements for audio |
 | `VidPly/Tracks.html` | Caption/chapter `<track>` elements |
@@ -644,6 +655,7 @@ composer require mpc/mpc-vidply
 | Media TCA | `Configuration/TCA/tx_mpcvidply_media.php` |
 | Content TCA | `Configuration/TCA/Overrides/tt_content.php` |
 | DataProcessor | `Classes/DataProcessing/VidPlyProcessor.php` |
+| Player services | `Classes/Service/Player/` |
 | Privacy Service | `Classes/Service/PrivacySettingsService.php` |
 | Main Template | `Resources/Private/Templates/VidPly.html` |
 | Privacy JS | `Resources/Public/JavaScript/PrivacyLayer.js` |

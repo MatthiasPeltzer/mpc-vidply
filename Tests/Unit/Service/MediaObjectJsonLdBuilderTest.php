@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mpc\MpcVidply\Tests\Unit\Service;
 
 use Mpc\MpcVidply\Service\MediaObjectJsonLdBuilder;
+use Mpc\MpcVidply\Service\MediaUrlNormalizer;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -21,7 +22,7 @@ final class MediaObjectJsonLdBuilderTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->subject = new MediaObjectJsonLdBuilder();
+        $this->subject = new MediaObjectJsonLdBuilder(new MediaUrlNormalizer());
     }
 
     #[Test]

@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\DataProcessing;
 
+use Mpc\MpcVidply\Service\DetailUrlBuilder;
+use Mpc\MpcVidply\Service\DurationFormatter;
+use Mpc\MpcVidply\Service\FileReferencePrefetcher;
 use Mpc\MpcVidply\Service\FrontendLanguageResolver;
 use Mpc\MpcVidply\Service\ListviewMediaResolver;
 use Mpc\MpcVidply\Service\MediaCategoryResolver;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Resource\Exception\ResourceDoesNotExistException;
 use TYPO3\CMS\Core\Resource\FileReference;
-use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
@@ -29,20 +30,27 @@ use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
 final class ListviewProcessor implements DataProcessorInterface
 {
     private readonly ConnectionPool $connectionPool;
-    private readonly ResourceFactory $resourceFactory;
     private readonly ListviewMediaResolver $mediaResolver;
     private readonly MediaCategoryResolver $mediaCategoryResolver;
+    private readonly FileReferencePrefetcher $fileReferencePrefetcher;
+    private readonly DetailUrlBuilder $detailUrlBuilder;
+    private readonly DurationFormatter $durationFormatter;
 
     public function __construct(
         ?ConnectionPool $connectionPool = null,
-        ?ResourceFactory $resourceFactory = null,
         ?ListviewMediaResolver $mediaResolver = null,
-        ?MediaCategoryResolver $mediaCategoryResolver = null
+        ?MediaCategoryResolver $mediaCategoryResolver = null,
+        ?FileReferencePrefetcher $fileReferencePrefetcher = null,
+        ?DetailUrlBuilder $detailUrlBuilder = null,
+        ?DurationFormatter $durationFormatter = null
     ) {
         $this->connectionPool = $connectionPool ?? GeneralUtility::makeInstance(ConnectionPool::class);
-        $this->resourceFactory = $resourceFactory ?? GeneralUtility::makeInstance(ResourceFactory::class);
         $this->mediaResolver = $mediaResolver ?? GeneralUtility::makeInstance(ListviewMediaResolver::class);
         $this->mediaCategoryResolver = $mediaCategoryResolver ?? GeneralUtility::makeInstance(MediaCategoryResolver::class);
+        $this->fileReferencePrefetcher = $fileReferencePrefetcher
+            ?? GeneralUtility::makeInstance(FileReferencePrefetcher::class);
+        $this->detailUrlBuilder = $detailUrlBuilder ?? GeneralUtility::makeInstance(DetailUrlBuilder::class);
+        $this->durationFormatter = $durationFormatter ?? GeneralUtility::makeInstance(DurationFormatter::class);
     }
 
     /**
@@ -124,7 +132,7 @@ final class ListviewProcessor implements DataProcessorInterface
                 array_map(static fn (array $m): int => (int)($m['uid'] ?? 0), $mediaRecords),
                 static fn (int $uid): bool => $uid > 0
             ));
-            $posterRefsByMediaUid = $this->prefetchPosterReferences($mediaUids);
+            $posterRefsByMediaUid = $this->fileReferencePrefetcher->prefetchField($mediaUids, 'poster');
             $categoryMap = $this->mediaCategoryResolver->fetchForMediaRecords($mediaRecords, $languageId);
 
             $cards = [];
@@ -209,7 +217,7 @@ final class ListviewProcessor implements DataProcessorInterface
         [$posterReferenceUid, $posterUrl, $posterAlt] = $this->resolvePosterData($posterRefs, (string)($media['title'] ?? ''));
 
         $slug = trim((string)($media['slug'] ?? ''));
-        $detailUrl = $this->buildDetailUrl($cObj, $detailPageUid, $defaultUid, $slug, $languageId);
+        $detailUrl = $this->detailUrlBuilder->build($cObj, $detailPageUid, $defaultUid, $slug, $languageId);
 
         $mediaType = (string)($media['media_type'] ?? 'video');
         $isExternal = in_array($mediaType, ['youtube', 'vimeo', 'soundcloud'], true);
@@ -223,7 +231,7 @@ final class ListviewProcessor implements DataProcessorInterface
             'longDescription' => (string)($media['long_description'] ?? ''),
             'artist' => (string)($media['artist'] ?? ''),
             'duration' => (int)($media['duration'] ?? 0),
-            'durationFormatted' => $this->formatDuration((int)($media['duration'] ?? 0)),
+            'durationFormatted' => $this->durationFormatter->format((int)($media['duration'] ?? 0)),
             'slug' => $slug,
             'mediaType' => $mediaType,
             'posterReferenceUid' => $posterReferenceUid,
@@ -266,54 +274,6 @@ final class ListviewProcessor implements DataProcessorInterface
         return [$referenceUid, $publicUrl !== '' ? $publicUrl : null, $alt];
     }
 
-    /**
-     * Build the detail-page URL for one media record.
-     *
-     * The generated URL always carries `media=<uid>`. TYPO3's VidPlyDetail route
-     * enhancer ({@see Configuration/Sets/mpc-vidply/route-enhancers.yaml}) then
-     * rewrites the parameter to the speaking slug segment. If the record has no
-     * slug, {@see \Mpc\MpcVidply\Routing\Aspect\VidPlyMediaRouteAspect} makes the
-     * enhancer step down so the PageRouter returns `?media=<uid>&cHash=…` (no
-     * unreliable `&id=<pageId>`). We do not build the query string manually.
-     */
-    private function buildDetailUrl(
-        ContentObjectRenderer $cObj,
-        int $detailPageUid,
-        int $mediaUid,
-        string $slug,
-        int $languageId
-    ): string {
-        if ($detailPageUid <= 0 || $mediaUid <= 0) {
-            return '';
-        }
-
-        $config = [
-            'parameter' => $detailPageUid,
-            'additionalParams' => '&media=' . rawurlencode((string)$mediaUid),
-            'forceAbsoluteUrl' => 0,
-            'returnLast' => 'url',
-        ];
-        if ($languageId > 0) {
-            $config['language'] = $languageId;
-        }
-
-        try {
-            $url = (string)$cObj->typoLink_URL($config);
-        } catch (\Throwable) {
-            $url = '';
-        }
-
-        // Last-resort: no `id`, site routing removes it; relative query is enough on same host.
-        if ($url === '') {
-            if ($slug !== '') {
-                return '/' . ltrim($slug, '/');
-            }
-            return '?media=' . $mediaUid;
-        }
-
-        return $url;
-    }
-
     private function resolveHeadlineLink(string $value, ContentObjectRenderer $cObj): string
     {
         $value = trim($value);
@@ -327,64 +287,4 @@ final class ListviewProcessor implements DataProcessorInterface
         }
     }
 
-    /**
-     * @param list<int> $mediaUids
-     * @return array<int, FileReference[]>
-     */
-    private function prefetchPosterReferences(array $mediaUids): array
-    {
-        if ($mediaUids === []) {
-            return [];
-        }
-
-        $qb = $this->connectionPool->getQueryBuilderForTable('sys_file_reference');
-        $rows = $qb
-            ->select('uid', 'uid_foreign')
-            ->from('sys_file_reference')
-            ->where(
-                $qb->expr()->eq('tablenames', $qb->createNamedParameter('tx_mpcvidply_media')),
-                $qb->expr()->eq('fieldname', $qb->createNamedParameter('poster')),
-                $qb->expr()->in(
-                    'uid_foreign',
-                    $qb->createNamedParameter($mediaUids, Connection::PARAM_INT_ARRAY)
-                ),
-                $qb->expr()->eq('deleted', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-                $qb->expr()->eq('hidden', $qb->createNamedParameter(0, Connection::PARAM_INT))
-            )
-            ->orderBy('uid_foreign', 'ASC')
-            ->addOrderBy('sorting_foreign', 'ASC')
-            ->executeQuery()
-            ->fetchAllAssociative();
-
-        $result = [];
-        foreach ($rows as $row) {
-            $fileRefUid = (int)($row['uid'] ?? 0);
-            $mediaUid = (int)($row['uid_foreign'] ?? 0);
-            if ($fileRefUid <= 0 || $mediaUid <= 0) {
-                continue;
-            }
-            try {
-                $ref = $this->resourceFactory->getFileReferenceObject($fileRefUid);
-            } catch (ResourceDoesNotExistException) {
-                continue;
-            }
-            $result[$mediaUid] ??= [];
-            $result[$mediaUid][] = $ref;
-        }
-        return $result;
-    }
-
-    private function formatDuration(int $seconds): string
-    {
-        if ($seconds <= 0) {
-            return '';
-        }
-        $hours = intdiv($seconds, 3600);
-        $minutes = intdiv($seconds % 3600, 60);
-        $secs = $seconds % 60;
-        if ($hours > 0) {
-            return sprintf('%d:%02d:%02d', $hours, $minutes, $secs);
-        }
-        return sprintf('%d:%02d', $minutes, $secs);
-    }
 }

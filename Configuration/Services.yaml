@@ -11,7 +11,10 @@ services:
     exclude:
       - '../Classes/Enums/*'
       - '../Classes/Dto/*'
+      # Not services: OnlineMedia helpers are instantiated by TYPO3's registry
+      # with the container file extension as their first constructor argument.
       - '../Classes/OnlineMedia/Helpers/ExternalMediaDomainValidationTrait.php'
+      - '../Classes/OnlineMedia/Helpers/AbstractExternalMediaHelper.php'
 
   # DataProcessors are instantiated via GeneralUtility::makeInstance() from
   # TypoScript, so they must be marked public for the service locator fallback
@@ -70,8 +73,8 @@ services:
     public: true
     arguments:
       $connectionPool: '@TYPO3\CMS\Core\Database\ConnectionPool'
-      $resourceFactory: '@TYPO3\CMS\Core\Resource\ResourceFactory'
       $mediaResolver: '@Mpc\MpcVidply\Service\ListviewMediaResolver'
+      $fileReferencePrefetcher: '@Mpc\MpcVidply\Service\FileReferencePrefetcher'
 
   Mpc\MpcVidply\Hooks\ListviewRowTranslationSync:
     public: true

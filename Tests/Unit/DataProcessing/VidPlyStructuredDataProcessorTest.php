@@ -6,6 +6,7 @@ namespace Mpc\MpcVidply\Tests\Unit\DataProcessing;
 
 use Mpc\MpcVidply\DataProcessing\VidPlyStructuredDataProcessor;
 use Mpc\MpcVidply\Service\MediaObjectJsonLdBuilder;
+use Mpc\MpcVidply\Service\MediaUrlNormalizer;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -29,7 +30,7 @@ final class VidPlyStructuredDataProcessorTest extends TestCase
         $this->subject = $reflection->newInstanceWithoutConstructor();
 
         $builderProperty = $reflection->getProperty('jsonLdBuilder');
-        $builderProperty->setValue($this->subject, new MediaObjectJsonLdBuilder());
+        $builderProperty->setValue($this->subject, new MediaObjectJsonLdBuilder(new MediaUrlNormalizer()));
     }
 
     private function invoke(string $method, mixed ...$args): mixed

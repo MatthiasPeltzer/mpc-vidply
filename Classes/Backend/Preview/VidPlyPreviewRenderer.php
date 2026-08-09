@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\Backend\Preview;
 
+use Mpc\MpcVidply\Service\FileReferencePrefetcher;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Backend\Preview\StandardContentPreviewRenderer;
@@ -13,7 +14,6 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Resource\Exception\ResourceDoesNotExistException;
 use TYPO3\CMS\Core\Resource\FileReference;
-use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
 
@@ -24,7 +24,7 @@ final class VidPlyPreviewRenderer extends StandardContentPreviewRenderer impleme
     private const LLL = 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:';
 
     private readonly ConnectionPool $connectionPool;
-    private readonly ResourceFactory $resourceFactory;
+    private readonly FileReferencePrefetcher $fileReferencePrefetcher;
 
     /** @var array<int, FileReference[]> */
     private array $posterRefsByMediaUid = [];
@@ -34,10 +34,11 @@ final class VidPlyPreviewRenderer extends StandardContentPreviewRenderer impleme
 
     public function __construct(
         ?ConnectionPool $connectionPool = null,
-        ?ResourceFactory $resourceFactory = null
+        ?FileReferencePrefetcher $fileReferencePrefetcher = null
     ) {
         $this->connectionPool = $connectionPool ?? GeneralUtility::makeInstance(ConnectionPool::class);
-        $this->resourceFactory = $resourceFactory ?? GeneralUtility::makeInstance(ResourceFactory::class);
+        $this->fileReferencePrefetcher = $fileReferencePrefetcher
+            ?? GeneralUtility::makeInstance(FileReferencePrefetcher::class);
     }
 
     public function renderPageModulePreviewContent(GridColumnItem $item): string
@@ -143,53 +144,19 @@ final class VidPlyPreviewRenderer extends StandardContentPreviewRenderer impleme
      * Batch-fetch poster and media_file references for all media UIDs in a single query
      * to avoid N+1 queries when rendering playlist previews.
      *
-     * @param int[] $mediaUids
+     * @param list<int> $mediaUids
      */
     private function prefetchFileReferences(array $mediaUids): void
     {
         $this->posterRefsByMediaUid = [];
         $this->mediaFileRefsByMediaUid = [];
 
-        if ($mediaUids === []) {
-            return;
-        }
-
-        $qb = $this->connectionPool->getQueryBuilderForTable('sys_file_reference');
-        $rows = $qb
-            ->select('uid', 'uid_foreign', 'fieldname')
-            ->from('sys_file_reference')
-            ->where(
-                $qb->expr()->eq('tablenames', $qb->createNamedParameter('tx_mpcvidply_media')),
-                $qb->expr()->in('fieldname', $qb->createNamedParameter(['poster', 'media_file'], Connection::PARAM_STR_ARRAY)),
-                $qb->expr()->in('uid_foreign', $qb->createNamedParameter($mediaUids, Connection::PARAM_INT_ARRAY)),
-                $qb->expr()->eq('deleted', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-                $qb->expr()->eq('hidden', $qb->createNamedParameter(0, Connection::PARAM_INT))
-            )
-            ->orderBy('uid_foreign', 'ASC')
-            ->addOrderBy('sorting_foreign', 'ASC')
-            ->executeQuery()
-            ->fetchAllAssociative();
-
-        foreach ($rows as $row) {
-            $uid = (int)($row['uid'] ?? 0);
-            $uidForeign = (int)($row['uid_foreign'] ?? 0);
-            $fieldName = (string)($row['fieldname'] ?? '');
-            if ($uid <= 0 || $uidForeign <= 0 || $fieldName === '') {
-                continue;
+        foreach ($this->fileReferencePrefetcher->prefetch($mediaUids, ['poster', 'media_file']) as $mediaUid => $byField) {
+            if (($byField['poster'] ?? []) !== []) {
+                $this->posterRefsByMediaUid[$mediaUid] = $byField['poster'];
             }
-
-            try {
-                $fileReference = $this->resourceFactory->getFileReferenceObject($uid);
-            } catch (ResourceDoesNotExistException) {
-                continue;
-            }
-
-            if ($fieldName === 'poster') {
-                $this->posterRefsByMediaUid[$uidForeign] ??= [];
-                $this->posterRefsByMediaUid[$uidForeign][] = $fileReference;
-            } else {
-                $this->mediaFileRefsByMediaUid[$uidForeign] ??= [];
-                $this->mediaFileRefsByMediaUid[$uidForeign][] = $fileReference;
+            if (($byField['media_file'] ?? []) !== []) {
+                $this->mediaFileRefsByMediaUid[$mediaUid] = $byField['media_file'];
             }
         }
     }

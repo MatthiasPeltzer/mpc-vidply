@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\Backend\Preview;
 
+use Mpc\MpcVidply\Service\FileReferencePrefetcher;
 use Mpc\MpcVidply\Service\ListviewMediaResolver;
 use TYPO3\CMS\Backend\Preview\StandardContentPreviewRenderer;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
@@ -14,7 +15,6 @@ use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Resource\Exception\ResourceDoesNotExistException;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Resource\ProcessedFile;
-use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 final class ListviewPreviewRenderer extends StandardContentPreviewRenderer
@@ -24,17 +24,18 @@ final class ListviewPreviewRenderer extends StandardContentPreviewRenderer
     private const PREVIEW_MAX_ITEMS_PER_ROW = 36;
 
     private readonly ConnectionPool $connectionPool;
-    private readonly ResourceFactory $resourceFactory;
     private readonly ListviewMediaResolver $mediaResolver;
+    private readonly FileReferencePrefetcher $fileReferencePrefetcher;
 
     public function __construct(
         ?ConnectionPool $connectionPool = null,
-        ?ResourceFactory $resourceFactory = null,
-        ?ListviewMediaResolver $mediaResolver = null
+        ?ListviewMediaResolver $mediaResolver = null,
+        ?FileReferencePrefetcher $fileReferencePrefetcher = null
     ) {
         $this->connectionPool = $connectionPool ?? GeneralUtility::makeInstance(ConnectionPool::class);
-        $this->resourceFactory = $resourceFactory ?? GeneralUtility::makeInstance(ResourceFactory::class);
         $this->mediaResolver = $mediaResolver ?? GeneralUtility::makeInstance(ListviewMediaResolver::class);
+        $this->fileReferencePrefetcher = $fileReferencePrefetcher
+            ?? GeneralUtility::makeInstance(FileReferencePrefetcher::class);
     }
 
     public function renderPageModulePreviewContent(GridColumnItem $item): string
@@ -196,7 +197,7 @@ final class ListviewPreviewRenderer extends StandardContentPreviewRenderer
             array_map(static fn (array $m): int => (int)($m['uid'] ?? 0), $mediaRecords),
             static fn (int $u): bool => $u > 0
         ));
-        $posterRefsByMediaUid = $this->prefetchPosterReferences($mediaUids);
+        $posterRefsByMediaUid = $this->fileReferencePrefetcher->prefetchField($mediaUids, 'poster');
 
         $html = '<div class="mpc-vidply-listview-row-items row g-2 mx-0 w-100 align-items-start justify-content-start">';
         foreach ($mediaRecords as $media) {
@@ -284,54 +285,6 @@ final class ListviewPreviewRenderer extends StandardContentPreviewRenderer
         $mediaRecords = $this->mediaResolver->resolveMediaRecordsForRow($row, $languageId);
 
         return array_slice($mediaRecords, 0, $limit);
-    }
-
-    /**
-     * @param list<int> $mediaUids
-     * @return array<int, FileReference[]>
-     */
-    private function prefetchPosterReferences(array $mediaUids): array
-    {
-        if ($mediaUids === []) {
-            return [];
-        }
-
-        $qb = $this->connectionPool->getQueryBuilderForTable('sys_file_reference');
-        $rows = $qb
-            ->select('uid', 'uid_foreign')
-            ->from('sys_file_reference')
-            ->where(
-                $qb->expr()->eq('tablenames', $qb->createNamedParameter('tx_mpcvidply_media')),
-                $qb->expr()->eq('fieldname', $qb->createNamedParameter('poster')),
-                $qb->expr()->in(
-                    'uid_foreign',
-                    $qb->createNamedParameter($mediaUids, Connection::PARAM_INT_ARRAY)
-                ),
-                $qb->expr()->eq('deleted', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-                $qb->expr()->eq('hidden', $qb->createNamedParameter(0, Connection::PARAM_INT))
-            )
-            ->orderBy('uid_foreign', 'ASC')
-            ->addOrderBy('sorting_foreign', 'ASC')
-            ->executeQuery()
-            ->fetchAllAssociative();
-
-        $result = [];
-        foreach ($rows as $refRow) {
-            $fileRefUid = (int)($refRow['uid'] ?? 0);
-            $mediaUid = (int)($refRow['uid_foreign'] ?? 0);
-            if ($fileRefUid <= 0 || $mediaUid <= 0) {
-                continue;
-            }
-            try {
-                $ref = $this->resourceFactory->getFileReferenceObject($fileRefUid);
-            } catch (ResourceDoesNotExistException) {
-                continue;
-            }
-            $result[$mediaUid] ??= [];
-            $result[$mediaUid][] = $ref;
-        }
-
-        return $result;
     }
 
     /**

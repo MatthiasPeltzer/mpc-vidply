@@ -7,6 +7,8 @@ namespace Mpc\MpcVidply\Service;
 use Mpc\MpcVidply\Repository\MediaRepository;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\QueryBuilder;
+use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -18,6 +20,8 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 final class ListviewMediaResolver
 {
+    private const ROW_TABLE = 'tx_mpcvidply_listview_row';
+
     private readonly ConnectionPool $connectionPool;
     private readonly MediaRepository $mediaRepository;
 
@@ -222,16 +226,14 @@ final class ListviewMediaResolver
         if ($parentIds === []) {
             return [];
         }
-        $qb = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_listview_row');
+        $qb = $this->createRestrictedQueryBuilder();
 
         return $qb
             ->select('*')
-            ->from('tx_mpcvidply_listview_row')
+            ->from(self::ROW_TABLE)
             ->where(
                 $qb->expr()->in('parentid', $qb->createNamedParameter($parentIds, Connection::PARAM_INT_ARRAY)),
                 $qb->expr()->eq('parenttable', $qb->createNamedParameter('tt_content')),
-                $qb->expr()->eq('deleted', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-                $qb->expr()->eq('hidden', $qb->createNamedParameter(0, Connection::PARAM_INT)),
                 $qb->expr()->in(
                     'sys_language_uid',
                     $qb->createNamedParameter([0, -1, $languageId], Connection::PARAM_INT_ARRAY)
@@ -256,18 +258,16 @@ final class ListviewMediaResolver
             return [];
         }
 
-        $qb = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_listview_row');
+        $qb = $this->createRestrictedQueryBuilder();
         $rows = $qb
             ->select('*')
-            ->from('tx_mpcvidply_listview_row')
+            ->from(self::ROW_TABLE)
             ->where(
                 $qb->expr()->in(
                     'l10n_parent',
                     $qb->createNamedParameter($defaultRowUids, Connection::PARAM_INT_ARRAY)
                 ),
-                $qb->expr()->eq('sys_language_uid', $qb->createNamedParameter($languageId, Connection::PARAM_INT)),
-                $qb->expr()->eq('deleted', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-                $qb->expr()->eq('hidden', $qb->createNamedParameter(0, Connection::PARAM_INT))
+                $qb->expr()->eq('sys_language_uid', $qb->createNamedParameter($languageId, Connection::PARAM_INT))
             )
             ->orderBy('sorting', 'ASC')
             ->executeQuery()
@@ -283,6 +283,20 @@ final class ListviewMediaResolver
         }
 
         return $overlays;
+    }
+
+    /**
+     * Rows are read with the same restriction set as the media behind them
+     * ({@see VidPlyPageMediaResolver}): whatever enablecolumns the TCA declares,
+     * plus the workspace of the current request. Applying them by hand would let
+     * a workspace preview disagree with the live site about which rows exist.
+     */
+    private function createRestrictedQueryBuilder(): QueryBuilder
+    {
+        $queryBuilder = $this->connectionPool->getQueryBuilderForTable(self::ROW_TABLE);
+        $queryBuilder->setRestrictions(GeneralUtility::makeInstance(FrontendRestrictionContainer::class));
+
+        return $queryBuilder;
     }
 
     /**
