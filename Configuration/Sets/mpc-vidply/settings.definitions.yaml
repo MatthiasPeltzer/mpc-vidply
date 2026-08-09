@@ -1,0 +1,10 @@
+categories:
+  mpcVidply: ~
+  mpcVidply.accessibility:
+    parent: mpcVidply
+
+settings:
+  mpcVidply.screenReaderAnnouncements:
+    default: true
+    type: bool
+    category: mpcVidply.accessibility

@@ -7,6 +7,7 @@ Where configuration lives: **extension-wide defaults**, **site-wide privacy**, *
 | Tier | Where configured | Scope |
 |------|------------------|-------|
 | Extension Configuration | Admin → Settings → Extension Configuration → VidPly | Whole TYPO3 installation |
+| Site Settings (site set) | Site Management → Sites → Settings, or `config/sites/<id>/settings.yaml` | One site |
 | Privacy Layer Settings | List module → Privacy Layer Settings | Site-wide external-service consent copy |
 | Player (content element) | Page module → VidPly Player CE | One player instance on a page |
 | Media record | List module → VidPly Media | Reusable item (any player/listview) |
@@ -31,6 +32,34 @@ Configured in **Admin → Settings → Extension Configuration → mpc_vidply** 
 | `themeSyncEnabled` | bool | `0` | Sync player theme with page light/dark mode (body class + custom events) |
 
 These apply to every frontend player unless overridden in Fluid/TypoScript.
+
+### Site Settings (per site)
+
+Declared by the `mpc/mpc-vidply` site set
+(`Configuration/Sets/mpc-vidply/settings.definitions.yaml`). Editors and
+integrators change them in **Site Management → Sites → *your site* →
+Settings → VidPly Player → Accessibility**; integrators can also write them to
+`config/sites/<id>/settings.yaml` or read them in TypoScript as constants.
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `mpcVidply.screenReaderAnnouncements` | bool | `true` | Announce play/pause, volume, mute, captions, fullscreen and speed changes in the player's live region |
+
+```yaml
+# config/sites/<id>/settings.yaml
+mpcVidply.screenReaderAnnouncements: false
+```
+
+```typoscript
+# available as a TypoScript constant
+{$mpcVidply.screenReaderAnnouncements}
+```
+
+Turning the announcements off silences the status messages the player sends to
+assistive technology (WCAG 4.1.3). Only do that when something else on the page
+already announces the same state — the player's own notices (help dialog,
+sign-language drag and resize hints) keep speaking either way, since they are
+the only feedback for the action that triggered them.
 
 ### Privacy Layer Settings (tx_mpcvidply_privacy_settings)
 **Site-wide settings for external service privacy layers:**
@@ -108,6 +137,10 @@ Use for branding and security defaults that should not vary per page:
 - Default dark/light theme and page theme sync
 - Custom play icon for privacy overlay and player
 - CSS icon mode for design-system integration
+
+### Site Settings (Per Site)
+Use for policies that differ between the sites of one installation:
+- Whether the player announces its state to screen readers
 
 ### Privacy Layer Settings (Site-Wide)
 Use for settings that should be **consistent across all external services**:
