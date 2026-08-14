@@ -20,7 +20,10 @@
     pointer-events: auto;
     position: relative;
     width: 100%;
-    z-index: 9999;
+
+    /* Above the video wrapper (z-index: 1) inside the player, but well below
+       fixed site chrome (Bootstrap .fixed-top is ~1030; mp-core header ~1042). */
+    z-index: 10;
 }
 
 /* When switching from audio to external renderers (YouTube/Vimeo/SoundCloud),
