@@ -218,14 +218,13 @@ final class TrackAssembler
         if (!empty($mediaRecord['description'])) {
             $track['description'] = $mediaRecord['description'];
         }
+        if (!empty($mediaRecord['long_description'])) {
+            $track['longDescription'] = $mediaRecord['long_description'];
+        }
         // The player renders the date verbatim — it has no locale knowledge.
         $publishDate = $this->localeFormatter->formatDate((int)($mediaRecord['publish_date'] ?? 0), $locale);
         if ($publishDate !== '') {
             $track['date'] = $publishDate;
-        }
-        $episodeNumber = trim((string)($mediaRecord['episode_number'] ?? ''));
-        if ($episodeNumber !== '') {
-            $track['episodeNumber'] = $episodeNumber;
         }
 
         return $track;

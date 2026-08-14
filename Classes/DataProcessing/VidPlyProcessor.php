@@ -126,10 +126,12 @@ class VidPlyProcessor implements DataProcessorInterface
         $languageId = $languageIdOverride ?? FrontendLanguageResolver::resolveLanguageId($request, $data);
 
         $siteDefaultLanguageCode = $this->resolveSiteDefaultLanguageCode($request);
-        $trackResult = $this->trackAssembler->assemble($mediaRecords, $siteDefaultLanguageCode, $locale);
-        $this->playerOptionsBuilder->applyTrackDependentOptions($playerOptions, $trackResult);
-
         $layout = $this->episodeListBuilder->resolveLayout($data);
+        $trackResult = $this->trackAssembler->assemble($mediaRecords, $siteDefaultLanguageCode, $locale);
+        if ($layout !== 'default') {
+            $trackResult = $this->withoutPlayerLongDescriptions($trackResult);
+        }
+        $this->playerOptionsBuilder->applyTrackDependentOptions($playerOptions, $trackResult);
 
         $playlistResult = $this->playerOptionsBuilder->buildPlaylistData($trackResult, $playerOptions, $layout);
         $playlistData = $playlistResult['playlistData'];
@@ -351,7 +353,31 @@ class VidPlyProcessor implements DataProcessorInterface
             }
         }
 
+        foreach (['title', 'artist', 'description', 'longDescription', 'date'] as $metadataKey) {
+            $value = $firstTrack[$metadataKey] ?? null;
+            if (is_string($value) && trim($value) !== '') {
+                $optionOverrides[$metadataKey] = $value;
+            }
+        }
+
         return ['trackData' => $result, 'optionOverrides' => $optionOverrides];
+    }
+
+    /**
+     * Card and episode layouts render long descriptions in their own header
+     * above the player, so keep them out of the in-player track-info header.
+     *
+     * @param TrackResult $trackResult
+     * @return TrackResult
+     */
+    private function withoutPlayerLongDescriptions(array $trackResult): array
+    {
+        foreach ($trackResult['tracks'] as &$track) {
+            unset($track['longDescription']);
+        }
+        unset($track);
+
+        return $trackResult;
     }
 
     /**

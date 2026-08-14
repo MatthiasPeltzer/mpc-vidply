@@ -46,7 +46,7 @@ final class TrackAssemblerTest extends TestCase
     }
 
     #[Test]
-    public function buildBaseTrackDataAddsFormattedDateAndEpisodeNumber(): void
+    public function buildBaseTrackDataAddsFormattedDate(): void
     {
         $track = $this->subject->buildBaseTrackData([
             'title' => 'Episode 11',
@@ -54,13 +54,13 @@ final class TrackAssemblerTest extends TestCase
             'episode_number' => ' 11 ',
         ], 'en-US');
 
-        self::assertSame('11', $track['episodeNumber']);
+        self::assertArrayNotHasKey('episodeNumber', $track);
         self::assertNotSame('', $track['date']);
         self::assertStringContainsString('2021', $track['date']);
     }
 
     #[Test]
-    public function buildBaseTrackDataOmitsEmptyDateAndEpisodeNumber(): void
+    public function buildBaseTrackDataOmitsEmptyDate(): void
     {
         $track = $this->subject->buildBaseTrackData([
             'title' => 'Episode 11',
@@ -70,6 +70,17 @@ final class TrackAssemblerTest extends TestCase
 
         self::assertArrayNotHasKey('date', $track);
         self::assertArrayNotHasKey('episodeNumber', $track);
+    }
+
+    #[Test]
+    public function buildBaseTrackDataIncludesLongDescriptionWhenSet(): void
+    {
+        $track = $this->subject->buildBaseTrackData([
+            'title' => 'Episode 11',
+            'long_description' => '<p>Extended notes.</p>',
+        ]);
+
+        self::assertSame('<p>Extended notes.</p>', $track['longDescription']);
     }
 
     #[Test]
