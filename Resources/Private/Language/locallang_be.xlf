@@ -270,6 +270,9 @@
       <trans-unit id="tt_content.tx_mpcvidply_options.muted">
         <source>Muted</source>
       </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_options.resume_playback">
+        <source>Resume from Last Position</source>
+      </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_playback_speed">
         <source>Playback Speed</source>
       </trans-unit>

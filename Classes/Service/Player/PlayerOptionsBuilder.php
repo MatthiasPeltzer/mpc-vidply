@@ -35,6 +35,7 @@ final class PlayerOptionsBuilder
     private const OPT_CAPTIONS_DEFAULT = 16;
     private const OPT_KEYBOARD = 64;
     private const OPT_AUTO_ADVANCE = 256;
+    private const OPT_RESUME_PLAYBACK = 512;
 
     /**
      * Site setting declared in `Configuration/Sets/mpc-vidply/settings.definitions.yaml`,
@@ -42,6 +43,12 @@ final class PlayerOptionsBuilder
      * `{$mpcVidply.screenReaderAnnouncements}`.
      */
     private const SETTING_SCREEN_READER_ANNOUNCEMENTS = 'mpcVidply.screenReaderAnnouncements';
+
+    /**
+     * Site setting for resume playback (`{$mpcVidply.resumePlayback}`).
+     * Off by default; can be enabled site-wide or per content element.
+     */
+    private const SETTING_RESUME_PLAYBACK = 'mpcVidply.resumePlayback';
 
     private const PLAY_BUTTON_POSITIONS = ['center', 'left-top', 'right-top', 'left-bottom', 'right-bottom'];
 
@@ -90,6 +97,8 @@ final class PlayerOptionsBuilder
         $playerOptions['preload'] = 'metadata';
         $playerOptions['requirePlaybackForAccessibilityToggles'] = $playerOptions['deferLoad'];
         $playerOptions['screenReaderAnnouncements'] = $this->resolveScreenReaderAnnouncements($request);
+        $playerOptions['resumePlayback'] = $this->resolveResumePlayback($request)
+            || (bool)($bits & self::OPT_RESUME_PLAYBACK);
 
         return $playerOptions;
     }
@@ -309,6 +318,20 @@ final class PlayerOptionsBuilder
         }
 
         return (bool)$site->getSettings()->get(self::SETTING_SCREEN_READER_ANNOUNCEMENTS, true);
+    }
+
+    /**
+     * Resume playback stays off unless a site or content element turns it on.
+     * Requests without a resolved site (backend preview, CLI) keep the default.
+     */
+    private function resolveResumePlayback(?ServerRequestInterface $request): bool
+    {
+        $site = $request?->getAttribute('site');
+        if (!$site instanceof Site) {
+            return false;
+        }
+
+        return (bool)$site->getSettings()->get(self::SETTING_RESUME_PLAYBACK, false);
     }
 
     /**

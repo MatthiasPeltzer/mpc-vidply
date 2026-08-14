@@ -42,6 +42,29 @@ final class PlayerOptionsBuilderTest extends TestCase
         self::assertTrue($options['deferLoad']);
         self::assertTrue($options['requirePlaybackForAccessibilityToggles']);
         self::assertSame('metadata', $options['preload']);
+        self::assertFalse($options['resumePlayback']);
+    }
+
+    #[Test]
+    public function buildTakesResumePlaybackFromTheSiteSettings(): void
+    {
+        $site = new Site('mpc', 1, [
+            'base' => '/',
+            'settings' => ['mpcVidply' => ['resumePlayback' => true]],
+        ]);
+        $request = (new ServerRequest())->withAttribute('site', $site);
+
+        $options = $this->subject->build([], $request);
+
+        self::assertTrue($options['resumePlayback']);
+    }
+
+    #[Test]
+    public function buildEnablesResumePlaybackFromTheContentElementOption(): void
+    {
+        $options = $this->subject->build(['tx_mpcvidply_options' => 512]);
+
+        self::assertTrue($options['resumePlayback']);
     }
 
     #[Test]

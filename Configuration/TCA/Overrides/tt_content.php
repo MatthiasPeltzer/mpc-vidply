@@ -181,6 +181,7 @@ $vidplyFields = [
                 ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_options.captions_default', 'value' => 16],
                 ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_options.keyboard', 'value' => 64],
                 ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_options.auto_advance', 'value' => 256],
+                ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_options.resume_playback', 'value' => 512],
             ],
             // Default: controls + keyboard + auto-advance (8 + 64 + 256).
             // Responsive is always enabled (no toggle), and transcript is per-media item only.

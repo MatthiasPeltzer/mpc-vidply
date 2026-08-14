@@ -8,3 +8,7 @@ settings:
     default: true
     type: bool
     category: mpcVidply.accessibility
+  mpcVidply.resumePlayback:
+    default: false
+    type: bool
+    category: mpcVidply

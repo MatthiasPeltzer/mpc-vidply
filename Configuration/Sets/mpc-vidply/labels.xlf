@@ -15,6 +15,12 @@
       <trans-unit id="settings.description.mpcVidply.screenReaderAnnouncements">
         <source>The player announces play, pause, volume, mute, captions, fullscreen and speed changes in a live region, so screen reader users notice state changes they did not trigger themselves (WCAG 4.1.3 Status Messages). Switch this off only if another component on the page already announces the same states.</source>
       </trans-unit>
+      <trans-unit id="settings.mpcVidply.resumePlayback">
+        <source>Resume playback from last position</source>
+      </trans-unit>
+      <trans-unit id="settings.description.mpcVidply.resumePlayback">
+        <source>When enabled, the player remembers where a visitor stopped watching or listening and offers to continue from that point on the next visit. Applies to all VidPly players on this site unless a content element overrides it.</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>
