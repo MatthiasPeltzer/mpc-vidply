@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.26] - 2026-08-14
+
+### Added
+- Resume playback from the last position is off by default. Enable it site-wide
+  via Site Management → Settings → VidPly Player, or per content element with
+  the new “Resume from Last Position” player option.
+- The player track-info header shows a collapsible long description when a media
+  record has `long_description` filled in (default layout and single items).
+  Card/episode layouts keep using the existing episode header instead.
+
+### Changed
+- Updated the bundled VidPly player: `resumePlayback` now defaults to off in the
+  standalone player as well.
+
 ## [1.2.25] - 2026-08-11
 
 ### Changed
@@ -903,6 +917,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.26]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.25...v1.2.26
 [1.2.25]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.24...v1.2.25
 [1.2.24]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.23...v1.2.24
 [1.2.23]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.22...v1.2.23
