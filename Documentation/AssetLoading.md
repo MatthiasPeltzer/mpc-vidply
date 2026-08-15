@@ -11,7 +11,7 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 | `needsPrivacyLayer` | PrivacyLayer.js + privacy-layer.css | YouTube, Vimeo, or SoundCloud present |
 | `needsVidPlay` | VidPly core (`vidply/vidply.esm.min.js` + code-split chunks; compiled from TypeScript, includes the buffering spinner, the optional download button and the SoundCloud renderer) | Video or audio media (not external services) |
 | `needsPlaylist` | PlaylistInit.js | 2+ media items OR native player |
-| `needsHLS` | hls.js **1.6.16** (`hls.min.js`) | HLS source (.m3u8) detected in media files |
+| `needsHLS` | hls.js **1.7.0** (`hls.min.js`) | HLS source (.m3u8) detected in media files |
 | `needsDASH` | dash.js **5.2.0** (`dash.all.min.js`, modern UMD) | DASH source (.mpd) detected in media files |
 
 The episode layouts add two more assets, loaded by `VidPly/EpisodeLayout.html`
@@ -103,14 +103,14 @@ element's Layout field is `card` or `episodes`.
 
 **Before optimization:**
 - All JavaScript files loaded on every page with VidPly
-- Total: ~530KB (including vendored hls.js 1.6.16)
+- Total: ~604KB (including vendored hls.js 1.7.0)
 
 **After optimization:**
 - Single YouTube / Vimeo / SoundCloud: ~7KB (PrivacyLayer.js + privacy-layer.css)
 - Single local video: ~180KB (VidPly core + PlaylistInit) — already includes the buffering spinner, optional download button and the SoundCloud renderer
-- Video with HLS source: ~240KB (VidPly + PlaylistInit + hls.js)
+- Video with HLS source: ~314KB (VidPly + PlaylistInit + hls.js)
 - Video with DASH source: ~380KB (VidPly + PlaylistInit + dash.js)
-- Video with HLS + DASH sources: ~440KB (VidPly + PlaylistInit + hls.js + dash.js)
+- Video with HLS + DASH sources: ~514KB (VidPly + PlaylistInit + hls.js + dash.js)
 
 **Savings:**
 - External services: 97% reduction (~350KB → ~7KB)
@@ -172,7 +172,7 @@ foreach ($tracks as $track) {
     <f:asset.script identifier="vidPlyPrivacy" src="..." type="module"/>
 </f:if>
 
-<!-- HLS.js 1.6.16 - only for HLS streams -->
+<!-- HLS.js 1.7.0 - only for HLS streams -->
 <f:if condition="{needsHLS}">
     <f:asset.script identifier="vidPlyHLS" src="EXT:mpc_vidply/Resources/Public/JavaScript/hls.min.js" defer="true"/>
 </f:if>

@@ -335,7 +335,7 @@ VidPly only loads JavaScript needed for current media types:
 |----------|---------------|------|
 | YouTube/Vimeo/SoundCloud only | PrivacyLayer.js | ~5KB |
 | Local video/audio | `vidply/vidply.esm.min.js` (+ chunks) + PlaylistInit.js | ~180KB |
-| HLS streaming | + hls.min.js | +60KB |
+| HLS streaming | + hls.min.js | +74KB |
 | DASH streaming | + dash.all.min.js | +200KB |
 | Playlist (2+ items) | + PlaylistInit.js | +5KB |
 
@@ -347,7 +347,7 @@ VidPly only loads JavaScript needed for current media types:
 |------|---------|
 | `PrivacyLayer.js` | GDPR consent for external services (YouTube / Vimeo / SoundCloud) |
 | `PlaylistInit.js` | Playlist UI and navigation |
-| `hls.min.js` | hls.js **1.6.16** for adaptive HLS streaming (Chrome / Firefox / Edge / desktop Safari) |
+| `hls.min.js` | hls.js **1.7.0** for adaptive HLS streaming (Chrome / Firefox / Edge / desktop Safari) |
 | `dash.all.min.js` | dash.js **5.2.0** (modern UMD) for MPEG-DASH streaming |
 | `vidply/*.js` | Core player (compiled TypeScript → ESM, code-split, includes SoundCloud renderer + buffering spinner + optional download button) |
 
