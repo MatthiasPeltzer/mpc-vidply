@@ -12,7 +12,7 @@
     }
   ],
   "type": "typo3-cms-extension",
-  "version": "1.2.26",
+  "version": "1.2.27",
   "license": ["GPL-2.0-or-later"],
   "require": {
     "php": "^8.2",
