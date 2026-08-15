@@ -349,7 +349,7 @@ VidPly only loads JavaScript needed for current media types:
 | `PlaylistInit.js` | Playlist UI and navigation |
 | `hls.min.js` | hls.js **1.7.0** for adaptive HLS streaming (Chrome / Firefox / Edge / desktop Safari) |
 | `dash.all.min.js` | dash.js **5.2.0** (modern UMD) for MPEG-DASH streaming |
-| `vidply/*.js` | Core player (compiled TypeScript → ESM, code-split, includes SoundCloud renderer + buffering spinner + optional download button) |
+| `vidply/*.js` | Core player **v1.2.9** (compiled TypeScript → ESM, code-split, includes SoundCloud renderer + buffering spinner + optional download button) |
 
 ### Player Initialization
 
@@ -672,5 +672,5 @@ tx_mpcvidply_privacy_settings -- Privacy layer configuration
 
 ---
 
-**Version:** 1.2.17 | **TYPO3:** 13.4+ / 14.x | **PHP:** ≥8.2
+**Version:** 1.2.27 | **TYPO3:** 13.4+ / 14.x | **PHP:** ≥8.2 | **Bundled player:** VidPly v1.2.9
 
