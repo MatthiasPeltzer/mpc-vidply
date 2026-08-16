@@ -179,13 +179,50 @@ $vidplyFields = [
                 ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_options.muted', 'value' => 4],
                 ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_options.controls', 'value' => 8],
                 ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_options.captions_default', 'value' => 16],
-                ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_options.keyboard', 'value' => 64],
-                ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_options.auto_advance', 'value' => 256],
-                ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_options.resume_playback', 'value' => 512],
+                ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_options.keyboard', 'value' => 32],
+                ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_options.auto_advance', 'value' => 64],
             ],
-            // Default: controls + keyboard + auto-advance (8 + 64 + 256).
+            // Default: controls + keyboard + auto-advance (8 + 32 + 64 = 104).
+            // Item values follow FormEngine positional bits (2^index), not legacy 64/256.
             // Responsive is always enabled (no toggle), and transcript is per-media item only.
-            'default' => 328,
+            'default' => 104,
+        ],
+    ],
+
+    'tx_mpcvidply_resume_playback' => [
+        'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_resume_playback',
+        'config' => [
+            'type' => 'check',
+            'renderType' => 'checkboxToggle',
+            'default' => 0,
+            'items' => [
+                [
+                    'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_resume_playback.toggle',
+                    'value' => 1,
+                ],
+            ],
+        ],
+        'behaviour' => [
+            'allowLanguageSynchronization' => true,
+        ],
+    ],
+
+    'tx_mpcvidply_show_track_info' => [
+        'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_show_track_info',
+        'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_show_track_info.description',
+        'config' => [
+            'type' => 'check',
+            'renderType' => 'checkboxToggle',
+            'default' => 0,
+            'items' => [
+                [
+                    'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_show_track_info.toggle',
+                    'value' => 1,
+                ],
+            ],
+        ],
+        'behaviour' => [
+            'allowLanguageSynchronization' => true,
         ],
     ],
 
@@ -310,6 +347,8 @@ $GLOBALS['TCA']['tt_content']['types']['mpc_vidply'] = [
             tx_mpcvidply_episode_pagination,
             tx_mpcvidply_episode_per_page,
             tx_mpcvidply_options,
+            tx_mpcvidply_resume_playback,
+            tx_mpcvidply_show_track_info,
             tx_mpcvidply_volume,
             tx_mpcvidply_playback_speed,
             tx_mpcvidply_language,
@@ -363,6 +402,8 @@ $GLOBALS['TCA']['tt_content']['types']['mpc_vidply_detail'] = [
             --palette--;;headers,
         --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tabs.settings,
             tx_mpcvidply_options,
+            tx_mpcvidply_resume_playback,
+            tx_mpcvidply_show_track_info,
             tx_mpcvidply_volume,
             tx_mpcvidply_playback_speed,
             tx_mpcvidply_language,

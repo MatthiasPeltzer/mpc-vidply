@@ -273,6 +273,12 @@
       <trans-unit id="tt_content.tx_mpcvidply_options.resume_playback">
         <source>Resume from Last Position</source>
       </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_options.show_track_info">
+        <source>Show track info header (single media)</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_options.show_track_info.description">
+        <source>Displays title, artist, description, and date above the player for a single medium. Playlists always show track info when switching tracks, including duration in the track-info header.</source>
+      </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_playback_speed">
         <source>Playback Speed</source>
       </trans-unit>
@@ -290,6 +296,21 @@
       </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_show_related">
         <source>Related content</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_show_track_info">
+        <source>Show track info header (single media)</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_show_track_info.description">
+        <source>Displays title, artist, description, and date in the player for a single medium. Playlists always show track info when switching tracks, including duration in the track-info header.</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_show_track_info.toggle">
+        <source>Show track info header (single media)</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_resume_playback">
+        <source>Resume from Last Position</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_resume_playback.toggle">
+        <source>Resume from last position</source>
       </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_show_related.description">
         <source>When enabled, a horizontal list of more items from the same category is shown below the player (if any exist). Turn off to hide this block entirely.</source>

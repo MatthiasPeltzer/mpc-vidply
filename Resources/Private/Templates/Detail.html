@@ -68,7 +68,8 @@
                                 id="mpc-vidply-detail-related-track"
                                 data-vidply-shelf
                                 role="list"
-                                tabindex="0">
+                                tabindex="0"
+                                aria-labelledby="mpc-vidply-detail-related-heading">
                                 <f:for each="{detail.related}" as="card">
                                     <li class="mpc-vidply-listview-shelf__item" role="listitem">
                                         <f:render partial="Listview/Card" arguments="{card: card, cardStyle: 'poster'}" />

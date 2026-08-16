@@ -208,7 +208,9 @@ document.dispatchEvent(new CustomEvent('mpc:dynamic-content:ready', { detail: { 
 | Field | Type | Description |
 |-------|------|-------------|
 | `tx_mpcvidply_media_items` | group | Media record selection (MM) |
-| `tx_mpcvidply_options` | check | Bitmask options |
+| `tx_mpcvidply_options` | check | Bitmask options (autoplay, loop, muted, controls, captions, keyboard, auto-advance) |
+| `tx_mpcvidply_resume_playback` | check (toggle) | Resume playback for this content element |
+| `tx_mpcvidply_show_track_info` | check (toggle) | Show in-player track info for single media |
 | `tx_mpcvidply_volume` | decimal | Default volume (0-1) |
 | `tx_mpcvidply_playback_speed` | decimal | Default speed (0.25-2.0) |
 | `tx_mpcvidply_language` | select | Force UI language |
@@ -483,12 +485,16 @@ $GLOBALS['TCA']['tx_mpcvidply_media']['types']['myservice'] = [
 
 ### Custom Player Options
 
-Add to `tt_content.php`:
+Prefer dedicated `checkboxToggle` fields on `tt_content` for new on/off player
+settings. TYPO3 validates `type=check` bitmasks with `(2 ** count(items)) - 1`, so
+adding more bitmask bits can silently fail on save once the field is full.
+
+If a bitmask item is still appropriate, keep the total item count within the limit:
 
 ```php
 $GLOBALS['TCA']['tt_content']['columns']['tx_mpcvidply_options']['config']['items'][] = [
     'label' => 'My Option',
-    'value' => 512,  // Next power of 2
+    'value' => 32,  // Must fit `(2 ** count(items)) - 1` (348 for seven items)
 ];
 ```
 

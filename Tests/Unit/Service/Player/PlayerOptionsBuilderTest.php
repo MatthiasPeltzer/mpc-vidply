@@ -62,7 +62,7 @@ final class PlayerOptionsBuilderTest extends TestCase
     #[Test]
     public function buildEnablesResumePlaybackFromTheContentElementOption(): void
     {
-        $options = $this->subject->build(['tx_mpcvidply_options' => 512]);
+        $options = $this->subject->build(['tx_mpcvidply_resume_playback' => 1]);
 
         self::assertTrue($options['resumePlayback']);
     }
@@ -70,9 +70,9 @@ final class PlayerOptionsBuilderTest extends TestCase
     #[Test]
     public function buildDecodesBitmask(): void
     {
-        // CONTROLS (8) + KEYBOARD (64) + AUTO_ADVANCE (256) = 328 (the documented default)
+        // CONTROLS (8) + KEYBOARD (32) + AUTO_ADVANCE (64) = 104 (the documented default)
         $options = $this->subject->build([
-            'tx_mpcvidply_options' => 328,
+            'tx_mpcvidply_options' => 104,
             'tx_mpcvidply_volume' => 0.5,
             'tx_mpcvidply_playback_speed' => 1.5,
             'tx_mpcvidply_language' => 'de',
@@ -89,6 +89,16 @@ final class PlayerOptionsBuilderTest extends TestCase
         self::assertSame(1.5, $options['playbackSpeed']);
         self::assertSame('de', $options['language']);
         self::assertSame('de', $options['defaultTranscriptLanguage']);
+    }
+
+    #[Test]
+    public function buildDecodesKeyboardFromFormEnginePositionalBitmask(): void
+    {
+        // Muted + controls + captions + keyboard (FormEngine positions 2–5) = 60
+        $options = $this->subject->build(['tx_mpcvidply_options' => 60]);
+
+        self::assertTrue($options['keyboard']);
+        self::assertFalse($options['autoAdvance']);
     }
 
     #[Test]
@@ -159,6 +169,48 @@ final class PlayerOptionsBuilderTest extends TestCase
         ]);
 
         self::assertSame(!$isStream, $playerOptions['requirePlaybackForAccessibilityToggles']);
+    }
+
+    #[Test]
+    public function applyTrackDependentOptionsDisablesTrackInfoForSingleItemByDefault(): void
+    {
+        $playerOptions = [];
+
+        $this->subject->applyTrackDependentOptions($playerOptions, [
+            'isPlaylist' => false,
+            'tracks' => [['title' => 'A']],
+            'records' => [],
+        ]);
+
+        self::assertFalse($playerOptions['showTrackInfo']);
+    }
+
+    #[Test]
+    public function applyTrackDependentOptionsEnablesTrackInfoForSingleItemWhenRequested(): void
+    {
+        $playerOptions = [];
+
+        $this->subject->applyTrackDependentOptions($playerOptions, [
+            'isPlaylist' => false,
+            'tracks' => [['title' => 'A']],
+            'records' => [],
+        ], ['tx_mpcvidply_show_track_info' => 1]);
+
+        self::assertTrue($playerOptions['showTrackInfo']);
+    }
+
+    #[Test]
+    public function applyTrackDependentOptionsLeavesTrackInfoUnsetForPlaylists(): void
+    {
+        $playerOptions = [];
+
+        $this->subject->applyTrackDependentOptions($playerOptions, [
+            'isPlaylist' => true,
+            'tracks' => [['title' => 'A'], ['title' => 'B']],
+            'records' => [],
+        ], ['tx_mpcvidply_show_track_info' => 1]);
+
+        self::assertArrayNotHasKey('showTrackInfo', $playerOptions);
     }
 
     #[Test]

@@ -335,6 +335,18 @@
         <source>Muted</source>
         <target>Stummgeschaltet</target>
       </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_options.resume_playback">
+        <source>Resume playback</source>
+        <target>Wiedergabe fortsetzen</target>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_options.show_track_info">
+        <source>Show track info header (single media)</source>
+        <target>Track-Info-Kopfzeile anzeigen (Einzelmedium)</target>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_options.show_track_info.description">
+        <source>Displays title, artist, description, and date above the player for a single medium. Playlists always show track info when switching tracks. Duration is not shown in the track-info header.</source>
+        <target>Zeigt Titel, Künstler, Beschreibung und Datum über dem Player für ein einzelnes Medium. Playlists zeigen beim Trackwechsel weiterhin Track-Info inklusive Dauer in der Track-Info-Kopfzeile.</target>
+      </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_playback_speed">
         <source>Playback Speed</source>
         <target>Wiedergabegeschwindigkeit</target>
@@ -354,6 +366,26 @@
       <trans-unit id="tt_content.tx_mpcvidply_poster">
         <source>Poster Image</source>
         <target>Vorschaubild</target>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_show_track_info">
+        <source>Show track info header (single media)</source>
+        <target>Track-Info-Kopfzeile anzeigen (Einzelmedium)</target>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_show_track_info.description">
+        <source>Displays title, artist, description, and date in the player for a single medium. Playlists always show track info when switching tracks, including duration in the track-info header.</source>
+        <target>Zeigt Titel, Künstler, Beschreibung und Datum im Player für ein einzelnes Medium. Playlists zeigen beim Trackwechsel weiterhin Track-Info inklusive Dauer in der Track-Info-Kopfzeile.</target>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_show_track_info.toggle">
+        <source>Show track info header (single media)</source>
+        <target>Track-Info-Kopfzeile anzeigen (Einzelmedium)</target>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_resume_playback">
+        <source>Resume from Last Position</source>
+        <target>Wiedergabe an letzter Position fortsetzen</target>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_resume_playback.toggle">
+        <source>Resume from last position</source>
+        <target>An letzter Position fortsetzen</target>
       </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_show_related">
         <source>Related content</source>

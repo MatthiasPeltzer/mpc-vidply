@@ -93,6 +93,7 @@ final class VidPlyProcessorTest extends FunctionalTestCase
         self::assertStringContainsString('clip.mp4', (string)$result['tracks'][0]['src']);
         self::assertIsArray($result['options']);
         self::assertArrayHasKey('controls', $result['options']);
+        self::assertFalse($result['options']['showTrackInfo']);
     }
 
     #[Test]
@@ -126,5 +127,6 @@ final class VidPlyProcessorTest extends FunctionalTestCase
         self::assertSame('mixedPlaylist', $result['renderMode']);
         self::assertTrue($result['isMixedPlaylist']);
         self::assertCount(2, $result['tracks']);
+        self::assertArrayNotHasKey('showTrackInfo', $result['options']);
     }
 }

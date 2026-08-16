@@ -33,9 +33,14 @@ final class PlayerOptionsBuilder
     private const OPT_MUTED = 4;
     private const OPT_CONTROLS = 8;
     private const OPT_CAPTIONS_DEFAULT = 16;
-    private const OPT_KEYBOARD = 64;
-    private const OPT_AUTO_ADVANCE = 256;
-    private const OPT_RESUME_PLAYBACK = 512;
+    /**
+     * Bits 0–4 match the TCA item values (1, 2, 4, 8, 16). Items 5–6 must use
+     * 2^position because TYPO3 FormEngine stores check fields as a positional
+     * bitmask (see `typo3-backend-form-update-bitmask`), not the sparse values
+     * formerly documented here (64, 256).
+     */
+    private const OPT_KEYBOARD = 32;
+    private const OPT_AUTO_ADVANCE = 64;
 
     /**
      * Site setting declared in `Configuration/Sets/mpc-vidply/settings.definitions.yaml`,
@@ -98,7 +103,7 @@ final class PlayerOptionsBuilder
         $playerOptions['requirePlaybackForAccessibilityToggles'] = $playerOptions['deferLoad'];
         $playerOptions['screenReaderAnnouncements'] = $this->resolveScreenReaderAnnouncements($request);
         $playerOptions['resumePlayback'] = $this->resolveResumePlayback($request)
-            || (bool)($bits & self::OPT_RESUME_PLAYBACK);
+            || (int)($data['tx_mpcvidply_resume_playback'] ?? 0) === 1;
 
         return $playerOptions;
     }
@@ -108,9 +113,14 @@ final class PlayerOptionsBuilder
      *
      * @param array<string, mixed> $playerOptions
      * @param TrackResult $trackResult
+     * @param array<string, mixed> $data
      */
-    public function applyTrackDependentOptions(array &$playerOptions, array $trackResult): void
+    public function applyTrackDependentOptions(array &$playerOptions, array $trackResult, array $data = []): void
     {
+        if (!$trackResult['isPlaylist']) {
+            $playerOptions['showTrackInfo'] = (int)($data['tx_mpcvidply_show_track_info'] ?? 0) === 1;
+        }
+
         $playerOptions['transcript'] = false;
         foreach ($trackResult['tracks'] as $t) {
             if (!empty($t['enableTranscript'])) {

@@ -342,10 +342,8 @@ function createPrivacyOverlay(service, track, onConsent, privacySettings = null,
     privacyText.className = 'vidply-privacy-text';
 
     if (settings.headline) {
-        const headlineEl = document.createElement('p');
+        const headlineEl = document.createElement('h2');
         headlineEl.className = 'vidply-privacy-headline';
-        headlineEl.setAttribute('role', 'heading');
-        headlineEl.setAttribute('aria-level', '2');
         headlineEl.textContent = settings.headline;
         privacyText.appendChild(headlineEl);
     }

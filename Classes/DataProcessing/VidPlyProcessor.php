@@ -131,7 +131,7 @@ class VidPlyProcessor implements DataProcessorInterface
         if ($layout !== 'default') {
             $trackResult = $this->withoutPlayerLongDescriptions($trackResult);
         }
-        $this->playerOptionsBuilder->applyTrackDependentOptions($playerOptions, $trackResult);
+        $this->playerOptionsBuilder->applyTrackDependentOptions($playerOptions, $trackResult, $data);
 
         $playlistResult = $this->playerOptionsBuilder->buildPlaylistData($trackResult, $playerOptions, $layout);
         $playlistData = $playlistResult['playlistData'];

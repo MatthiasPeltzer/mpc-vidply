@@ -1,20 +1,15 @@
 <html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
 
 <f:comment>
-    The video and the audio player differ only in the element name, the default
-    label, the poster and which sources partial applies, so both render from
-    here. `mediaKind` is `audio` or `video` — that is the element name as well,
-    and Fluid has no view helper for a dynamic tag, so it is written into the
-    markup as plain text.
+    The video and the audio player differ only in the element name, the poster
+    and which sources partial applies, so both render from here. `mediaKind` is
+    `audio` or `video` — that is the element name as well, and Fluid has no
+    view helper for a dynamic tag, so it is written into the markup as plain text.
+    The wrapper region in Player.html carries the accessible name for the player.
 </f:comment>
-<f:if condition="{mediaKind} == 'audio'">
-    <f:then><f:variable name="defaultMediaLabel" value="Audio player" /></f:then>
-    <f:else><f:variable name="defaultMediaLabel" value="Video player" /></f:else>
-</f:if>
 
 <{mediaKind}
     id="{vidply.uniqueId}"
-    aria-label="{f:if(condition: data.header, then: data.header, else: defaultMediaLabel)}"
     controls
     <f:if condition="{vidply.privacyPlayIconUrl}">data-vidply-play-icon="{vidply.privacyPlayIconUrl}"</f:if>
     data-vidply-play-position="{vidply.privacyPlayButtonPosition}"
