@@ -481,6 +481,7 @@ async function handleImport(wrap) {
       pid: config.pid,
       recordIdentifier: config.recordIdentifier,
       tableName: config.tableName,
+      currentMediaType: config.currentMediaType,
     });
     const result = await response.resolve();
 

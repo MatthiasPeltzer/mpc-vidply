@@ -47,7 +47,7 @@ final class MediaFromUrlService
         private readonly MediaOEmbedMetadataService $oEmbedMetadataService,
     ) {}
 
-    public function import(string $url, Folder $targetFolder): MediaImportResult
+    public function import(string $url, Folder $targetFolder, ?MediaType $preferredMediaType = null): MediaImportResult
     {
         $normalizedUrl = $this->urlNormalizer->normalize($url);
         if ($normalizedUrl === null) {
@@ -56,7 +56,7 @@ final class MediaFromUrlService
             );
         }
 
-        $file = $this->transformUrlToFile($normalizedUrl, $targetFolder);
+        $file = $this->transformUrlToFile($normalizedUrl, $targetFolder, $preferredMediaType);
         if ($file === null) {
             return MediaImportResult::fail($this->buildFailureMessage($normalizedUrl));
         }
@@ -112,14 +112,40 @@ final class MediaFromUrlService
         );
     }
 
-    private function transformUrlToFile(string $url, Folder $targetFolder): ?File
+    private function transformUrlToFile(string $url, Folder $targetFolder, ?MediaType $preferredMediaType = null): ?File
     {
         try {
-            $file = $this->onlineMediaHelperRegistry->transformUrlToFile($url, $targetFolder, []);
+            $file = $this->onlineMediaHelperRegistry->transformUrlToFile(
+                $url,
+                $targetFolder,
+                $this->resolveAllowedHelperExtensions($preferredMediaType),
+            );
             return $file;
         } catch (OnlineMediaAlreadyExistsException $exception) {
             return $exception->getOnlineMedia();
         }
+    }
+
+    /**
+     * Limit which online-media helpers are tried for a URL import.
+     *
+     * `.m3u8` is accepted by both HlsHelper and ExternalAudioHelper. When both
+     * audio and video domain allow-lists include the same host, the helper order
+     * alone is ambiguous — the record's media type must pick the right importer.
+     *
+     * @return list<string>
+     */
+    private function resolveAllowedHelperExtensions(?MediaType $preferredMediaType): array
+    {
+        if ($preferredMediaType === null) {
+            return [];
+        }
+
+        if ($preferredMediaType->isAudioOnly()) {
+            return ['soundcloud', 'externalaudio'];
+        }
+
+        return ['youtube', 'vimeo', 'hls', 'dash', 'externalvideo'];
     }
 
     private function buildResultFromFile(File $file, ?string $sourceUrl = null): MediaImportResult

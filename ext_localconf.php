@@ -67,27 +67,8 @@ try {
     $extConf = [];
 }
 
-if (trim((string)($extConf['allowedVideoDomains'] ?? '')) !== '') {
-    $GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['onlineMediaHelpers']['externalvideo'] ??= ExternalVideoHelper::class;
-    // Ensure Filelist treats the online media container file as a media file so thumbnails are rendered
-    $mediaExt = GeneralUtility::trimExplode(',', (string)($GLOBALS['TYPO3_CONF_VARS']['SYS']['mediafile_ext'] ?? ''), true);
-    if (!in_array('externalvideo', $mediaExt, true)) {
-        $mediaExt[] = 'externalvideo';
-        $GLOBALS['TYPO3_CONF_VARS']['SYS']['mediafile_ext'] = implode(',', $mediaExt);
-    }
-}
-
-if (trim((string)($extConf['allowedAudioDomains'] ?? '')) !== '') {
-    $GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['onlineMediaHelpers']['externalaudio'] ??= ExternalAudioHelper::class;
-    // Ensure Filelist treats the online media container file as a media file so thumbnails are rendered
-    $mediaExt = GeneralUtility::trimExplode(',', (string)($GLOBALS['TYPO3_CONF_VARS']['SYS']['mediafile_ext'] ?? ''), true);
-    if (!in_array('externalaudio', $mediaExt, true)) {
-        $mediaExt[] = 'externalaudio';
-        $GLOBALS['TYPO3_CONF_VARS']['SYS']['mediafile_ext'] = implode(',', $mediaExt);
-    }
-}
-
-// HLS / M3U stream playlists (Add media by URL) - guarded by allow-lists
+// HLS / DASH before external audio: `.m3u8` is valid for both, but TV streams
+// should default to the video helpers when no record media type is available.
 if (trim((string)($extConf['allowedVideoDomains'] ?? '')) !== '') {
     $GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['onlineMediaHelpers']['hls'] ??= HlsHelper::class;
     $mediaExt = GeneralUtility::trimExplode(',', (string)($GLOBALS['TYPO3_CONF_VARS']['SYS']['mediafile_ext'] ?? ''), true);
@@ -98,6 +79,20 @@ if (trim((string)($extConf['allowedVideoDomains'] ?? '')) !== '') {
     $GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['onlineMediaHelpers']['dash'] ??= DashHelper::class;
     if (!in_array('dash', $mediaExt, true)) {
         $mediaExt[] = 'dash';
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['mediafile_ext'] = implode(',', $mediaExt);
+    }
+    $GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['onlineMediaHelpers']['externalvideo'] ??= ExternalVideoHelper::class;
+    if (!in_array('externalvideo', $mediaExt, true)) {
+        $mediaExt[] = 'externalvideo';
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['mediafile_ext'] = implode(',', $mediaExt);
+    }
+}
+
+if (trim((string)($extConf['allowedAudioDomains'] ?? '')) !== '') {
+    $GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['onlineMediaHelpers']['externalaudio'] ??= ExternalAudioHelper::class;
+    $mediaExt = GeneralUtility::trimExplode(',', (string)($GLOBALS['TYPO3_CONF_VARS']['SYS']['mediafile_ext'] ?? ''), true);
+    if (!in_array('externalaudio', $mediaExt, true)) {
+        $mediaExt[] = 'externalaudio';
         $GLOBALS['TYPO3_CONF_VARS']['SYS']['mediafile_ext'] = implode(',', $mediaExt);
     }
 }

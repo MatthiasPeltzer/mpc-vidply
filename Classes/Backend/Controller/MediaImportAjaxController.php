@@ -38,6 +38,7 @@ final readonly class MediaImportAjaxController
         $pid = (int)($body['pid'] ?? 0);
         $recordIdentifier = trim((string)($body['recordIdentifier'] ?? ''));
         $tableName = trim((string)($body['tableName'] ?? 'tx_mpcvidply_media'));
+        $preferredMediaType = MediaType::tryFrom(trim((string)($body['currentMediaType'] ?? '')));
 
         if ($url === '') {
             return new JsonResponse(['success' => false, 'errorMessage' => 'Please paste a media URL.']);
@@ -61,7 +62,7 @@ final readonly class MediaImportAjaxController
             return new JsonResponse(['success' => false, 'errorMessage' => 'Could not resolve an upload folder for this record.']);
         }
 
-        $result = $this->mediaFromUrlService->import($url, $targetFolder);
+        $result = $this->mediaFromUrlService->import($url, $targetFolder, $preferredMediaType);
         if (!$result->success) {
             return new JsonResponse($result->toArray());
         }

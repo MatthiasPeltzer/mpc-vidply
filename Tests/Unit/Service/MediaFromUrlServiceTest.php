@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\Tests\Unit\Service;
 
+use Mpc\MpcVidply\Enums\MediaType;
 use Mpc\MpcVidply\Service\MediaFromUrlService;
 use Mpc\MpcVidply\Service\MediaOEmbedMetadataService;
 use Mpc\MpcVidply\Service\MediaUrlNormalizer;
@@ -117,5 +118,63 @@ final class MediaFromUrlServiceTest extends TestCase
                 unlink($previewPath);
             }
         }
+    }
+
+    #[Test]
+    public function importForVideoRecordExcludesExternalAudioHelper(): void
+    {
+        $registry = $this->createMock(OnlineMediaHelperRegistry::class);
+        $registry->expects(self::once())
+            ->method('transformUrlToFile')
+            ->with(
+                'https://daserste-live.ard-mcdn.de/daserste/live/hls/de/master.m3u8',
+                self::isInstanceOf(Folder::class),
+                ['youtube', 'vimeo', 'hls', 'dash', 'externalvideo'],
+            )
+            ->willReturn(null);
+
+        $subject = new MediaFromUrlService(
+            new MediaUrlNormalizer(),
+            $registry,
+            $this->createMock(ExtensionConfiguration::class),
+            new MediaOEmbedMetadataService(),
+        );
+
+        $result = $subject->import(
+            'https://daserste-live.ard-mcdn.de/daserste/live/hls/de/master.m3u8',
+            $this->createMock(Folder::class),
+            MediaType::Video,
+        );
+
+        self::assertFalse($result->success);
+    }
+
+    #[Test]
+    public function importForAudioRecordUsesExternalAudioHelperOnly(): void
+    {
+        $registry = $this->createMock(OnlineMediaHelperRegistry::class);
+        $registry->expects(self::once())
+            ->method('transformUrlToFile')
+            ->with(
+                'https://wdr.de/live.m3u8',
+                self::isInstanceOf(Folder::class),
+                ['soundcloud', 'externalaudio'],
+            )
+            ->willReturn(null);
+
+        $subject = new MediaFromUrlService(
+            new MediaUrlNormalizer(),
+            $registry,
+            $this->createMock(ExtensionConfiguration::class),
+            new MediaOEmbedMetadataService(),
+        );
+
+        $result = $subject->import(
+            'https://wdr.de/live.m3u8',
+            $this->createMock(Folder::class),
+            MediaType::Audio,
+        );
+
+        self::assertFalse($result->success);
     }
 }
