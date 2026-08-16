@@ -5,11 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.2.28] - 2026-08-16
+## [1.2.29] - 2026-08-16
 
 ### Added
 - Updated bundled VidPly player: live stream controls (LIVE badge, conditional skip-forward, Go live, auto-detection for HLS/DASH live sources).
 - Updated bundled VidPly player: HLS live subtitle/transcript fixes (auto-activate hls.js subtitle track, incremental live transcript, deduplicated cues).
+
+### Fixed
+- Updated bundled VidPly player: HLS VOD transcript loads all segmented WebVTT parts (not only the first ~6 s); control bar rebuild re-applies live/VOD button visibility after HLS caption buttons are added; VOD shows skip-forward again; live streams hide VOD-only controls pre-play and probe the level playlist on manifest parse for early live detection.
+- Updated bundled VidPly player: VOD HLS sources no longer show the LIVE badge (Apple BipBop and similar demos); unknown duration before level playlists load no longer triggers live mode; VOD HLS no longer switches to live controls/captions when MSE reports `Infinity` duration during startup.
+
+## [1.2.28] - 2026-08-16
 
 ### Accessibility
 - Playlist privacy overlay: use semantic `<h2>` for headline instead of `role="heading"` on a paragraph.
@@ -941,6 +947,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.29]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.28...v1.2.29
 [1.2.28]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.27...v1.2.28
 [1.2.27]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.26...v1.2.27
 [1.2.26]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.25...v1.2.26
