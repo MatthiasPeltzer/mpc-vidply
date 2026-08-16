@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.28] - 2026-08-16
+
+### Added
+- Updated bundled VidPly player: live stream controls (LIVE badge, conditional skip-forward, Go live, auto-detection for HLS/DASH live sources).
+- Updated bundled VidPly player: HLS live subtitle/transcript fixes (auto-activate hls.js subtitle track, incremental live transcript, deduplicated cues).
+
+### Accessibility
+- Playlist privacy overlay: use semantic `<h2>` for headline instead of `role="heading"` on a paragraph.
+- Detail page related shelf: label focusable shelf list via `aria-labelledby`.
+- Media player partial: remove duplicate `aria-label` on `<video>`/`<audio>` when wrapper region is already labeled.
+- Updated bundled VidPly player: transcript modal focus trap, caption style dialog trap, keyboard help inert background, slider `aria-orientation`, playlist `aria-selected`.
+
+### Fixed
+- URL import: respect the record media type when `.m3u8` URLs match both audio and video domain allow-lists — video records use the HLS helper, audio records keep external audio (fixes TV livestreams imported as audio-only).
+- Player Options bitmask: align keyboard (bit 32) and auto-advance (bit 64) with TYPO3 FormEngine positional storage so backend saves match frontend behaviour (keyboard help button).
+- Upgrade wizard and migration service remap legacy keyboard/auto-advance bits (64/256) and move show-track-info/resume flags into dedicated columns.
+- Ship VidPly player fix for volume/mute init and scoped localStorage preferences.
+
 ## [1.2.27] - 2026-08-15
 
 ### Changed
@@ -923,6 +941,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.28]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.27...v1.2.28
 [1.2.27]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.26...v1.2.27
 [1.2.26]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.25...v1.2.26
 [1.2.25]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.24...v1.2.25
