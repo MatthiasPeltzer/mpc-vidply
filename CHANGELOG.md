@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.31] - 2026-08-18
+
+### Fixed
+- Updated bundled VidPly player: SoundCloud sets in mixed-media playlists no longer auto-advance after the first track.
+
 ## [1.2.30] - 2026-08-18
 
 ### Changed
@@ -953,6 +958,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.31]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.30...v1.2.31
 [1.2.30]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.29...v1.2.30
 [1.2.29]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.28...v1.2.29
 [1.2.28]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.27...v1.2.28
