@@ -10,7 +10,7 @@ Universal, Accessible Video & Audio Player for TYPO3. Includes support for HTML5
 - **Auto Playlists** - 2+ items automatically create playlists
 - **Full Accessibility** - Captions, chapters, audio description, sign language, keyboard controls
 - **HLS Streaming** - Adaptive bitrate streaming with **hls.js 1.7.0** (Chrome / Firefox / Edge / desktop Safari) and native HLS on iOS / iPadOS — both paths integrate with VidPly's captions, transcript and quality menus
-- **DASH Streaming** - MPEG-DASH via **dash.js 5.2.0** (modern UMD) with adaptive quality and subtitles (integrated into video/audio types)
+- **DASH Streaming** - MPEG-DASH via **dash.js 5.2.1** (modern UMD) with adaptive quality and subtitles (integrated into video/audio types)
 - **Import from URL** - Paste a media URL in the backend to auto-detect type, attach online media, and pre-fill title, artist, and poster
 - **SoundCloud Support** - GDPR consent layer, then SoundCloud Widget playback (optional developer opt-in for unified VidPly controls — see [PrivacyLayer.md](Documentation/PrivacyLayer.md))
 - **Buffering Spinner** - Centered loading spinner shown automatically while the media is buffering

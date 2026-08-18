@@ -17,9 +17,9 @@
 
 | Browser | Implementation | Status |
 |---|---|---|
-| Chrome / Edge | dash.js **5.2.0** (modern UMD) | Working |
-| Firefox | dash.js **5.2.0** | Working |
-| Safari | dash.js **5.2.0** | Working |
+| Chrome / Edge | dash.js **5.2.1** (modern UMD) | Working |
+| Firefox | dash.js **5.2.1** | Working |
+| Safari | dash.js **5.2.1** | Working |
 
 ## Technical Setup
 
@@ -76,12 +76,12 @@ Loaded locally by `mpc-vidply` via `Resources/Private/Partials/VidPly/Assets.htm
 | | |
 |---|---|
 | **Vendored file** | `Resources/Public/JavaScript/dash.all.min.js` |
-| **Pinned version** | **dash.js 5.2.0** (modern UMD build) |
+| **Pinned version** | **dash.js 5.2.1** (modern UMD build) |
 
 VidPly's CDN fallback (used only when dash.js is not already on the page):
 
 ```
-https://cdn.jsdelivr.net/npm/dashjs@5.2.0/dist/modern/umd/dash.all.min.js
+https://cdn.jsdelivr.net/npm/dashjs@5.2.1/dist/modern/umd/dash.all.min.js
 ```
 
 #### 2. VidPly DASH Renderer
@@ -189,7 +189,7 @@ ddev typo3 cache:flush
 
 - **Adaptive bitrate** — Automatically adjusts quality (HLS and DASH)
 - **Buffer optimization** — Smooth playback
-- **CDN delivery** — Standalone VidPly embeds can load pinned releases from jsDelivr; `mpc-vidply` ships **hls.js 1.7.0** and **dash.js 5.2.0** locally
+- **CDN delivery** — Standalone VidPly embeds can load pinned releases from jsDelivr; `mpc-vidply` ships **hls.js 1.7.0** and **dash.js 5.2.1** locally
 - **Minimal overhead** — `hls.js` / `dash.js` only load when an `.m3u8` / `.mpd` source is actually used
 - **Conditional loading** — `hls.js` and `dash.js` are loaded independently based on detected source formats by the `VidPlyProcessor`
 - **Native HLS on iOS** — Avoids the cost of running `hls.js` on devices where it cannot run anyway, while still keeping the full VidPly UI through the native `TextTrack` bridge

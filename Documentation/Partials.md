@@ -36,7 +36,7 @@ Modular template structure for maintainability and customization.
 - `privacy-layer.css` - Privacy layer styles (external services only)
 - `PrivacyLayer.js` - YouTube, Vimeo, SoundCloud
 - `hls.min.js` — vendored **hls.js 1.7.0** (HLS streams only)
-- `dash.all.min.js` — vendored **dash.js 5.2.0** (modern UMD; DASH streams only)
+- `dash.all.min.js` — vendored **dash.js 5.2.1** (modern UMD; DASH streams only)
 - `PlaylistInit.js` - Playlists or player init
 - `vidply/vidply.esm.min.js` - Native player only (plus code-split chunks)
 

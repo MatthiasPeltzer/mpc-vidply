@@ -12,7 +12,7 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 | `needsVidPlay` | VidPly core (`vidply/vidply.esm.min.js` + code-split chunks; compiled from TypeScript, includes the buffering spinner, the optional download button and the SoundCloud renderer) | Video or audio media (not external services) |
 | `needsPlaylist` | PlaylistInit.js | 2+ media items OR native player |
 | `needsHLS` | hls.js **1.7.0** (`hls.min.js`) | HLS source (.m3u8) detected in media files |
-| `needsDASH` | dash.js **5.2.0** (`dash.all.min.js`, modern UMD) | DASH source (.mpd) detected in media files |
+| `needsDASH` | dash.js **5.2.1** (`dash.all.min.js`, modern UMD) | DASH source (.mpd) detected in media files |
 
 The episode layouts add two more assets, loaded by `VidPly/EpisodeLayout.html`
 rather than by a flag: `episode.min.css` and `EpisodeInit.min.js` (wires the
@@ -177,7 +177,7 @@ foreach ($tracks as $track) {
     <f:asset.script identifier="vidPlyHLS" src="EXT:mpc_vidply/Resources/Public/JavaScript/hls.min.js" defer="true"/>
 </f:if>
 
-<!-- dash.js 5.2.0 (modern UMD) - only for DASH streams -->
+<!-- dash.js 5.2.1 (modern UMD) - only for DASH streams -->
 <f:if condition="{needsDASH}">
     <f:asset.script identifier="vidPlyDASH" src="EXT:mpc_vidply/Resources/Public/JavaScript/dash.all.min.js" defer="true"/>
 </f:if>
