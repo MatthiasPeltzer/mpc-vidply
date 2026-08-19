@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Content element option **Playlist position** (`below` default, `right` on desktop; mobile always stacks below the player).
+
+### Fixed
+- Shipped VidPly player: buffering spinner centers on the media surface; video right-panel playlists restore overlay auto-hide controls so captions stay visible during playback.
+- Shipped VidPly player: audio artwork reappears when switching from video to audio in mixed-media playlists.
+- Right-side playlist layout: left column stacks video, controls, and track info; playlist sits in the right column without stretching the video area.
+- Right-side playlist layout no longer throws when selecting a track after the player chrome was wrapped in `.vidply-playlist-main`.
+- Mixed-media track switches keep the right-column layout after the player is recreated (video ↔ audio).
+- Playlist privacy consent overlay is inserted into the media column so it stays visible with the right-side playlist layout.
+- External-media consent no longer immediately restores the previous track behind the privacy overlay when switching playlist items.
+- Audio tracks in right-side playlists no longer stretch the player column; artwork, captions, controls, and track info stack correctly.
+- Shipped VidPly player: play overlay centers on external iframes when paused; control bar overflow on narrow widths; right-panel breakpoint at `75rem`.
+- External-media playlist consent: track artwork stays hidden while the privacy overlay is shown (YouTube/Vimeo/SoundCloud); service type resolves from track `type` when the URL alone is ambiguous.
+
 ## [1.2.31] - 2026-08-18
 
 ### Fixed
