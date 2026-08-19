@@ -776,6 +776,8 @@ function removePrivacyOverlay(element, playlist, wrapperElement = null) {
 function findTrackArtworkElement(playlist, element, wrapperElement = null) {
     const player = playlist?.player;
     const candidates = [
+        element?.querySelector?.('.vidply-playlist-main'),
+        player?.container?.querySelector?.('.vidply-playlist-main'),
         player?.container,
         player?.videoWrapper?.parentElement,
         wrapperElement,
@@ -960,9 +962,6 @@ function insertPrivacyOverlay(overlay, playlist, element, wrapperElement = null)
  * Show consent overlay then proceed with track loading
  */
 function showConsentOverlay(playlist, element, wrapperElement, serviceType, track, index, proceedFn, privacySettings = null) {
-    // External services should never show the audio artwork (it duplicates the privacy layer poster).
-    setArtworkForcedHidden(playlist, element, wrapperElement, true);
-
     // Drop any previous overlay, then hide the current media chrome for this consent step.
     removePrivacyOverlayNodes(playlist, element, wrapperElement);
     pauseAndHidePlayer(playlist, element, wrapperElement);
@@ -971,6 +970,10 @@ function showConsentOverlay(playlist, element, wrapperElement, serviceType, trac
     playlist.currentIndex = index;
     playlist.updatePlaylistUI?.();
     playlist.updateTrackInfo?.(track);
+
+    // External services should never show the audio artwork (it duplicates the privacy layer poster).
+    setArtworkForcedHidden(playlist, element, wrapperElement, true);
+    requestAnimationFrame(() => setArtworkForcedHidden(playlist, element, wrapperElement, true));
 
     // Create and insert overlay
     const playIconUrl = wrapperElement?.dataset?.vidplyPlayIcon || element?.dataset?.vidplyPlayIcon || null;
@@ -986,6 +989,21 @@ function showConsentOverlay(playlist, element, wrapperElement, serviceType, trac
 }
 
 /**
+ * Resolve the privacy service for a playlist track (src URL or explicit type).
+ */
+function resolveTrackServiceType(track) {
+    const fromSrc = getServiceType(track?.src);
+    if (fromSrc) {
+        return fromSrc;
+    }
+    const type = (track?.type || '').toLowerCase();
+    if (type === 'youtube' || type === 'vimeo' || type === 'soundcloud') {
+        return type;
+    }
+    return null;
+}
+
+/**
  * Intercept track loading to handle privacy consent
  */
 function createTrackInterceptor(playlist, element, wrapperElement, originalFn, privacySettings = null, applyPerTrackUi = null) {
@@ -998,7 +1016,7 @@ function createTrackInterceptor(playlist, element, wrapperElement, originalFn, p
             applyPerTrackUi(track);
         }
 
-        const serviceType = getServiceType(track.src);
+        const serviceType = resolveTrackServiceType(track);
 
         // Keep audio artwork hidden for external tracks; allow VidPly to manage it otherwise.
         setArtworkForcedHidden(playlist, element, wrapperElement, !!serviceType);
