@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.2.32] - 2026-08-19
 
 ### Added
 - Content element option **Playlist position** (`below` default, `right` on desktop; mobile always stacks below the player).
@@ -975,6 +975,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.32]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.31...v1.2.32
 [1.2.31]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.30...v1.2.31
 [1.2.30]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.29...v1.2.30
 [1.2.29]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.28...v1.2.29
