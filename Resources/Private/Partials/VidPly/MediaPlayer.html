@@ -21,6 +21,7 @@
             data-playlist-auto-play-first="{f:if(condition: vidply.options.autoplay, then: 'true', else: 'false')}"
             data-playlist-loop="{f:if(condition: vidply.playlistData.options.loop, then: 'true', else: 'false')}"
             data-playlist-show-panel="{f:if(condition: vidply.playlistData.options.showPanel, then: 'true', else: 'false')}"
+            data-playlist-panel-position="{vidply.playlistData.options.panelPosition}"
             <f:if condition="{vidply.hasExternalMedia}">
                 data-playlist-has-external="true"
                 data-playlist-external-services='{f:format.json(value: vidply.externalServiceTypes)}'

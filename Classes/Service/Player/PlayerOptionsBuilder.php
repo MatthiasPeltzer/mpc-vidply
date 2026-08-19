@@ -61,6 +61,8 @@ final class PlayerOptionsBuilder
 
     private const SIGN_LANGUAGE_DISPLAY_MODES = ['pip', 'main', 'both'];
 
+    private const PLAYLIST_PANEL_POSITIONS = ['below', 'right'];
+
     private readonly ExtensionConfiguration $extensionConfiguration;
     private readonly UrlSanitizer $urlSanitizer;
     private readonly InlineSvgProvider $inlineSvgProvider;
@@ -192,10 +194,15 @@ final class PlayerOptionsBuilder
     /**
      * @param TrackResult $trackResult
      * @param array<string, mixed> $playerOptions
+     * @param array<string, mixed> $data
      * @return array{playlistData: ?array<string, mixed>, optionOverrides: array<string, mixed>}
      */
-    public function buildPlaylistData(array $trackResult, array $playerOptions, string $layout = 'default'): array
-    {
+    public function buildPlaylistData(
+        array $trackResult,
+        array $playerOptions,
+        string $layout = 'default',
+        array $data = []
+    ): array {
         if (!$trackResult['isPlaylist']) {
             return ['playlistData' => null, 'optionOverrides' => []];
         }
@@ -204,6 +211,7 @@ final class PlayerOptionsBuilder
         // player's own panel would repeat the same records with a second set of
         // formatters. Suppress the panel and its toggle to keep one list.
         $showPanel = $layout !== 'episodes';
+        $panelPosition = $this->resolvePlaylistPanelPosition($data, $layout);
 
         $tracks = $trackResult['tracks'];
         $playlistData = [
@@ -213,6 +221,7 @@ final class PlayerOptionsBuilder
                 'autoAdvance' => $playerOptions['autoAdvance'],
                 'loop' => $playerOptions['loop'],
                 'showPanel' => $showPanel,
+                'panelPosition' => $panelPosition,
                 'isMixedPlaylist' => $trackResult['isMixedPlaylist'],
                 'hasExternalMedia' => $trackResult['hasExternalMedia'],
                 'externalServiceTypes' => $trackResult['externalServiceTypes'],
@@ -245,6 +254,20 @@ final class PlayerOptionsBuilder
         }
 
         return ['playlistData' => $playlistData, 'optionOverrides' => $optionOverrides];
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function resolvePlaylistPanelPosition(array $data, string $layout): string
+    {
+        if ($layout === 'episodes') {
+            return 'below';
+        }
+
+        $value = (string)($data['tx_mpcvidply_playlist_position'] ?? 'below');
+
+        return in_array($value, self::PLAYLIST_PANEL_POSITIONS, true) ? $value : 'below';
     }
 
     /**

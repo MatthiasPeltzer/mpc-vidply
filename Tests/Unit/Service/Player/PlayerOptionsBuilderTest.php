@@ -293,7 +293,46 @@ final class PlayerOptionsBuilderTest extends TestCase
         $result = $this->subject->buildPlaylistData($this->playlistTrackResult(), $this->playlistPlayerOptions(), 'card');
 
         self::assertTrue($result['playlistData']['options']['showPanel']);
+        self::assertSame('below', $result['playlistData']['options']['panelPosition']);
         self::assertArrayNotHasKey('playlistToggleButton', $result['optionOverrides']);
+    }
+
+    #[Test]
+    public function buildPlaylistDataPassesTheRightPanelPositionFromTheContentElement(): void
+    {
+        $result = $this->subject->buildPlaylistData(
+            $this->playlistTrackResult(),
+            $this->playlistPlayerOptions(),
+            'default',
+            ['tx_mpcvidply_playlist_position' => 'right']
+        );
+
+        self::assertSame('right', $result['playlistData']['options']['panelPosition']);
+    }
+
+    #[Test]
+    public function buildPlaylistDataDefaultsThePanelPositionToBelow(): void
+    {
+        $result = $this->subject->buildPlaylistData(
+            $this->playlistTrackResult(),
+            $this->playlistPlayerOptions(),
+            'default'
+        );
+
+        self::assertSame('below', $result['playlistData']['options']['panelPosition']);
+    }
+
+    #[Test]
+    public function buildPlaylistDataIgnoresInvalidPanelPositionValues(): void
+    {
+        $result = $this->subject->buildPlaylistData(
+            $this->playlistTrackResult(),
+            $this->playlistPlayerOptions(),
+            'default',
+            ['tx_mpcvidply_playlist_position' => 'left']
+        );
+
+        self::assertSame('below', $result['playlistData']['options']['panelPosition']);
     }
 
     /**
@@ -306,6 +345,7 @@ final class PlayerOptionsBuilderTest extends TestCase
         $result = $this->subject->buildPlaylistData($this->playlistTrackResult(), $this->playlistPlayerOptions(), 'episodes');
 
         self::assertFalse($result['playlistData']['options']['showPanel']);
+        self::assertSame('below', $result['playlistData']['options']['panelPosition']);
         self::assertFalse($result['optionOverrides']['playlistToggleButton']);
     }
 

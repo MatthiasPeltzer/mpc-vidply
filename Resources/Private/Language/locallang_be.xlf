@@ -207,6 +207,18 @@
       <trans-unit id="tt_content.tx_mpcvidply_layout.episodes">
         <source>Episode card with episode list</source>
       </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_playlist_position">
+        <source>Playlist position</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_playlist_position.description">
+        <source>Where the in-player playlist panel appears when two or more media items are selected. On mobile devices the list is always shown below the player.</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_playlist_position.below">
+        <source>Below the player (default)</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_playlist_position.right">
+        <source>Right of the player</source>
+      </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_listview_rows">
         <source>Listview Rows</source>
       </trans-unit>

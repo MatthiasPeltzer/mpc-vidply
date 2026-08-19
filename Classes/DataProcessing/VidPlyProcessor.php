@@ -133,7 +133,7 @@ class VidPlyProcessor implements DataProcessorInterface
         }
         $this->playerOptionsBuilder->applyTrackDependentOptions($playerOptions, $trackResult, $data);
 
-        $playlistResult = $this->playerOptionsBuilder->buildPlaylistData($trackResult, $playerOptions, $layout);
+        $playlistResult = $this->playerOptionsBuilder->buildPlaylistData($trackResult, $playerOptions, $layout, $data);
         $playlistData = $playlistResult['playlistData'];
         $playerOptions = array_merge($playerOptions, $playlistResult['optionOverrides']);
 

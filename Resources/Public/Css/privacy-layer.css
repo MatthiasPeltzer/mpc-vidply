@@ -26,6 +26,13 @@
     z-index: 10;
 }
 
+/* Playlist privacy overlay inside the left media column (right-panel layout) */
+.vidply-playlist-main > .vidply-playlist-privacy-overlay {
+    flex-shrink: 0;
+    order: 0;
+    width: 100%;
+}
+
 /* When switching from audio to external renderers (YouTube/Vimeo/SoundCloud),
    VidPly may re-apply inline `display: block` on `.vidply-track-artwork`.
    This flag must always win to avoid double posters behind the consent layer. */
@@ -56,12 +63,22 @@
     border: none;
     cursor: pointer;
     left: 50%;
+    line-height: 0;
+    min-height: 5rem;
+    min-width: 5rem;
     padding: 0;
     position: absolute;
     top: 50%;
     transform: translate(-50%, -50%);
     transition: none;
     z-index: 10;
+}
+
+/* Never inherit audio-player rules that hide `.vidply-play-overlay` in the media column */
+.vidply-privacy-button .vidply-play-overlay,
+.vidply-privacy-button .vidply-play-overlay-image,
+.vidply-privacy-button svg {
+    display: block !important;
 }
 
 @media (width <= 48rem), (width < 48rem) {

@@ -172,6 +172,7 @@ CREATE TABLE tt_content (
 	tx_mpcvidply_resume_playback smallint unsigned DEFAULT '0' NOT NULL,
 	tx_mpcvidply_show_track_info smallint unsigned DEFAULT '0' NOT NULL,
 	tx_mpcvidply_layout varchar(20) DEFAULT 'default' NOT NULL,
+	tx_mpcvidply_playlist_position varchar(20) DEFAULT 'below' NOT NULL,
 	tx_mpcvidply_episode_sort varchar(20) DEFAULT 'sorting' NOT NULL,
 	tx_mpcvidply_episode_pagination smallint unsigned DEFAULT '1' NOT NULL,
 	tx_mpcvidply_episode_per_page smallint unsigned DEFAULT '10' NOT NULL

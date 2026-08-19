@@ -311,14 +311,16 @@ function createPrivacyOverlay(service, track, onConsent, privacySettings = null,
         if (parsed) {
             playButton.appendChild(parsed);
         }
-    } else if (isSafeUrl(playIconUrl)) {
+    }
+
+    if (!playButton.firstElementChild && isSafeUrl(playIconUrl)) {
         const img = document.createElement('img');
         img.className = 'vidply-play-overlay-image';
         img.src = playIconUrl;
         img.alt = '';
         img.setAttribute('aria-hidden', 'true');
         playButton.appendChild(img);
-    } else {
+    } else if (!playButton.firstElementChild) {
         const filterId = `vidply-play-shadow-privacy-${++filterIdCounter}`;
         playButton.innerHTML = `
             <svg class="vidply-play-overlay" viewBox="0 0 80 80" width="80" height="80" aria-hidden="true" role="presentation">
@@ -545,6 +547,7 @@ function initializePlaylistElement(element) {
                 autoPlayFirst: hasExternalMedia ? false : autoPlayFirst,
                 loop: element.dataset.playlistLoop === 'true',
                 showPanel: element.dataset.playlistShowPanel !== 'false',
+                panelPosition: element.dataset.playlistPanelPosition === 'right' ? 'right' : 'below',
                 tracks: hasExternalMedia ? [] : tracks,
                 recreatePlayers: hasExternalMedia && element.tagName === 'DIV',
                 hostElement: element.tagName === 'DIV' ? element : null,
@@ -629,10 +632,36 @@ function initializePlaylistElement(element) {
 }
 
 /**
+ * Collect DOM roots that may contain a playlist privacy overlay.
+ */
+function getPrivacyOverlaySearchRoots(playlist, element, wrapperElement = null) {
+    const playerContainer = playlist?.player?.container;
+    const main = playerContainer?.querySelector('.vidply-playlist-main');
+
+    return [
+        main,
+        playerContainer,
+        wrapperElement,
+        element.closest?.('.vidply-wrapper'),
+        element.parentElement,
+        element
+    ].filter(Boolean);
+}
+
+/**
+ * Remove privacy overlay nodes without restoring player visibility.
+ */
+function removePrivacyOverlayNodes(playlist, element, wrapperElement = null) {
+    getPrivacyOverlaySearchRoots(playlist, element, wrapperElement).forEach(root => {
+        root.querySelectorAll?.('.vidply-playlist-privacy-overlay').forEach(node => node.remove());
+    });
+}
+
+/**
  * Remove privacy overlay and restore hidden elements
  */
-function removePrivacyOverlay(element, playlist) {
-    element.querySelector('.vidply-playlist-privacy-overlay')?.remove();
+function removePrivacyOverlay(element, playlist, wrapperElement = null) {
+    removePrivacyOverlayNodes(playlist, element, wrapperElement);
 
     const currentPlayer = playlist.player;
     if (currentPlayer?.videoWrapper) {
@@ -790,27 +819,57 @@ function restorePlayerVisibility(playlist, element, wrapperElement = null) {
 }
 
 /**
- * Find insertion point for privacy overlay
+ * Find where the privacy overlay should sit so it covers the media area only.
  */
-function findOverlayInsertionPoint(element) {
-    for (const child of element.children) {
-        if (child.classList.contains('vidply-video-wrapper') || child.classList.contains('vidply-player')) {
-            return child;
+function findOverlayInsertionPoint(playlist, element, wrapperElement = null) {
+    const playerContainer = playlist?.player?.container;
+    const main = playerContainer?.querySelector('.vidply-playlist-main');
+    const videoWrapper = main?.querySelector('.vidply-video-wrapper')
+        ?? playerContainer?.querySelector('.vidply-video-wrapper');
+
+    if (videoWrapper?.parentElement) {
+        return { parent: videoWrapper.parentElement, before: videoWrapper };
+    }
+
+    if (main) {
+        return { parent: main, before: main.firstChild };
+    }
+
+    if (playerContainer) {
+        const playerChild = playerContainer.querySelector('.vidply-video-wrapper, .vidply-playlist-main');
+        if (playerChild?.parentElement === playerContainer) {
+            return { parent: playerContainer, before: playerChild };
+        }
+        return { parent: playerContainer, before: playerContainer.firstChild };
+    }
+
+    const scopeRoots = getPrivacyOverlaySearchRoots(playlist, element, wrapperElement);
+    for (const root of scopeRoots) {
+        for (const child of root.children ?? []) {
+            if (child.classList.contains('vidply-video-wrapper') || child.classList.contains('vidply-player')) {
+                return { parent: root, before: child };
+            }
         }
     }
-    return element.firstChild;
+
+    return { parent: element, before: element.firstChild };
 }
 
 /**
  * Insert privacy overlay into DOM
  */
-function insertPrivacyOverlay(overlay, element) {
-    const insertBefore = findOverlayInsertionPoint(element);
-    if (insertBefore) {
-        element.insertBefore(overlay, insertBefore);
-    } else {
-        element.appendChild(overlay);
+function insertPrivacyOverlay(overlay, playlist, element, wrapperElement = null) {
+    const { parent, before } = findOverlayInsertionPoint(playlist, element, wrapperElement);
+    if (parent) {
+        if (before) {
+            parent.insertBefore(overlay, before);
+        } else {
+            parent.appendChild(overlay);
+        }
+        return;
     }
+
+    element.appendChild(overlay);
 }
 
 /**
@@ -819,12 +878,10 @@ function insertPrivacyOverlay(overlay, element) {
 function showConsentOverlay(playlist, element, wrapperElement, serviceType, track, index, proceedFn, privacySettings = null) {
     // External services should never show the audio artwork (it duplicates the privacy layer poster).
     setArtworkForcedHidden(playlist, element, wrapperElement, true);
-    pauseAndHidePlayer(playlist, element, wrapperElement);
 
-    // Remove existing overlays from all potential containers
-    [element, element.parentElement, wrapperElement].forEach(target => {
-        target?.querySelector('.vidply-playlist-privacy-overlay')?.remove();
-    });
+    // Drop any previous overlay, then hide the current media chrome for this consent step.
+    removePrivacyOverlayNodes(playlist, element, wrapperElement);
+    pauseAndHidePlayer(playlist, element, wrapperElement);
 
     // Update playlist UI
     playlist.currentIndex = index;
@@ -841,7 +898,7 @@ function showConsentOverlay(playlist, element, wrapperElement, serviceType, trac
         ensureAutoplay(playlist);
     }, privacySettings, playIconUrl, playButtonPosition, playIconInlineSvg);
 
-    insertPrivacyOverlay(overlay, element);
+    insertPrivacyOverlay(overlay, playlist, element, wrapperElement);
 }
 
 /**
@@ -868,7 +925,7 @@ function createTrackInterceptor(playlist, element, wrapperElement, originalFn, p
             return;
         }
 
-        removePrivacyOverlay(element, playlist);
+        removePrivacyOverlay(element, playlist, wrapperElement);
         const result = originalFn(index, userInitiated);
 
         // For external services with consent, ensure autoplay

@@ -107,6 +107,25 @@ $vidplyFields = [
         ],
     ],
 
+    // In-player playlist panel placement (desktop only; mobile always stacks below).
+    'tx_mpcvidply_playlist_position' => [
+        'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_playlist_position',
+        'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_playlist_position.description',
+        'displayCond' => 'FIELD:tx_mpcvidply_layout:!=:episodes',
+        'config' => [
+            'type' => 'select',
+            'renderType' => 'selectSingle',
+            'items' => [
+                ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_playlist_position.below', 'value' => 'below'],
+                ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_playlist_position.right', 'value' => 'right'],
+            ],
+            'default' => 'below',
+        ],
+        'behaviour' => [
+            'allowLanguageSynchronization' => true,
+        ],
+    ],
+
     // Episode list controls. Only the episodes layout renders a list of its own;
     // the other layouts show a single card or the bare player.
     'tx_mpcvidply_episode_sort' => [
@@ -343,6 +362,7 @@ $GLOBALS['TCA']['tt_content']['types']['mpc_vidply'] = [
             tx_mpcvidply_media_items,
         --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tabs.settings,
             tx_mpcvidply_layout,
+            tx_mpcvidply_playlist_position,
             tx_mpcvidply_episode_sort,
             tx_mpcvidply_episode_pagination,
             tx_mpcvidply_episode_per_page,
