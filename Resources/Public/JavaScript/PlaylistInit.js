@@ -503,6 +503,84 @@ function getMediaType(element) {
 }
 
 /**
+ * Infer whether a playlist track needs an <audio> element when recreated.
+ */
+function isAudioPlaylistTrack(track) {
+    const type = (track?.type || '').toLowerCase();
+    if (type.startsWith('audio/') || type === 'audio' || type === 'soundcloud') {
+        return true;
+    }
+    const src = (track?.src || '').toLowerCase();
+    return /\.(mp3|m4a|ogg|wav|aac|flac)(\?|#|$)/i.test(src);
+}
+
+/**
+ * Infer whether a playlist track needs a <video> element when recreated.
+ */
+function isVideoPlaylistTrack(track) {
+    const type = (track?.type || '').toLowerCase();
+    if (type.startsWith('video/') || type === 'video') {
+        return true;
+    }
+    if (['youtube', 'vimeo', 'hls', 'dash'].includes(type)) {
+        return true;
+    }
+    if (type.startsWith('application/')) {
+        return true;
+    }
+    const src = (track?.src || '').toLowerCase();
+    if (src.includes('youtube.com') || src.includes('youtu.be') || src.includes('vimeo.com')) {
+        return true;
+    }
+    if (src.includes('soundcloud.com')) {
+        return false;
+    }
+    return /\.(mp4|webm|ogv|m3u8|mpd)(\?|#|$)/i.test(src);
+}
+
+/**
+ * True when the playlist contains both audio- and video-type tracks.
+ */
+function playlistHasMixedElementTypes(tracks) {
+    let hasAudio = false;
+    let hasVideo = false;
+    for (const track of tracks) {
+        if (isAudioPlaylistTrack(track)) {
+            hasAudio = true;
+        }
+        if (isVideoPlaylistTrack(track)) {
+            hasVideo = true;
+        }
+        if (hasAudio && hasVideo) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Resolve the DOM host used when swapping <video> ↔ <audio> in mixed playlists.
+ * DIV hosts (MixedPlaylistPlayer) are used directly; media hosts get a wrapper
+ * so recreation does not wipe sibling asset scripts in `.vidply-wrapper`.
+ */
+function resolvePlaylistHostElement(element, needsRecreate) {
+    if (!needsRecreate) {
+        return null;
+    }
+    if (element.tagName === 'DIV') {
+        return element;
+    }
+    const hostElement = document.createElement('div');
+    hostElement.className = 'vidply-playlist-host';
+    if (element.id) {
+        hostElement.id = `${element.id}-host`;
+    }
+    element.parentElement?.insertBefore(hostElement, element);
+    hostElement.appendChild(element);
+    return hostElement;
+}
+
+/**
  * Create patched error handler for playlist
  */
 function createPlaylistErrorHandler(playlist, autoAdvance) {
@@ -525,6 +603,9 @@ function initializePlaylistElement(element) {
 
         const options = element.dataset.vidplyOptions ? JSON.parse(element.dataset.vidplyOptions) : {};
         const hasExternalMedia = element.dataset.playlistHasExternal === 'true';
+        const hasMixedElementTypes = playlistHasMixedElementTypes(tracks);
+        const needsRecreate = hasExternalMedia || hasMixedElementTypes;
+        const hostElement = resolvePlaylistHostElement(element, needsRecreate);
         const wrapperElement = element.closest('.vidply-wrapper') || element.parentElement;
         const mediaType = getMediaType(element);
         const autoPlayFirst = element.dataset.playlistAutoPlayFirst === 'true';
@@ -549,8 +630,8 @@ function initializePlaylistElement(element) {
                 showPanel: element.dataset.playlistShowPanel !== 'false',
                 panelPosition: element.dataset.playlistPanelPosition === 'right' ? 'right' : 'below',
                 tracks: hasExternalMedia ? [] : tracks,
-                recreatePlayers: hasExternalMedia && element.tagName === 'DIV',
-                hostElement: element.tagName === 'DIV' ? element : null,
+                recreatePlayers: needsRecreate && Boolean(hostElement),
+                hostElement,
                 PlayerClass: Player
             };
 
@@ -559,6 +640,9 @@ function initializePlaylistElement(element) {
                 playlist = new PlaylistManager(player, playlistOptions);
             });
             element._vidplyPlaylist = playlist;
+            if (hostElement) {
+                hostElement._vidplyPlaylist = playlist;
+            }
 
             /**
              * Apply per-track UI overrides (e.g. hide speed / help buttons).
