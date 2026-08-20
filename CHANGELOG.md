@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.33] - 2026-08-20
+
+### Changed
+- Shipped VidPly player: playlist panel toggle moved from the main transport controls to the right control bar.
+
 ## [1.2.32] - 2026-08-19
 
 ### Added
@@ -975,6 +980,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.33]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.32...v1.2.33
 [1.2.32]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.31...v1.2.32
 [1.2.31]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.30...v1.2.31
 [1.2.30]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.29...v1.2.30
