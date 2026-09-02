@@ -8,9 +8,9 @@
 
 | Browser | Implementation | Status |
 |---|---|---|
-| Chrome / Edge | hls.js **1.7.0** (vendored locally) | Working |
-| Firefox | hls.js **1.7.0** | Working |
-| Desktop macOS Safari | hls.js **1.7.0** (for parity with Chrome/Firefox: full quality menu, advanced caption styling) | Working |
+| Chrome / Edge | hls.js **1.7.2** (vendored locally) | Working |
+| Firefox | hls.js **1.7.2** | Working |
+| Desktop macOS Safari | hls.js **1.7.2** (for parity with Chrome/Firefox: full quality menu, advanced caption styling) | Working |
 | iOS / iPadOS Safari | Native HLS (`<video>` MSE is unavailable on iOS) — VidPly bridges native `TextTrack` API into the captions / transcript / quality UI | Working |
 
 ### DASH
@@ -32,14 +32,14 @@ Loaded locally by `mpc-vidply` via `Resources/Private/Partials/VidPly/Assets.htm
 | | |
 |---|---|
 | **Vendored file** | `Resources/Public/JavaScript/hls.min.js` |
-| **Pinned version** | **hls.js 1.7.0** (release build) |
+| **Pinned version** | **hls.js 1.7.2** (release build) |
 
-> The vendored file is the published **1.7.0** release, not a local `master`-branch checkout of hls.js. When upgrading, copy the release artifact (npm / GitHub tag) into `Resources/Public/JavaScript/hls.min.js`.
+> The vendored file is the published **1.7.2** release, not a local `master`-branch checkout of hls.js. When upgrading, copy the release artifact (npm / GitHub tag) into `Resources/Public/JavaScript/hls.min.js`.
 
 VidPly's CDN fallback (used only when hls.js is not already on the page, e.g. standalone embeds):
 
 ```
-https://cdn.jsdelivr.net/npm/hls.js@1.7.0/dist/hls.min.js
+https://cdn.jsdelivr.net/npm/hls.js@1.7.2/dist/hls.min.js
 ```
 
 #### 2. VidPly HLS Renderer
@@ -66,6 +66,17 @@ Each `addtrack` burst (one per subtitle rendition in the manifest) is debounced 
 #### Live transcript / caption updates
 
 The renderer listens for `Hls.Events.SUBTITLE_FRAG_PROCESSED` and re-emits a generic `textcuesupdate` event so the interactive transcript and live captions stay in sync as new subtitle fragments are loaded for long / live streams. The same event is emitted by the native iOS path on `cuechange`.
+
+#### Live stream UI
+
+With `liveStream: 'auto'` (the default in the bundled player), VidPly detects HLS live playlists and adjusts the control bar:
+
+- **LIVE** badge instead of total duration
+- Restart and playback speed hidden
+- Skip-forward and **Go live** only when the viewer is more than a few seconds behind the live edge
+- VOD HLS sources (finite playlists) keep normal seek controls — detection uses the level playlist's `live` flag, not transient `Infinity` duration during startup
+
+Import live TV streams as **Video** media records so the HLS renderer is used even when the URL also matches audio domain allow-lists.
 
 ### DASH
 
@@ -189,7 +200,7 @@ ddev typo3 cache:flush
 
 - **Adaptive bitrate** — Automatically adjusts quality (HLS and DASH)
 - **Buffer optimization** — Smooth playback
-- **CDN delivery** — Standalone VidPly embeds can load pinned releases from jsDelivr; `mpc-vidply` ships **hls.js 1.7.0** and **dash.js 5.2.1** locally
+- **CDN delivery** — Standalone VidPly embeds can load pinned releases from jsDelivr; `mpc-vidply` ships **hls.js 1.7.2** and **dash.js 5.2.1** locally
 - **Minimal overhead** — `hls.js` / `dash.js` only load when an `.m3u8` / `.mpd` source is actually used
 - **Conditional loading** — `hls.js` and `dash.js` are loaded independently based on detected source formats by the `VidPlyProcessor`
 - **Native HLS on iOS** — Avoids the cost of running `hls.js` on devices where it cannot run anyway, while still keeping the full VidPly UI through the native `TextTrack` bridge

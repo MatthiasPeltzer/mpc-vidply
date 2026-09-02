@@ -208,6 +208,8 @@ document.dispatchEvent(new CustomEvent('mpc:dynamic-content:ready', { detail: { 
 | Field | Type | Description |
 |-------|------|-------------|
 | `tx_mpcvidply_media_items` | group | Media record selection (MM) |
+| `tx_mpcvidply_layout` | select | `default`, `episode`, `episodes` |
+| `tx_mpcvidply_playlist_position` | select | `below` (default) or `right` — desktop playlist panel placement |
 | `tx_mpcvidply_options` | check | Bitmask options (autoplay, loop, muted, controls, captions, keyboard, auto-advance) |
 | `tx_mpcvidply_resume_playback` | check (toggle) | Resume playback for this content element |
 | `tx_mpcvidply_show_track_info` | check (toggle) | Show in-player track info for single media |
@@ -349,7 +351,7 @@ VidPly only loads JavaScript needed for current media types:
 |------|---------|
 | `PrivacyLayer.js` | GDPR consent for external services (YouTube / Vimeo / SoundCloud) |
 | `PlaylistInit.js` | Playlist UI and navigation |
-| `hls.min.js` | hls.js **1.7.0** for adaptive HLS streaming (Chrome / Firefox / Edge / desktop Safari) |
+| `hls.min.js` | hls.js **1.7.2** for adaptive HLS streaming (Chrome / Firefox / Edge / desktop Safari) |
 | `dash.all.min.js` | dash.js **5.2.1** (modern UMD) for MPEG-DASH streaming |
 | `vidply/*.js` | Core player **v1.2.9** (compiled TypeScript → ESM, code-split, includes SoundCloud renderer + buffering spinner + optional download button) |
 
