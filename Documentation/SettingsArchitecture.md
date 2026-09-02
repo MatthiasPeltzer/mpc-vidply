@@ -44,15 +44,18 @@ Settings → VidPly Player → Accessibility**; integrators can also write them 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
 | `mpcVidply.screenReaderAnnouncements` | bool | `true` | Announce play/pause, volume, mute, captions, fullscreen and speed changes in the player's live region |
+| `mpcVidply.resumePlayback` | bool | `false` | Remember playback position and offer to resume on the next visit (content elements can override) |
 
 ```yaml
 # config/sites/<id>/settings.yaml
 mpcVidply.screenReaderAnnouncements: false
+mpcVidply.resumePlayback: true
 ```
 
 ```typoscript
-# available as a TypoScript constant
+# available as TypoScript constants
 {$mpcVidply.screenReaderAnnouncements}
+{$mpcVidply.resumePlayback}
 ```
 
 Turning the announcements off silences the status messages the player sends to
@@ -80,7 +83,11 @@ Available for YouTube, Vimeo, and SoundCloud. Supports multilingual content via 
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
+| Layout | select | `default` | `default`, `episode`, or `episodes` (episode card layouts) |
+| Playlist position | select | `below` | In-player playlist panel: `below` or `right` (desktop; mobile always below). Ignored for *Episode card with episode list* |
 | Options | Bitmask | 328 | Player features (see below) |
+| Resume from last position | toggle | Off | Per-element override of site-wide resume playback |
+| Show track info | toggle | On | In-player now-playing header for single items |
 | Volume | Float | 0.8 | Initial volume (0-1) |
 | Playback Speed | Float | 1.0 | Initial speed (0.25-2x) |
 | Language | String | Auto | UI language |
@@ -141,6 +148,7 @@ Use for branding and security defaults that should not vary per page:
 ### Site Settings (Per Site)
 Use for policies that differ between the sites of one installation:
 - Whether the player announces its state to screen readers
+- Whether visitors are offered resume playback by default
 
 ### Privacy Layer Settings (Site-Wide)
 Use for settings that should be **consistent across all external services**:

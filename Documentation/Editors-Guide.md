@@ -341,6 +341,8 @@ Generate searchable text transcript from captions:
 | Option | Default | Description |
 |--------|---------|-------------|
 | **Layout** | Player only | Presentation of the element — see below |
+| **Playlist position** | Below the player | Where the in-player playlist panel appears when two or more media items are selected (`below` or `right` on desktop; mobile always stacks below) |
+| **Resume from last position** | Off | Offer to continue where the visitor stopped (overrides the site default when set on this element) |
 | **Autoplay** | Off | Start playing automatically |
 | **Loop** | Off | Loop when finished |
 | **Muted** | Off | Start muted |
@@ -366,7 +368,7 @@ The **Layout** field controls how the element is presented:
 |--------|--------|
 | **Player only** | The plain player — unchanged default |
 | **Episode card** | Square cover with a large play button, episode number, title, publish date, duration and description; the player sits below |
-| **Episode card with episode list** | Same card, plus the player's playlist panel for all selected media items |
+| **Episode card with episode list** | Card header follows the now-playing track, plus a server-rendered episode list below the player (the in-player playlist panel is hidden — the list is the track picker) |
 
 The card is filled from the **first** selected media record. Publish date and
 episode number come from that record's metadata palette, and the cover is its
@@ -421,10 +423,30 @@ room for it, so there the card's link to the detail page stays the way in.
 
 Select **2 or more media items** to automatically create a playlist:
 
-- Thumbnail list appears alongside player
+- Thumbnail list appears alongside or below the player (see **Playlist position**)
 - Click any item to play it
 - Auto-advance plays next track
 - Loop option cycles through all tracks
+
+**Playlist position** (Settings tab, visible with 2+ media items):
+
+| Value | Result |
+|-------|--------|
+| **Below the player** | Default — scrollable track list under the control bar |
+| **Right of the player** | Desktop layout: player and controls in the left column, playlist in the right column (from `75rem` viewport width). On narrower viewports the list stacks below the player |
+
+The playlist toggle sits in the **right control bar** (next to captions, settings, and fullscreen). On very narrow widths it may move into the overflow menu while previous, play/pause, next, and volume stay visible.
+
+### Live streams
+
+HLS and DASH **live** sources (for example TV streams ending in `.m3u8`) are detected automatically. The player then:
+
+- Shows a **LIVE** badge instead of total duration
+- Hides restart and playback-speed controls
+- Shows **Go live** and skip-forward only when the viewer falls behind the live edge
+- Keeps captions and the interactive transcript in sync as new subtitle fragments arrive
+
+Import `.m3u8` URLs into a **Video** media record (not Audio) when the stream carries video — VidPly respects the record's media type even when the URL matches both audio and video allow-lists.
 
 ### Best Practices
 
