@@ -29,15 +29,11 @@ export function buildYoutubePrivacyEmbedUrl(videoId, { autoplay = false } = {}) 
         modestbranding: '1'
     });
 
-    // origin/enablejsapi on LAN or IP origins makes iPhone playback fail at play time.
-    if (!isLikelyUnsupportedYoutubeEmbedHost() && typeof window !== 'undefined') {
-        params.set('enablejsapi', '1');
-        if (window.location?.origin) {
-            params.set('origin', window.location.origin);
-        }
-        if (window.location?.href) {
-            params.set('widget_referrer', window.location.href);
-        }
+    // Privacy layer uses a plain iframe, not the IFrame API. Do not pass enablejsapi or
+    // origin — iPhone Safari often refuses playback when those are set without the API
+    // script. The browser sends Referer on HTTPS; widget_referrer is optional backup.
+    if (!isLikelyUnsupportedYoutubeEmbedHost() && typeof window !== 'undefined' && window.location?.href) {
+        params.set('widget_referrer', window.location.href);
     }
 
     const host = isIOS()
