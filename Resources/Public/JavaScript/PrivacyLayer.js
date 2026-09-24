@@ -11,7 +11,14 @@
 import { bootstrap, resolveScope } from './shared/bootstrap.js';
 import { privacyConsent } from './shared/consent.js';
 import { extractMediaId } from './shared/media-services.js';
+import { isIOS } from './shared/platform.js';
 import { sanitizeCssUrl } from './shared/url-safety.js';
+import {
+    applyYoutubeEmbedReferrerPolicy,
+    buildYoutubePrivacyEmbedUrl,
+    createYoutubeIosLanFallback,
+    shouldUseYoutubeIosLanFallback
+} from './shared/youtube-embed.js';
 
 (function () {
     'use strict';
@@ -38,24 +45,33 @@ import { sanitizeCssUrl } from './shared/url-safety.js';
         layer.style.setProperty('background-position', 'center');
     };
 
+    /**
+     * iOS does not carry the consent click's user gesture into a freshly created
+     * cross-origin iframe, so an unmuted `autoplay=1` embed is refused inside the
+     * provider's frame — YouTube in particular reports that as its own error
+     * panel rather than falling back to a paused player. Asking for autoplay only
+     * where the browser can honour it leaves iOS visitors with a ready-to-play
+     * embed they start with a second tap, which is a real in-frame gesture.
+     */
     // Sandbox tokens retain only the capabilities each embed actually needs:
     // - allow-scripts + allow-same-origin: the provider's own JS runtime
     // - allow-popups + allow-popups-to-escape-sandbox: "watch on YouTube" / "open in Vimeo" links
-    // - allow-presentation: picture-in-picture / cast where supported
     // We intentionally omit allow-top-navigation so a malicious embed cannot redirect the host page.
+    // `allow-presentation` is deliberately absent: WebKit rejects it as an invalid
+    // sandbox flag and logs a parse error for the whole attribute.
     const IFRAME_CONFIGS = {
         youtube: {
-            url: (id) => `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&playsinline=1&rel=0&modestbranding=1`,
+            url: (id, autoplay) => buildYoutubePrivacyEmbedUrl(id, { autoplay }),
             allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
             // No sandbox — YouTube’s official embed is unsandboxed; WebKit/iOS often fails inside a sandboxed YT iframe.
         },
         vimeo: {
-            url: (id) => `https://player.vimeo.com/video/${id}?autoplay=1&title=0&byline=0&portrait=0`,
+            url: (id, autoplay) => `https://player.vimeo.com/video/${id}?autoplay=${autoplay ? 1 : 0}&title=0&byline=0&portrait=0`,
             allow: 'autoplay; fullscreen; picture-in-picture',
-            sandbox: 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation'
+            sandbox: 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox'
         },
         soundcloud: {
-            url: (url) => `https://w.soundcloud.com/player/?url=${url}&auto_play=true&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true`,
+            url: (url, autoplay) => `https://w.soundcloud.com/player/?url=${url}&auto_play=${autoplay ? 'true' : 'false'}&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true`,
             allow: 'autoplay',
             sandbox: 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox'
         }
@@ -74,12 +90,16 @@ import { sanitizeCssUrl } from './shared/url-safety.js';
 
         const iframe = document.createElement('iframe');
         if (containerId) iframe.id = containerId;
-        const embedUrl = config.url(mediaId);
+        const embedUrl = config.url(mediaId, !isIOS());
         iframe.setAttribute('allow', config.allow);
         if (config.sandbox) {
             iframe.setAttribute('sandbox', config.sandbox);
         }
-        iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+        if (service === 'youtube') {
+            applyYoutubeEmbedReferrerPolicy(iframe);
+        } else {
+            iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+        }
         // Eager load on consent click — lazy iframes can miss iOS Safari’s user-gesture window for autoplay.
         iframe.setAttribute('loading', 'eager');
         iframe.setAttribute('allowfullscreen', '');
@@ -129,6 +149,14 @@ import { sanitizeCssUrl } from './shared/url-safety.js';
             return;
         }
 
+        privacyConsent.setConsent(service);
+        applyAspectRatioStyles(layer);
+
+        if (service === 'youtube' && shouldUseYoutubeIosLanFallback()) {
+            layer.replaceChildren(createYoutubeIosLanFallback(document, mediaId));
+            return;
+        }
+
         const built = createIframeElement(service, mediaId, containerId);
         if (!built) {
             console.error('VidPlay Privacy Layer: Could not create iframe for service', service);
@@ -139,12 +167,14 @@ import { sanitizeCssUrl } from './shared/url-safety.js';
         const titleMap = {youtube: 'YouTube video player', vimeo: 'Vimeo video player', soundcloud: 'SoundCloud audio player'};
         iframe.title = titleMap[service] || 'Embedded media player';
 
-        privacyConsent.setConsent(service);
-        applyAspectRatioStyles(layer);
         layer.replaceChildren(iframe);
         // Assign src after mount so WebKit ties navigation to the consent click (autoplay=1).
         iframe.src = embedUrl;
-        iframe.focus();
+        // Do not focus the cross-origin iframe on iOS — it can swallow the next
+        // tap the visitor needs on YouTube's in-frame play control.
+        if (!isIOS()) {
+            iframe.focus({ preventScroll: true });
+        }
     }
 
     /**

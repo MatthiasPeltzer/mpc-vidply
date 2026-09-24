@@ -239,3 +239,32 @@
         transition: none;
     }
 }
+
+/* iPhone + LAN/IP: YouTube iframe playback is blocked — open watch URL after consent */
+.vidply-youtube-ios-lan-fallback {
+    align-items: center;
+    background: rgb(0 0 0 / 85%);
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    justify-content: center;
+    left: 0;
+    padding: 1rem;
+    position: absolute;
+    right: 0;
+    text-align: center;
+    top: 0;
+    z-index: 11;
+}
+
+.vidply-youtube-ios-lan-fallback__hint {
+    color: #fff;
+    font-size: 0.85rem;
+    margin: 0;
+    max-width: 22rem;
+}
+
+.vidply-youtube-ios-lan-fallback__link {
+    font-weight: 600;
+}

@@ -8,6 +8,7 @@ import {Player, PlaylistManager} from './vidply/vidply.esm.min.js';
 import {bootstrap, resolveScope} from './shared/bootstrap.js';
 import {privacyConsent} from './shared/consent.js';
 import {getServiceType, isExternalRendererUrl} from './shared/media-services.js';
+import {isIOS} from './shared/platform.js';
 import {isSafeUrl, sanitizeCssUrl} from './shared/url-safety.js';
 
 // Constants
@@ -377,7 +378,7 @@ function createPrivacyOverlay(service, track, onConsent, privacySettings = null,
         overlay.remove();
         onConsent();
         const focusTarget = container?.querySelector('video, audio, button, [tabindex]');
-        if (focusTarget) setTimeout(() => focusTarget.focus(), OVERLAY_INSERT_DELAY);
+        if (focusTarget) setTimeout(() => focusTarget.focus({ preventScroll: true }), OVERLAY_INSERT_DELAY);
     });
 
     return overlay;
@@ -823,6 +824,12 @@ const autoplayReadyBound = new WeakSet();
  * Ensure autoplay after external content loads
  */
 function ensureAutoplay(playlist) {
+    // iOS does not honour programmatic play() on cross-origin embeds; delayed
+    // retries after consent only confuse YouTube's player (error panel) on iPhone.
+    if (isIOS()) {
+        return;
+    }
+
     setTimeout(() => {
         const currentPlayer = playlist.player;
         if (!currentPlayer) return;
