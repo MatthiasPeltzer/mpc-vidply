@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.36] - 2026-09-24
+
+### Fixed
+- Privacy-layer YouTube embeds on iOS Safari: add `playsinline=1`, load iframes eagerly, drop the sandbox on YouTube, and set `iframe.src` only after the iframe is mounted so consent-click autoplay keeps the user gesture.
+
+### Changed
+- Shipped VidPly player with `playsinline` enabled for the YouTube IFrame API renderer.
+- Update vidply to v1.2.17
+
 ## [1.2.35] - 2026-09-12
 
 ### Changed
