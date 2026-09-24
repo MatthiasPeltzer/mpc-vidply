@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.38] - 2026-09-24
+
+### Fixed
+- YouTube privacy-layer iframe on iPhone (production HTTPS): stop passing `enablejsapi` and `origin` on the plain consent embed — Safari refused playback when those parameters were set without loading the IFrame API.
+
 ## [1.2.37] - 2026-09-24
 
 ### Fixed
@@ -1013,6 +1018,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.38]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.37...v1.2.38
 [1.2.37]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.36...v1.2.37
 [1.2.36]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.35...v1.2.36
 [1.2.35]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.34...v1.2.35
