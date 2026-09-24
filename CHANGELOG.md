@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.37] - 2026-09-24
+
+### Fixed
+- YouTube and Vimeo consent embeds no longer fail with a provider-side error on iOS: iOS does not pass the consent click's user gesture into a newly created cross-origin iframe, so `autoplay=1` was refused inside the provider's frame. Autoplay is now requested only where the browser can honour it; iOS visitors get a ready-to-play embed instead of an error panel.
+- Removed `allow-presentation` from the Vimeo and SoundCloud iframe sandbox. WebKit rejects it as an invalid flag and logged a parse error for the whole attribute.
+- Consent no longer scrolls the page: the embed iframe and the playlist privacy overlay's follow-up focus both use `preventScroll`.
+- iPhone YouTube after consent: playlist `ensureAutoplay()` no longer fires delayed `play()` calls on iOS (they put YouTube into its error state on iPhone). On real HTTPS domains, privacy/playlist embeds pass `origin`, `widget_referrer`, and `enablejsapi=1` with `referrerpolicy="strict-origin-when-cross-origin"` per Google’s embed identity rules. On iPhone with development hostnames (LAN IP, `*.sslip.io`, `*.ddev.site`, …), YouTube still rejects in-frame playback — after consent the UI offers **Video in YouTube abspielen** instead of a broken iframe; iOS skips focusing the privacy iframe so taps are not swallowed.
+
+### Changed
+- Shipped VidPly player with the iOS play-button, page-scroll and fullscreen fixes.
+
 ## [1.2.36] - 2026-09-24
 
 ### Fixed
@@ -1002,6 +1013,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.37]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.36...v1.2.37
+[1.2.36]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.35...v1.2.36
 [1.2.35]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.34...v1.2.35
 [1.2.34]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.33...v1.2.34
 [1.2.33]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.32...v1.2.33
