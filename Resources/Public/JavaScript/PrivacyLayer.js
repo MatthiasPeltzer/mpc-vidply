@@ -45,9 +45,9 @@ import { sanitizeCssUrl } from './shared/url-safety.js';
     // We intentionally omit allow-top-navigation so a malicious embed cannot redirect the host page.
     const IFRAME_CONFIGS = {
         youtube: {
-            url: (id) => `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1`,
-            allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
-            sandbox: 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation'
+            url: (id) => `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&playsinline=1&rel=0&modestbranding=1`,
+            allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+            // No sandbox — YouTube’s official embed is unsandboxed; WebKit/iOS often fails inside a sandboxed YT iframe.
         },
         vimeo: {
             url: (id) => `https://player.vimeo.com/video/${id}?autoplay=1&title=0&byline=0&portrait=0`,
@@ -74,13 +74,14 @@ import { sanitizeCssUrl } from './shared/url-safety.js';
 
         const iframe = document.createElement('iframe');
         if (containerId) iframe.id = containerId;
-        iframe.src = config.url(mediaId);
+        const embedUrl = config.url(mediaId);
         iframe.setAttribute('allow', config.allow);
         if (config.sandbox) {
             iframe.setAttribute('sandbox', config.sandbox);
         }
         iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
-        iframe.setAttribute('loading', 'lazy');
+        // Eager load on consent click — lazy iframes can miss iOS Safari’s user-gesture window for autoplay.
+        iframe.setAttribute('loading', 'eager');
         iframe.setAttribute('allowfullscreen', '');
         iframe.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%';
 
@@ -93,7 +94,7 @@ import { sanitizeCssUrl } from './shared/url-safety.js';
             iframe.setAttribute('frameborder', '0');
         }
 
-        return iframe;
+        return { iframe, embedUrl };
     }
 
     /**
@@ -128,18 +129,21 @@ import { sanitizeCssUrl } from './shared/url-safety.js';
             return;
         }
 
-        const iframe = createIframeElement(service, mediaId, containerId);
-        if (!iframe) {
+        const built = createIframeElement(service, mediaId, containerId);
+        if (!built) {
             console.error('VidPlay Privacy Layer: Could not create iframe for service', service);
             return;
         }
 
+        const { iframe, embedUrl } = built;
         const titleMap = {youtube: 'YouTube video player', vimeo: 'Vimeo video player', soundcloud: 'SoundCloud audio player'};
         iframe.title = titleMap[service] || 'Embedded media player';
 
         privacyConsent.setConsent(service);
         applyAspectRatioStyles(layer);
         layer.replaceChildren(iframe);
+        // Assign src after mount so WebKit ties navigation to the consent click (autoplay=1).
+        iframe.src = embedUrl;
         iframe.focus();
     }
 
