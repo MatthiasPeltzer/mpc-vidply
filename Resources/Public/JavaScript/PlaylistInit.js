@@ -1050,8 +1050,9 @@ function createTrackInterceptor(playlist, element, wrapperElement, originalFn, p
         removePrivacyOverlay(element, playlist, wrapperElement);
         const result = originalFn(index, userInitiated);
 
-        // For external services with consent, ensure autoplay
-        if (serviceType) {
+        // User-initiated playlist.play() starts embeds once; delayed retries fight
+        // the iframe API and cause stop/start loops (YouTube/Vimeo/SoundCloud).
+        if (serviceType && userInitiated !== true) {
             ensureAutoplay(playlist);
         }
 

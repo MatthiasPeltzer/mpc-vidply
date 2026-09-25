@@ -65,7 +65,7 @@ const trackIndex = (button) => {
 
 const activeIndex = (player) => {
     const index = player.playlistManager?.currentIndex;
-    return Number.isInteger(index) && index >= 0 ? index : 0;
+    return Number.isInteger(index) && index >= 0 ? index : -1;
 };
 
 const isPlaying = (player) => (typeof player.isPlaying === 'function' ? Boolean(player.isPlaying()) : false);
@@ -249,22 +249,24 @@ const syncCurrentEpisode = (root, index) => {
  */
 const paint = (root, player, trackChanged = false) => {
     const active = activeIndex(player);
-    const playing = isPlaying(player);
+    const playing = active >= 0 && isPlaying(player);
 
     // Playback runs through the whole playlist, so it can leave the page the
     // list currently shows — follow it there instead of losing the active row.
     // Only on a track change: play/pause and the initial paint must not pull the
     // list away from the page the visitor is looking at.
-    if (trackChanged) {
+    if (trackChanged && active >= 0) {
         pagers.get(root)?.reveal(
             (item) => Number.parseInt(item.dataset.mpcEpisodeItem ?? '', 10) === active
         );
     }
 
-    syncCurrentEpisode(root, active);
+    if (active >= 0) {
+        syncCurrentEpisode(root, active);
+    }
 
     root.querySelectorAll(PLAY_BUTTON_SELECTOR).forEach((button) => {
-        const isActive = trackIndex(button) === active;
+        const isActive = active >= 0 && trackIndex(button) === active;
         paintButton(button, isActive && playing);
 
         const item = button.closest(ITEM_SELECTOR);
@@ -289,6 +291,7 @@ const subscribe = (root, player) => {
             player.on(event, () => paint(root, player));
         });
         player.on('playlisttrackchange', () => paint(root, player, true));
+        player.on('playlisttrackselect', () => paint(root, player, true));
     }
 
     paint(root, player);
@@ -338,7 +341,15 @@ const handleClick = (button) => {
     const playlist = player.playlistManager;
     const index = trackIndex(button);
 
-    if (Array.isArray(playlist?.tracks) && playlist.tracks.length > 1 && index !== playlist.currentIndex) {
+    const active = playlist?.currentIndex ?? -1;
+    const isActiveRow = active >= 0 && index === active;
+
+    if (isActiveRow && isPlaying(player)) {
+        player.pause?.();
+        return;
+    }
+
+    if (typeof playlist?.play === 'function') {
         void playlist.play(index, true).catch(() => {
             // The player reports load failures through its own error handling.
         });
