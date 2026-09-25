@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.41] - 2026-09-25
+
+### Fixed
+- Playlist init: when the first track is YouTube/Vimeo/SoundCloud and consent is pending, show the privacy overlay on load instead of the default player chrome.
+
+### Changed
+- Shipped VidPly player: embed-first idle preview (poster + play overlay / privacy layer) bundled from upstream VidPly.
+
 ## [1.2.40] - 2026-09-25
 
 ### Fixed
@@ -1046,6 +1054,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.41]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.40...v1.2.41
 [1.2.40]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.39...v1.2.40
 [1.2.39]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.38...v1.2.39
 [1.2.38]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.37...v1.2.38

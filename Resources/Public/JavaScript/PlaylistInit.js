@@ -1061,6 +1061,46 @@ function createTrackInterceptor(playlist, element, wrapperElement, originalFn, p
 }
 
 /**
+ * First track is an external embed and consent is pending: show privacy overlay on load
+ * instead of the default HTML5 chrome (presentIdleTrack only sets poster metadata).
+ */
+function showInitialPrivacyOverlayIfNeeded(
+    playlist,
+    element,
+    wrapperElement,
+    tracks,
+    autoPlayFirst,
+    privacySettings,
+    applyPerTrackUi,
+    originalPlay
+) {
+    if (autoPlayFirst || !Array.isArray(tracks) || tracks.length === 0) {
+        return;
+    }
+
+    const track = tracks[0];
+    const serviceType = resolveTrackServiceType(track);
+    if (!serviceType || privacyConsent.hasConsent(serviceType)) {
+        return;
+    }
+
+    if (typeof applyPerTrackUi === 'function') {
+        applyPerTrackUi(track);
+    }
+
+    showConsentOverlay(
+        playlist,
+        element,
+        wrapperElement,
+        serviceType,
+        track,
+        0,
+        () => originalPlay(0, true),
+        privacySettings
+    );
+}
+
+/**
  * Setup privacy consent interception for playlists with external media
  */
 function setupPrivacyInterception(playlist, element, wrapperElement, tracks, autoPlayFirst, privacySettings = null, applyPerTrackUi = null) {
@@ -1081,6 +1121,17 @@ function setupPrivacyInterception(playlist, element, wrapperElement, tracks, aut
     suppressVidPlyLogs(() => {
         playlist.loadPlaylist(tracks);
     });
+
+    showInitialPrivacyOverlayIfNeeded(
+        playlist,
+        element,
+        wrapperElement,
+        tracks,
+        autoPlayFirst,
+        privacySettings,
+        applyPerTrackUi,
+        originalPlay
+    );
 }
 
 /**
