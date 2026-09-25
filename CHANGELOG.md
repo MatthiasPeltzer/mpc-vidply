@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.39] - 2026-09-25
+
+### Fixed
+- Allow `?vidplyDebug=1` on speaking URLs without a TYPO3 cHash (sites with `FE.cacheHash.enforceValidation` no longer return 404 for the VidPly debug overlay query flag).
+- Shipped VidPly player: iOS mixed playlists tear down YouTube/Vimeo/SoundCloud renderers in the tap gesture before binding MP4/HLS on the media element (switching from embed tracks to file/HLS tracks no longer aborts silently).
+- Shipped VidPly player: German (and other) locale chunks keep UTF-8 umlauts when copied into mpc-vidply (fixes mojibake such as `zurÃ¼ckspulen` in mobile overflow labels).
+- Shipped VidPly player: caption/transcript controls added after tracks load re-run mobile overflow detection so Untertitel & related items appear in the ⋮ menu.
+
+### Changed
+- VidPly debug overlay: fixed panel at **top-right** (yellow border), one panel per page, mounts as soon as the first player starts; `debugOverlay` is set in player options when `vidplyDebug=1` is in the URL.
+- Shipped VidPly player: iOS MP4/HLS playlist **first tap** and **episode switch** keep `video.play()` inside the user gesture (prefetch no longer schedules a gesture-less follow-up play after renderer init).
+- Shipped VidPly player: iOS playlist play sets `video.src` directly (drops competing `<source>` tags), uses in-gesture `HTMLMediaElement.play()` instead of `renderer.play()` when WebKit reports no selected resource (`NotSupportedError`, `rs=0` / `ns=3`).
+- Shipped VidPly player: iOS playlist tap re-binds absolute `video.src` and calls `load()` in the user gesture when prefetch left the element at `networkState` NO_SOURCE (`ns=3`).
+- Shipped VidPly player: iOS MP4 playlist first tap clears the renderer-init preserve flag when the HTML5 renderer is already ready (avoids suppressed media errors and a stuck buffering spinner); calls `load()` in the user gesture only when WebKit has no `currentSrc` (`NotSupportedError` / `ns=3`), otherwise skips redundant `load()`.
+- Shipped VidPly player: playlist tracks with multiple renditions (DASH/HLS + MP4) negotiate a native-playback URL on iPhone instead of using MSE-first `track.src` on `<video>` (fixes `MEDIA_ERR_SRC_NOT_SUPPORTED` when a `.mpd` URL was assigned to the media element).
+- Shipped VidPly player: iOS playlist staging matches TYPO3 single-video markup (`<source type="video/mp4">` instead of `video.src`) so WebKit can select the MP4 resource (`ns=3` / SRC_NOT_SUPPORTED on valid file URLs).
+- Shipped VidPly player: iOS MP4/HLS playlists defer binding `video.src` until the user tap (prefetch only stores the URL); `HTML5Renderer.play()` runs in the gesture so WebKit leaves `NETWORK_NO_SOURCE` (`ns=3` / endless `waiting`).
+- Shipped VidPly player: iOS playlists defer caption/chapter `<track>` elements until after `loadedmetadata`, bind media with `<source type="video/mp4">` in the tap gesture, and avoid re-running `selectTrack()` after play (fixes `MEDIA_ERR_SRC_NOT_SUPPORTED` on valid MP4 URLs).
+- Shipped VidPly player: iOS MP4 playlist pause/resume calls `renderer.play()` when the track is already loaded instead of re-running the first-tap source bind (resume no longer jumps to 0:00).
+
 ## [1.2.38] - 2026-09-24
 
 ### Fixed
@@ -1018,6 +1038,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.39]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.38...v1.2.39
 [1.2.38]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.37...v1.2.38
 [1.2.37]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.36...v1.2.37
 [1.2.36]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.35...v1.2.36
