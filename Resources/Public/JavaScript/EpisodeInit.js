@@ -339,7 +339,7 @@ const handleClick = (button) => {
     const index = trackIndex(button);
 
     if (Array.isArray(playlist?.tracks) && playlist.tracks.length > 1 && index !== playlist.currentIndex) {
-        Promise.resolve(playlist.play(index, true)).catch(() => {
+        void playlist.play(index, true).catch(() => {
             // The player reports load failures through its own error handling.
         });
         return;

@@ -107,6 +107,10 @@ final class PlayerOptionsBuilder
         $playerOptions['resumePlayback'] = $this->resolveResumePlayback($request)
             || (int)($data['tx_mpcvidply_resume_playback'] ?? 0) === 1;
 
+        if ($request !== null && ($request->getQueryParams()['vidplyDebug'] ?? null) === '1') {
+            $playerOptions['debugOverlay'] = true;
+        }
+
         return $playerOptions;
     }
 

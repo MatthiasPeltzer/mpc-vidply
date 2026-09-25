@@ -68,6 +68,16 @@ final class PlayerOptionsBuilderTest extends TestCase
     }
 
     #[Test]
+    public function buildEnablesDebugOverlayWhenVidplyDebugQueryIsSet(): void
+    {
+        $request = (new ServerRequest())->withQueryParams(['vidplyDebug' => '1']);
+
+        $options = $this->subject->build([], $request);
+
+        self::assertTrue($options['debugOverlay']);
+    }
+
+    #[Test]
     public function buildDecodesBitmask(): void
     {
         // CONTROLS (8) + KEYBOARD (32) + AUTO_ADVANCE (64) = 104 (the documented default)

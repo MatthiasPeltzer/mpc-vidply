@@ -586,9 +586,22 @@ function resolvePlaylistHostElement(element, needsRecreate) {
  */
 function createPlaylistErrorHandler(playlist, autoAdvance) {
     return function handleTrackError(e) {
+        if (this.isChangingTrack) {
+            return;
+        }
+        const player = this.player;
+        if (player?._switchingRenderer) {
+            return;
+        }
         const currentTrack = this.getCurrentTrack();
-        if (currentTrack?.src && isExternalRendererUrl(currentTrack.src)) return;
-        if (autoAdvance) setTimeout(() => this.next(), ERROR_ADVANCE_DELAY);
+        if (currentTrack?.src && isExternalRendererUrl(currentTrack.src)) {
+            return;
+        }
+        // iOS often emits transient media errors while src/renderer is swapping;
+        // auto-advance would walk the whole playlist to the last item.
+        if (autoAdvance && !isIOS()) {
+            setTimeout(() => this.next(), ERROR_ADVANCE_DELAY);
+        }
     }.bind(playlist);
 }
 
