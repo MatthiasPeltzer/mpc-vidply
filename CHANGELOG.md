@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.40] - 2026-09-25
+
+### Fixed
+- Episode layout: play buttons select and start the matching playlist track in one tap; no episode row is marked active until the user picks one; tapping pause on the active row only pauses when that track is already playing.
+- Episode layout: list play/pause state stays in sync when the track changes from the player (next/previous, auto-advance, playlist panel) via `playlisttrackselect`.
+- Playlist init: skip delayed `ensureAutoplay` on user-initiated track switches so external embeds do not stutter or loop.
+- Shipped VidPly player: desktop playlist loading, idle first-track preview, first-click play, embed switching, and mixed audio/video recreation fixes bundled from upstream VidPly.
+
 ## [1.2.39] - 2026-09-25
 
 ### Fixed
@@ -1038,6 +1046,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.40]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.39...v1.2.40
 [1.2.39]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.38...v1.2.39
 [1.2.38]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.37...v1.2.38
 [1.2.37]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.36...v1.2.37
