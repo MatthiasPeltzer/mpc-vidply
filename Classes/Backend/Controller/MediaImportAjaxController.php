@@ -113,11 +113,14 @@ final readonly class MediaImportAjaxController
 
         // The refresh writes a poster next to the media file, so the editor
         // needs read access to the file and write access to its folder.
-        $parentFolder = $file->getParentFolder();
+        $storage = $file->getStorage();
+        $parentFolder = $storage->getFolder(
+            $storage->getFolderIdentifierFromFileIdentifier($file->getIdentifier())
+        );
         if (
             !$this->mediaFromUrlService->isOnlineMediaFile($file)
             || !$file->checkActionPermission('read')
-            || !$file->getStorage()->checkFolderActionPermission('write', $parentFolder)
+            || !$parentFolder->checkActionPermission('write')
         ) {
             return new JsonResponse(['success' => false, 'errorMessage' => 'Media file not found.']);
         }
