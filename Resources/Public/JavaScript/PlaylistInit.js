@@ -284,7 +284,7 @@ function observeVidplyOverlays(wrapperElement) {
 /**
  * Create the privacy consent overlay for a playlist track
  */
-function createPrivacyOverlay(service, track, onConsent, privacySettings = null, playIconUrl = null, playButtonPosition = 'center', playIconInlineSvg = null) {
+function createPrivacyOverlay(service, track, onConsent, privacySettings = null, playIconUrl = null, playButtonPosition = 'center', playIconInlineSvg = null, headlineLevel = 2) {
     const settings = getPrivacySettings(service, privacySettings);
 
     const overlay = document.createElement('div');
@@ -345,7 +345,9 @@ function createPrivacyOverlay(service, track, onConsent, privacySettings = null,
     privacyText.className = 'vidply-privacy-text';
 
     if (settings.headline) {
-        const headlineEl = document.createElement('h2');
+        // One level below the content element's header, as in PrivacyLayer.html.
+        const level = Number.isInteger(headlineLevel) && headlineLevel >= 2 && headlineLevel <= 6 ? headlineLevel : 2;
+        const headlineEl = document.createElement(`h${level}`);
         headlineEl.className = 'vidply-privacy-headline';
         headlineEl.textContent = settings.headline;
         privacyText.appendChild(headlineEl);
@@ -829,9 +831,15 @@ function setArtworkForcedHidden(playlist, element, wrapperElement, shouldHide) {
     }
 }
 
-// ensureAutoplay runs on every track switch, so without this the player would
-// collect one more `ready` listener each time and replay them all on the next event.
-const autoplayReadyBound = new WeakSet();
+/**
+ * Cancels the pending autoplay retries of a playlist. There is one chain per
+ * playlist at a time, and it ends as soon as playback starts or the visitor
+ * pauses — a retry must never restart media the visitor has paused
+ * (WCAG 2.2.2 Pause, Stop, Hide).
+ *
+ * @type {WeakMap<object, () => void>}
+ */
+const autoplayChains = new WeakMap();
 
 /**
  * Ensure autoplay after external content loads
@@ -843,35 +851,62 @@ function ensureAutoplay(playlist) {
         return;
     }
 
-    setTimeout(() => {
-        const currentPlayer = playlist.player;
-        if (!currentPlayer) return;
+    autoplayChains.get(playlist)?.();
 
-        const tryPlay = () => {
-            try {
-                currentPlayer.play?.();
-            } catch (e) {
-                // Autoplay might be blocked by browser
-            }
-        };
+    const timers = [];
+    let currentPlayer = null;
+    let cancelled = false;
 
-        // For external services, wait for ready event
-        if (!autoplayReadyBound.has(currentPlayer)) {
-            if (typeof currentPlayer.once === 'function') {
-                autoplayReadyBound.add(currentPlayer);
-                currentPlayer.once('ready', () => {
-                    autoplayReadyBound.delete(currentPlayer);
-                    setTimeout(tryPlay, AUTOPLAY_TIMEOUTS[0]);
-                });
-            } else if (typeof currentPlayer.on === 'function') {
-                autoplayReadyBound.add(currentPlayer);
-                currentPlayer.on('ready', () => setTimeout(tryPlay, AUTOPLAY_TIMEOUTS[0]));
-            }
+    const cancel = () => {
+        if (cancelled) return;
+        cancelled = true;
+        timers.forEach((timer) => clearTimeout(timer));
+        if (currentPlayer && typeof currentPlayer.off === 'function') {
+            currentPlayer.off('play', cancel);
+            currentPlayer.off('pause', cancel);
+            currentPlayer.off('ready', onReady);
+        }
+        if (autoplayChains.get(playlist) === cancel) {
+            autoplayChains.delete(playlist);
+        }
+    };
+
+    const tryPlay = () => {
+        if (cancelled) return;
+        try {
+            currentPlayer?.play?.();
+        } catch (e) {
+            // Autoplay might be blocked by browser
+        }
+    };
+
+    const schedule = (delay) => {
+        if (!cancelled) {
+            timers.push(setTimeout(tryPlay, delay));
+        }
+    };
+
+    // For external services, wait for ready event
+    const onReady = () => schedule(AUTOPLAY_TIMEOUTS[0]);
+
+    autoplayChains.set(playlist, cancel);
+
+    timers.push(setTimeout(() => {
+        currentPlayer = playlist.player;
+        if (!currentPlayer || cancelled) {
+            cancel();
+            return;
+        }
+
+        if (typeof currentPlayer.on === 'function') {
+            currentPlayer.on('play', cancel);
+            currentPlayer.on('pause', cancel);
+            currentPlayer.on('ready', onReady);
         }
 
         // Try after delays to handle different loading times
-        AUTOPLAY_TIMEOUTS.forEach(timeout => setTimeout(tryPlay, timeout));
-    }, OVERLAY_INSERT_DELAY);
+        AUTOPLAY_TIMEOUTS.forEach(schedule);
+    }, OVERLAY_INSERT_DELAY));
 }
 
 /**
@@ -999,11 +1034,12 @@ function showConsentOverlay(playlist, element, wrapperElement, serviceType, trac
     const playIconUrl = wrapperElement?.dataset?.vidplyPlayIcon || element?.dataset?.vidplyPlayIcon || null;
     const playButtonPosition = wrapperElement?.dataset?.vidplyPlayPosition || element?.dataset?.vidplyPlayPosition || 'center';
     const playIconInlineSvg = getInlinePlaySvgMarkup(wrapperElement);
+    const headlineLevel = Number.parseInt(element?.dataset?.playlistPrivacyHeadlineLevel ?? '', 10);
     const overlay = createPrivacyOverlay(serviceType, track, () => {
         restorePlayerVisibility(playlist, element, wrapperElement);
         proceedFn();
         ensureAutoplay(playlist);
-    }, privacySettings, playIconUrl, playButtonPosition, playIconInlineSvg);
+    }, privacySettings, playIconUrl, playButtonPosition, playIconInlineSvg, headlineLevel);
 
     insertPrivacyOverlay(overlay, playlist, element, wrapperElement);
 }
@@ -1188,107 +1224,121 @@ function detectPageTheme() {
     return 'dark'; // Default to dark
 }
 
-// Check if theme sync is enabled for any player on the page
+const THEME_SYNC_SELECTOR = '[data-vidply-theme-sync="1"]';
+const PLAYER_HOST_SELECTOR = '[data-vidply-player], [data-vidply-init], [data-playlist]';
+
+/** Theme last applied by the automatic sync, so unrelated mutations are ignored. */
+let lastSyncedTheme = null;
+
+// Theme sync is opt-in per player (extension setting themeSyncEnabled).
 function isThemeSyncEnabled() {
-    // Always enable if data-bs-theme is set, #themeSwitch exists, or data attribute is set
-    return document.documentElement.hasAttribute('data-bs-theme') ||
-           document.getElementById('themeSwitch') !== null || 
-           document.querySelector('[data-vidply-theme-sync="1"]') !== null;
+    return document.querySelector(THEME_SYNC_SELECTOR) !== null;
 }
 
-// Apply theme to ALL VidPly players on the page (including those not in allPlayers set)
-function applyThemeToAllPlayers(theme) {
+/**
+ * Apply a theme to VidPly players.
+ *
+ * The automatic sync only touches players that opted in through
+ * `data-vidply-theme-sync="1"` on their wrapper and only when the theme actually
+ * changed; players with a fixed theme are left alone. The public
+ * `VidPlyTheme.setTheme()` is an explicit request and reaches every player.
+ *
+ * @param {string} theme
+ * @param {{ onlySynced?: boolean, force?: boolean }} [options]
+ */
+function applyTheme(theme, options = {}) {
     const validTheme = theme === 'light' ? 'light' : 'dark';
-    
-    // Method 1: Use tracked players
-    getAlivePlayers().forEach(player => {
-        if (player && typeof player.setTheme === 'function') {
-            try {
-                player.setTheme(validTheme);
-            } catch (e) {
-                // Ignore errors
-            }
+    const onlySynced = options.onlySynced === true;
+    if (onlySynced && !options.force && validTheme === lastSyncedTheme) {
+        return;
+    }
+    if (onlySynced) {
+        lastSyncedTheme = validTheme;
+    }
+
+    const roots = onlySynced ? Array.from(document.querySelectorAll(THEME_SYNC_SELECTOR)) : [document.documentElement];
+    const inScope = (node) => node instanceof Node && roots.some((root) => root.contains(node));
+    const themed = new Set();
+    const setPlayerTheme = (player) => {
+        if (!player || themed.has(player) || typeof player.setTheme !== 'function') {
+            return;
+        }
+        themed.add(player);
+        try {
+            player.setTheme(validTheme);
+        } catch (e) {
+            // Ignore errors
+        }
+    };
+
+    getAlivePlayers().forEach((player) => {
+        if (inScope(player?.container ?? player?.element)) {
+            setPlayerTheme(player);
         }
     });
-    
-    // Method 2: Find all player containers on the page and apply theme class directly
-    document.querySelectorAll('.vidply-player').forEach(container => {
-        // Remove existing theme classes
-        container.classList.remove('vidply-theme-dark', 'vidply-theme-light');
-        // Add new theme class
-        container.classList.add(`vidply-theme-${validTheme}`);
+
+    roots.forEach((root) => {
+        root.querySelectorAll('.vidply-player').forEach((container) => {
+            container.classList.remove('vidply-theme-dark', 'vidply-theme-light');
+            container.classList.add(`vidply-theme-${validTheme}`);
+        });
+        root.querySelectorAll(PLAYER_HOST_SELECTOR).forEach((element) => {
+            setPlayerTheme(element._vidplyPlaylist?.player ?? element._vidplyPlayer);
+        });
     });
-    
-    // Method 3: Try to get player from element reference
-    document.querySelectorAll('[data-vidply-init], [data-playlist]').forEach(element => {
-        const player = element._vidplyPlayer;
-        if (player && typeof player.setTheme === 'function') {
-            try {
-                player.setTheme(validTheme);
-            } catch (e) {
-                // Ignore errors
-            }
-        }
-    });
-    
+
     // Dispatch event for any custom integrations
-    document.dispatchEvent(new CustomEvent('vidply:themechange', { 
-        detail: { theme: validTheme } 
+    document.dispatchEvent(new CustomEvent('vidply:themechange', {
+        detail: { theme: validTheme }
     }));
 }
+
+const syncTheme = (theme, force = false) => applyTheme(theme, { onlySynced: true, force });
 
 // Setup theme sync observers and event listeners
 function setupThemeSync() {
     const html = document.documentElement;
     const themeSwitch = document.getElementById('themeSwitch');
-    
+
     // Set initial theme based on current page state
-    const initialTheme = detectPageTheme();
-    setTimeout(() => applyThemeToAllPlayers(initialTheme), 200);
-    
-    // Primary method: Observe data-bs-theme attribute on <html>
+    setTimeout(() => syncTheme(detectPageTheme(), true), 200);
+
+    // Class and data attribute changes on <html>/<body> are frequent (menus,
+    // scroll state, …); only a change of the detected theme is applied.
     const observer = new MutationObserver((mutations) => {
-        for (const mutation of mutations) {
-            if (mutation.attributeName === 'data-bs-theme') {
-                const newTheme = html.getAttribute('data-bs-theme');
-                if (newTheme === 'light' || newTheme === 'dark') {
-                    applyThemeToAllPlayers(newTheme);
-                }
+        if (mutations.some((mutation) => mutation.attributeName === 'data-bs-theme')) {
+            const newTheme = html.getAttribute('data-bs-theme');
+            if (newTheme === 'light' || newTheme === 'dark') {
+                syncTheme(newTheme);
                 return;
             }
         }
-        // Fallback: re-detect theme for other attribute changes
-        const newTheme = detectPageTheme();
-        applyThemeToAllPlayers(newTheme);
+        syncTheme(detectPageTheme());
     });
-    
-    // Observe html element for data-bs-theme changes
+
     observer.observe(html, {
         attributes: true,
         attributeFilter: ['data-bs-theme', 'class', 'data-theme']
     });
-    
-    // Also observe body for class-based theme switches
+
     observer.observe(document.body, {
         attributes: true,
         attributeFilter: ['class', 'data-theme', 'data-color-scheme']
     });
-    
-    // Fallback: Listen for checkbox change events directly
+
     // Fallback: observe #themeSwitch when data-bs-theme is not used
     if (themeSwitch && themeSwitch.type === 'checkbox') {
         themeSwitch.addEventListener('change', () => {
             // checked = dark, unchecked = light
-            const theme = themeSwitch.checked ? 'dark' : 'light';
-            applyThemeToAllPlayers(theme);
+            syncTheme(themeSwitch.checked ? 'dark' : 'light');
         });
     }
-    
+
     // Listen for custom theme change events
     document.addEventListener('theme:change', (e) => {
         const theme = e.detail?.theme;
         if (theme === 'light' || theme === 'dark') {
-            applyThemeToAllPlayers(theme);
+            syncTheme(theme);
         }
     });
 }
@@ -1368,7 +1418,7 @@ function runInitialSetup() {
 
 // Export theme and init helpers for external use (Vue sliders, galleries, …)
 window.VidPlyTheme = {
-    setTheme: applyThemeToAllPlayers,
+    setTheme: (theme) => applyTheme(theme),
     getPlayers: () => getAlivePlayers(),
     detectPageTheme
 };

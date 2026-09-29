@@ -35,7 +35,7 @@ final class ExternalAudioHelperTest extends TestCase
             'empty url' => [''],
             'missing scheme and host' => ['/relative/track.mp3'],
             'unsupported scheme' => ['ftp://cdn.example.com/track.mp3'],
-            'unsupported extension' => ['https://cdn.example.com/track.ogg'],
+            'unsupported extension' => ['https://cdn.example.com/track.wma'],
             'video extension rejected' => ['https://cdn.example.com/track.mp4'],
             'disallowed host' => ['https://evil.example.org/track.mp3'],
         ];

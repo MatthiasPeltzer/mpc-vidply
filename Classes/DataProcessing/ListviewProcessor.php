@@ -128,10 +128,14 @@ final class ListviewProcessor implements DataProcessorInterface
 
             $mediaRecords = $this->mediaResolver->resolveMediaRecordsForRow($row, $languageId);
 
-            $mediaUids = array_values(array_filter(
-                array_map(static fn (array $m): int => (int)($m['uid'] ?? 0), $mediaRecords),
-                static fn (int $uid): bool => $uid > 0
-            ));
+            // Translations without a poster of their own fall back to the
+            // default-language poster, so both uids are prefetched.
+            $mediaUids = [];
+            foreach ($mediaRecords as $m) {
+                $mediaUids[] = (int)($m['uid'] ?? 0);
+                $mediaUids[] = (int)($m['l10n_parent'] ?? 0);
+            }
+            $mediaUids = array_values(array_unique(array_filter($mediaUids, static fn (int $uid): bool => $uid > 0)));
             $posterRefsByMediaUid = $this->fileReferencePrefetcher->prefetchField($mediaUids, 'poster');
             $categoryMap = $this->mediaCategoryResolver->fetchForMediaRecords($mediaRecords, $languageId);
 

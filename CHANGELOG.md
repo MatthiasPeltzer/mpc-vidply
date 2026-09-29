@@ -5,6 +5,54 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Security
+- Episode cards print the episode title and number escaped (stored XSS through titles, including oEmbed titles).
+- External media container files (HLS, DASH, external video/audio, SoundCloud) are re-validated on every read: only `http(s)` URLs on the allow-list, without backslashes, whitespace, control characters or user/password parts. Imported URLs are stored rebuilt from the validated parts, closing an allow-list bypass via `https://evil.tld\@cdn.allowed.com/…`.
+- Download links are only offered for media files with an `http(s)` or relative URL; stream manifests and YouTube/Vimeo/SoundCloud embeds are never offered as downloads.
+- oEmbed, provider pages and poster thumbnails are fetched with connect/total timeouts and size limits. Thumbnails only come from `i.ytimg.com`, `i.vimeocdn.com`, `vumbnail.com` and `*.sndcdn.com` over HTTPS without redirects and must be a JPEG, PNG or WebP image; non-HTTP values are never read from the local file system.
+- Metadata refresh in the backend requires read access to the file, write access to its folder and an online-media file; the table name and media type are validated. The URL import requires content-edit permission on the storage page.
+- DataHandler hooks (poster persist, SRT conversion, translation sync) only act on records whose save was allowed; the poster hook also checks the `poster` exclude field. Translation sync skips workspaces and languages the editor may not edit and updates the reference index.
+- Content Security Policy: `connect-src` / `media-src` are extended with the allow-listed media hosts instead of the whole `https:` scheme.
+- Detail views, related items, fallback detail pages and privacy settings are scoped to the current site; records stored outside every site tree stay shared.
+
+### Fixed
+- Upgrade wizard for player options no longer turns "auto-advance on, keyboard off" into "keyboard on, auto-advance off"; legacy bits are only remapped when a legacy-only bit is set, and hidden or scheduled content elements are migrated as well.
+- Hidden translated listview rows are no longer duplicated on every save of the default content element; hidden default rows pass their visibility to the translation.
+- `?vidplyDebug=1` is no longer read on the server, so the debug overlay cannot be cached for all visitors (the player reads the flag itself).
+- Media records: `crdate` is no longer overwritten with sort numbers (TCA `default_sortby` instead of `sortby`).
+- Translated detail pages show related items; "next in category" returns at most the requested number of items.
+- Translated media records fall back to the default-language poster in listviews, detail pages and structured data; the detail poster is queried once.
+- Structured data only collects content elements of the current language.
+- The URL import no longer saves the placeholder icon as a JPEG poster, reuses an identical poster instead of adding `-poster_N` copies, detects the real image type and removes a poster whose write failed.
+- SRT to WebVTT conversion renames first and writes afterwards, so a failed rename no longer loses the original captions.
+- Hidden records previews ("show hidden records") and scheduled records honour the frontend visibility settings; title sorting in other languages uses the translated titles.
+- `.ogg` URLs can be imported as external audio.
+- Episode play buttons work for playlists with YouTube, Vimeo or SoundCloud tracks.
+- Autoplay retries after consent stop once playback starts or the visitor pauses (WCAG 2.2.2).
+- Theme sync only updates players with theme sync enabled and only when the page theme actually changes.
+- The backend URL import and metadata refresh cannot run twice in parallel.
+- Detail URLs are no longer built by hand when TYPO3 cannot generate a link (the fallback `/slug` path returned 404).
+
+### Accessibility
+- Shelf arrows stay visible and focusable at the ends of a shelf (`aria-disabled` instead of `disabled`).
+- Pagination announces "Page X of Y" once through a persistent status element instead of a rebuilt live region; the current page button stays focusable with `aria-current="page"`.
+- Two-tone focus ring on the privacy button (WCAG 1.4.11).
+- Listview, episode and privacy styles no longer switch to light text because of the operating system's dark mode alone (WCAG 1.4.3); the dark palette requires `data-bs-theme="dark"` or `data-theme="dark"`.
+- Shelf keyboard scrolling no longer captures keys pressed inside focused cards.
+- The privacy button stays usable after a failed load.
+- Detail page: no content element header above the media `<h1>`, category chips in a plain list instead of a `<nav>`, no `role="alert"` on the "not found" message.
+- No nested regions with the same name in mixed playlists; fallback labels ("Media player", "Media shelf", "Chapters") are translated.
+- Privacy layer headlines sit one level below the content element header instead of always being `<h2>`.
+- Content element `<h1>` headers use `id="header-c{uid}"` instead of a fixed `id="headerMain"`, so two elements no longer produce duplicate ids. Site templates that label `<main>` with `aria-labelledby="headerMain"` from a VidPly header need to reference the new id.
+- Reduced motion: positioned play buttons no longer scale on hover or press.
+
+### Changed
+- New site setting `mpcVidply.registerBreadcrumbMenu` (default on) to stop the Site Set from registering its breadcrumb `MenuProcessor` at `page.10.dataProcessing.70`.
+- `typo3/cms-backend` is a runtime requirement; `ext_emconf.php` allows TYPO3 up to 14.x like `composer.json`.
+- Fewer queries: file references are built from the prefetched rows, category titles are localized once per request, structured data prefetches all posters in one query, privacy settings are cached per site and language.
+
 ## [1.2.41] - 2026-09-25
 
 ### Fixed

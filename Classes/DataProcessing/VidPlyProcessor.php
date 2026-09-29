@@ -92,7 +92,8 @@ class VidPlyProcessor implements DataProcessorInterface
         $languageId = FrontendLanguageResolver::resolveLanguageId($request, $data);
         $contentUid = (int)$data['uid'];
         $l10nParent = (int)($data['l18n_parent'] ?? $data['l10n_parent'] ?? 0);
-        // MM uid_local: try translated CE first, then default (see MediaRepository::findByContentUid)
+        // MM uid_local: the default-language CE (l18n parent) wins, the translated
+        // CE is only read when the parent has no relations (see MediaRepository::findByContentUid)
         $mediaRecords = $this->mediaRepository->findByContentUid(
             $contentUid,
             $languageId,
@@ -599,6 +600,7 @@ class VidPlyProcessor implements DataProcessorInterface
             'playlistData' => $playlistData,
             'tracks' => $trackResult['tracks'],
             'privacySettings' => $privacySettings,
+            'privacyHeadlineLevel' => $this->resolvePrivacyHeadlineLevel($data),
             'privacyPlayIconUrl' => $uiConfig['playIconUrl'],
             'privacyPlayIconInlineSvg' => $uiConfig['playIconInlineSvg'],
             'privacyPlayButtonPosition' => $uiConfig['playButtonPosition'],
@@ -619,6 +621,29 @@ class VidPlyProcessor implements DataProcessorInterface
         }
 
         return $vidplyData;
+    }
+
+    /**
+     * Heading level of the privacy layer headline: one level below the content
+     * element's own header when it renders one, otherwise level 2. Layout 0 is
+     * the site's default header (<h2>), layouts 7–12 are visually hidden
+     * <h1>–<h6>, layout 100 hides the header (see ContentElement/Header.html).
+     *
+     * @param array<string, mixed> $data
+     */
+    private function resolvePrivacyHeadlineLevel(array $data): int
+    {
+        $headerLayout = (int)($data['header_layout'] ?? 0);
+        if (trim((string)($data['header'] ?? '')) === '' || $headerLayout === 100) {
+            return 2;
+        }
+        $headerLevel = match (true) {
+            $headerLayout >= 1 && $headerLayout <= 6 => $headerLayout,
+            $headerLayout >= 7 && $headerLayout <= 12 => $headerLayout - 6,
+            default => 2,
+        };
+
+        return min(6, $headerLevel + 1);
     }
 
     /**

@@ -7,6 +7,7 @@ namespace Mpc\MpcVidply\Tests\Unit\Service\Player;
 use Mpc\MpcVidply\Service\Player\DownloadResolver;
 use Mpc\MpcVidply\Service\Player\LocaleFormatter;
 use Mpc\MpcVidply\Service\Player\MediaFileRegistry;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -70,6 +71,45 @@ final class DownloadResolverTest extends TestCase
             $this->subject->resolveUrl(['src' => '/fileadmin/a.mp3', 'type' => 'audio/mpeg'])
         );
         self::assertNull($this->subject->resolveUrl(['type' => 'audio/mpeg']));
+    }
+
+    /**
+     * @return array<string, array{0: array<string, mixed>}>
+     */
+    public static function nonDownloadableTrackProvider(): array
+    {
+        return [
+            'hls manifest' => [['src' => 'https://cdn.example.com/a.m3u8', 'type' => 'application/x-mpegurl']],
+            'dash manifest' => [['src' => 'https://cdn.example.com/a.mpd', 'type' => 'application/dash+xml']],
+            'youtube embed' => [['src' => 'https://www.youtube.com/watch?v=abc', 'type' => 'youtube']],
+            'soundcloud embed' => [['src' => 'https://soundcloud.com/a/b', 'type' => 'soundcloud']],
+            'javascript url' => [['src' => 'javascript:alert(1)', 'type' => 'audio/mpeg']],
+            'protocol relative url' => [['src' => '//evil.example/a.mp3', 'type' => 'audio/mpeg']],
+            'unsafe progressive source' => [[
+                'src' => 'https://cdn.example.com/a.m3u8',
+                'type' => 'application/x-mpegurl',
+                'sources' => [['src' => 'javascript:alert(1)', 'type' => 'video/mp4']],
+            ]],
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $track
+     */
+    #[Test]
+    #[DataProvider('nonDownloadableTrackProvider')]
+    public function resolveUrlOffersNoDownloadForStreamsEmbedsOrUnsafeUrls(array $track): void
+    {
+        self::assertNull($this->subject->resolveUrl($track));
+    }
+
+    #[Test]
+    public function resolveUrlAcceptsOtherMediaFileFormats(): void
+    {
+        self::assertSame(
+            '/fileadmin/a.m4a',
+            $this->subject->resolveUrl(['src' => '/fileadmin/a.m4a', 'type' => 'audio/mp4'])
+        );
     }
 
     #[Test]

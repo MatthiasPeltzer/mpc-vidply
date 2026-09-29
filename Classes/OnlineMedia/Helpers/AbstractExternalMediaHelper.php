@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\OnlineMedia\Helpers;
 
+use Mpc\MpcVidply\Utility\HttpUrlGuard;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Resource\Exception\OnlineMediaAlreadyExistsException;
 use TYPO3\CMS\Core\Resource\File;
@@ -35,34 +36,20 @@ abstract class AbstractExternalMediaHelper extends AbstractOnlineMediaHelper
     /** @return File|null */
     public function transformUrlToFile($url, Folder $targetFolder)
     {
-        $url = trim((string)$url);
-        if ($url === '') {
+        $parts = $this->parseAllowedUrl((string)$url);
+        if ($parts === null) {
             return null;
         }
 
-        $parts = parse_url($url);
-        if (!is_array($parts) || empty($parts['scheme']) || empty($parts['host'])) {
-            return null;
-        }
-
-        $scheme = strtolower((string)$parts['scheme']);
-        if (!in_array($scheme, ['http', 'https'], true)) {
-            return null;
-        }
-
-        $path = (string)($parts['path'] ?? '');
+        $path = $parts['path'] ?? '';
         $fileExtension = strtolower((string)pathinfo($path, PATHINFO_EXTENSION));
         if (!in_array($fileExtension, $this->getSupportedFileExtensions(), true)) {
             return null;
         }
 
-        $allowedDomains = $this->getAllowedDomains($this->getAllowedDomainsConfigKey());
-        if (!$this->isHostAllowed($scheme, strtolower((string)$parts['host']), $allowedDomains)) {
-            return null;
-        }
-
-        // The full URL doubles as the "online media id".
-        $onlineMediaId = $url;
+        // The full URL doubles as the "online media id". It is rebuilt from the
+        // validated parts so the stored value is exactly what was checked.
+        $onlineMediaId = HttpUrlGuard::build($parts);
         $existing = $this->findExistingFileByOnlineMediaId($onlineMediaId, $targetFolder, $this->extension);
         if ($existing !== null) {
             throw new OnlineMediaAlreadyExistsException($existing, $this->getAlreadyExistsExceptionCode());
@@ -80,12 +67,19 @@ abstract class AbstractExternalMediaHelper extends AbstractOnlineMediaHelper
         );
     }
 
-    /** @return string|null */
+    /**
+     * The container file content is editor-controlled: the container extensions
+     * are also regular upload extensions, so a file can reach this point
+     * without ever passing {@see transformUrlToFile()}. The URL is therefore
+     * re-validated on every read.
+     *
+     * @return string|null
+     */
     public function getPublicUrl(File $file)
     {
-        $url = $this->getOnlineMediaId($file);
+        $parts = $this->parseAllowedUrl($this->getOnlineMediaId($file));
 
-        return $url !== '' ? $url : null;
+        return $parts !== null ? HttpUrlGuard::build($parts) : null;
     }
 
     /** @return string */
@@ -135,6 +129,21 @@ abstract class AbstractExternalMediaHelper extends AbstractOnlineMediaHelper
      * Used when the derived base name sanitizes down to nothing.
      */
     abstract protected function getFileNameFallback(): string;
+
+    /**
+     * @return array{scheme: string, host: string, port?: int, path?: string, query?: string, fragment?: string}|null
+     */
+    private function parseAllowedUrl(string $url): ?array
+    {
+        $parts = HttpUrlGuard::parse($url);
+        if ($parts === null) {
+            return null;
+        }
+
+        $allowedDomains = $this->getAllowedDomains($this->getAllowedDomainsConfigKey());
+
+        return $this->isHostAllowed($parts['scheme'], $parts['host'], $allowedDomains) ? $parts : null;
+    }
 
     private function getExtensionConfiguration(): ExtensionConfiguration
     {

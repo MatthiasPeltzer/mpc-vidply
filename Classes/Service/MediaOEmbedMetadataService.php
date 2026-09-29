@@ -16,6 +16,13 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 final class MediaOEmbedMetadataService
 {
+    private const MAX_OEMBED_BYTES = 512 * 1024;
+    private const MAX_PAGE_BYTES = 3 * 1024 * 1024;
+
+    public function __construct(
+        private ?RemoteContentFetcher $remoteContentFetcher = null,
+    ) {}
+
     /**
      * @return array{
      *     title: string,
@@ -129,8 +136,8 @@ final class MediaOEmbedMetadataService
             return [];
         }
 
-        $response = GeneralUtility::getUrl($oEmbedUrl);
-        if (!is_string($response) || $response === '') {
+        $response = $this->getRemoteContentFetcher()->fetch($oEmbedUrl, self::MAX_OEMBED_BYTES);
+        if ($response === null || $response === '') {
             return [];
         }
 
@@ -147,8 +154,8 @@ final class MediaOEmbedMetadataService
             return ['description' => '', 'duration' => 0];
         }
 
-        $response = GeneralUtility::getUrl($trackUrl);
-        if (!is_string($response) || $response === '') {
+        $response = $this->getRemoteContentFetcher()->fetch($trackUrl, self::MAX_PAGE_BYTES);
+        if ($response === null || $response === '') {
             return ['description' => '', 'duration' => 0];
         }
 
@@ -214,8 +221,11 @@ final class MediaOEmbedMetadataService
      */
     private function fetchYouTubePageDetails(string $videoId): array
     {
-        $response = GeneralUtility::getUrl('https://www.youtube.com/watch?v=' . rawurlencode($videoId));
-        if (!is_string($response) || $response === '') {
+        $response = $this->getRemoteContentFetcher()->fetch(
+            'https://www.youtube.com/watch?v=' . rawurlencode($videoId),
+            self::MAX_PAGE_BYTES
+        );
+        if ($response === null || $response === '') {
             return ['description' => '', 'duration' => 0];
         }
 
@@ -226,7 +236,8 @@ final class MediaOEmbedMetadataService
 
         $description = '';
         if (preg_match('/"shortDescription"\s*:\s*"((?:[^"\\\\]|\\\\.)*)"/s', $response, $matches)) {
-            $description = $this->normalizeText(stripcslashes($matches[1]));
+            $decoded = json_decode('"' . $matches[1] . '"');
+            $description = is_string($decoded) ? $this->normalizeText($decoded) : '';
         }
 
         return [
@@ -261,5 +272,10 @@ final class MediaOEmbedMetadataService
         }
 
         return 0;
+    }
+
+    private function getRemoteContentFetcher(): RemoteContentFetcher
+    {
+        return $this->remoteContentFetcher ??= GeneralUtility::makeInstance(RemoteContentFetcher::class);
     }
 }

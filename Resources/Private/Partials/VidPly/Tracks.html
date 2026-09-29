@@ -14,7 +14,7 @@
 
 <f:for each="{chapters}" as="chapter">
     <track kind="{chapter.kind}" src="{chapter.src}" srclang="{chapter.srclang}"
-        label="{f:if(condition: chapter.label, then: chapter.label, else: 'Chapters')}"
+        label="{f:if(condition: chapter.label, then: chapter.label, else: '{f:translate(key: \'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:player.chapters\', default: \'Chapters\')}')}"
         <f:if condition="{chapter.describedSrc}">data-desc-src="{chapter.describedSrc}"</f:if>>
 </f:for>
 

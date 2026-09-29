@@ -132,6 +132,10 @@ import {
 
     /**
      * Handle privacy layer click
+     *
+     * @returns {boolean} Whether the layer was replaced by the embed. Nothing
+     *     is changed (no consent stored) when the embed cannot be built, so
+     *     the button keeps working.
      */
     function handlePrivacyClick(layer) {
         const service = layer.getAttribute('data-vidply-privacy');
@@ -140,28 +144,30 @@ import {
 
         if (!url || !containerId) {
             console.error('VidPlay Privacy Layer: Missing URL or container ID');
-            return;
+            return false;
         }
 
         const mediaId = extractMediaId(url, service);
         if (!mediaId) {
             console.error('VidPlay Privacy Layer: Invalid URL for service', service);
-            return;
+            return false;
         }
 
-        privacyConsent.setConsent(service);
-        applyAspectRatioStyles(layer);
-
         if (service === 'youtube' && shouldUseYoutubeIosLanFallback()) {
+            privacyConsent.setConsent(service);
+            applyAspectRatioStyles(layer);
             layer.replaceChildren(createYoutubeIosLanFallback(document, mediaId));
-            return;
+            return true;
         }
 
         const built = createIframeElement(service, mediaId, containerId);
         if (!built) {
             console.error('VidPlay Privacy Layer: Could not create iframe for service', service);
-            return;
+            return false;
         }
+
+        privacyConsent.setConsent(service);
+        applyAspectRatioStyles(layer);
 
         const { iframe, embedUrl } = built;
         const titleMap = {youtube: 'YouTube video player', vimeo: 'Vimeo video player', soundcloud: 'SoundCloud audio player'};
@@ -175,6 +181,8 @@ import {
         if (!isIOS()) {
             iframe.focus({ preventScroll: true });
         }
+
+        return true;
     }
 
     /**
@@ -194,11 +202,12 @@ import {
             const button = layer.querySelector('.vidply-privacy-button');
             if (!button) return;
 
-            let clicked = false;
+            // Only a successful load locks the button; after a failure it
+            // stays usable instead of going dead.
+            let loaded = false;
             button.addEventListener('click', () => {
-                if (clicked) return;
-                clicked = true;
-                handlePrivacyClick(layer);
+                if (loaded) return;
+                loaded = handlePrivacyClick(layer);
             });
         });
     }

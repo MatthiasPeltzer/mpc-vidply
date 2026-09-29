@@ -114,11 +114,13 @@ Features:
 Required CSP directives (shared by HLS and DASH):
 
 ```php
-'media-src'       => ['blob:', 'data:', 'https:'],
+'media-src'       => ['blob:', 'data:', /* hosts from allowedVideoDomains / allowedAudioDomains */],
 'worker-src'      => ['blob:'],
-'connect-src'     => ['blob:', 'data:', 'https:'],
+'connect-src'     => ['blob:', /* hosts from allowedVideoDomains / allowedAudioDomains */],
 'script-src-elem' => ["'self'"],
 ```
+
+The media hosts are added by `StreamingContentSecurityPolicyEventListener` from the extension configuration, so only allow-listed CDNs are reachable — not every `https:` origin.
 
 > **Note:** `mpc-vidply` ships **hls.js** and **dash.js** locally (`Resources/Public/JavaScript/`). The jsDelivr URLs mentioned elsewhere in this file are fallbacks for standalone VidPly embeds only — they are **not** required when using the TYPO3 extension with vendored scripts. Since v1.2.6 the extension CSP no longer whitelists `cdn.jsdelivr.net` for scripts by default.
 
@@ -127,7 +129,7 @@ Why these directives are needed:
 - `media-src 'blob:'` — `hls.js` / `dash.js` set a `blob:` URL on `<video>.src` while playing.
 - `media-src 'data:'` — some HLS variants embed init segments / WebVTT inline as `data:` URIs.
 - `worker-src 'blob:'` — `hls.js` / `dash.js` spawn workers from `blob:` URLs for demuxing.
-- `connect-src 'https:'` — fetching segments and manifests from arbitrary CDNs.
+- `connect-src` (allow-listed hosts) — fetching segments and manifests from the configured CDNs.
 - `script-src-elem 'self'` — vendored `hls.min.js` / `dash.all.min.js` from the extension.
 - `script-src-elem 'https://cdn.jsdelivr.net'` — only required if you rely on VidPly's CDN fallback instead of the vendored files.
 

@@ -9,7 +9,7 @@
             <f:if condition="{header}">
                 <f:switch expression="{data.header_layout}">
                     <f:case value="1">
-                        <h1 class="{positionClass}" id="headerMain">
+                        <h1 class="{positionClass}" id="header-c{data.uid}">
                             <f:if condition="{kicker}"><span class="kicker">{kicker}<span class="visually-hidden">: </span></span><f:if condition="{data.header_link}"><br></f:if></f:if>
                             <f:link.typolink parameter="{data.header_link}"><span>{header}</span></f:link.typolink>
                         </h1>
@@ -46,7 +46,7 @@
                     </f:case>
                     <f:case value="7">
                         <f:if condition="{kicker}"><p class="visually-hidden">{kicker}</p></f:if>
-                        <h1 class="visually-hidden" id="headerMain">{header}</h1>
+                        <h1 class="visually-hidden" id="header-c{data.uid}">{header}</h1>
                     </f:case>
                     <f:case value="8">
                         <f:if condition="{kicker}"><p class="visually-hidden">{kicker}</p></f:if>

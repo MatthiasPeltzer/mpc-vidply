@@ -2,6 +2,12 @@
 
 <f:layout name="Default" />
 
+<f:comment>
+    The media title is the page's <h1>, so the content element header (an <h2>
+    by default) must not render above it.
+</f:comment>
+<f:section name="Header"></f:section>
+
 <f:section name="Main">
     <f:asset.css href="EXT:mpc_vidply/Resources/Public/Css/listview.min.css" identifier="vidplyListviewCSS"/>
 
@@ -36,16 +42,16 @@
                 </f:if>
 
                 <f:if condition="{detail.categories}">
-                    <nav class="mpc-vidply-detail__categories"
-                         aria-label="{f:translate(key: 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:detail.categories', default: 'Categories')}">
-                        <ul class="mpc-vidply-detail__category-list">
+                    <div class="mpc-vidply-detail__categories">
+                        <ul class="mpc-vidply-detail__category-list"
+                            aria-label="{f:translate(key: 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:detail.categories', default: 'Categories')}">
                             <f:for each="{detail.categories}" as="category">
                                 <li class="mpc-vidply-detail__category">
                                     <span class="mpc-vidply-detail__category-chip">{category.title}</span>
                                 </li>
                             </f:for>
                         </ul>
-                    </nav>
+                    </div>
                 </f:if>
 
                 <f:if condition="{detail.related}">
@@ -82,7 +88,7 @@
             </article>
         </f:then>
         <f:else>
-            <div class="mpc-vidply-detail mpc-vidply-detail--not-found" role="alert">
+            <div class="mpc-vidply-detail mpc-vidply-detail--not-found">
                 <h1 class="mpc-vidply-detail__title">
                     <f:translate key="LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:detail.not_found.title">
                         Media not found

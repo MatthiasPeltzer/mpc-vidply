@@ -18,7 +18,10 @@ import { compareText, createCollator, documentLocale, sortChildren } from './sha
 const PLAY_BUTTON_SELECTOR = '[data-mpc-episode-play]';
 const ROOT_SELECTOR = '.mpc-episode';
 const ITEM_SELECTOR = '[data-mpc-episode-item]';
-const PLAYER_SELECTOR = '[data-vidply-init], [data-playlist]';
+/* `data-vidply-player` is the stable hook: PlaylistInit removes `data-playlist`
+   from playlists with external media before it creates the player. The other
+   selectors keep cached markup without the hook working. */
+const PLAYER_SELECTOR = '[data-vidply-player], [data-vidply-init], [data-playlist]';
 /* The card above the player, as opposed to the identically built list rows. */
 const CURRENT_COVER_SELECTOR = ':scope > .mpc-episode-cover';
 const CURRENT_HEADER_SELECTOR = ':scope > .mpc-episode-main > .mpc-episode-header';
@@ -56,15 +59,24 @@ const wiredLists = new WeakSet();
 /** Pager of an episode root, so `paint()` can page back to the playing episode. */
 const pagers = new WeakMap();
 
-const findPlayer = (root) => root?.querySelector(PLAYER_SELECTOR)?._vidplyPlayer ?? null;
+/* Playlists that recreate their player per track (YouTube, Vimeo, SoundCloud)
+   expose the current one through the playlist manager. */
+const findPlayer = (root) => {
+    const element = root?.querySelector(PLAYER_SELECTOR);
+
+    return element?._vidplyPlaylist?.player ?? element?._vidplyPlayer ?? null;
+};
 
 const trackIndex = (button) => {
     const index = Number.parseInt(button.dataset.mpcEpisodeIndex ?? '', 10);
     return Number.isInteger(index) && index >= 0 ? index : 0;
 };
 
-const activeIndex = (player) => {
-    const index = player.playlistManager?.currentIndex;
+const findPlaylist = (root, player) =>
+    root?.querySelector(PLAYER_SELECTOR)?._vidplyPlaylist ?? player?.playlistManager ?? null;
+
+const activeIndex = (root, player) => {
+    const index = findPlaylist(root, player)?.currentIndex;
     return Number.isInteger(index) && index >= 0 ? index : -1;
 };
 
@@ -248,7 +260,7 @@ const syncCurrentEpisode = (root, index) => {
  * the selected track only — every other button falls back to its play label.
  */
 const paint = (root, player, trackChanged = false) => {
-    const active = activeIndex(player);
+    const active = activeIndex(root, player);
     const playing = active >= 0 && isPlaying(player);
 
     // Playback runs through the whole playlist, so it can leave the page the
@@ -338,7 +350,7 @@ const handleClick = (button) => {
 
     subscribe(root, player);
 
-    const playlist = player.playlistManager;
+    const playlist = findPlaylist(root, player);
     const index = trackIndex(button);
 
     const active = playlist?.currentIndex ?? -1;

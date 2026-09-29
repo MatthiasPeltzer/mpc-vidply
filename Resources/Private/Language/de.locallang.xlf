@@ -163,6 +163,10 @@
         <source>Previous items</source>
         <target>Vorherige Einträge</target>
       </trans-unit>
+      <trans-unit id="listview.shelf.region">
+        <source>Media shelf</source>
+        <target>Medienregal</target>
+      </trans-unit>
       <trans-unit id="listview.sort.label">
         <source>Sort by</source>
         <target>Sortieren</target>
@@ -170,6 +174,10 @@
       <trans-unit id="player.captions">
         <source>Captions</source>
         <target>Untertitel</target>
+      </trans-unit>
+      <trans-unit id="player.chapters">
+        <source>Chapters</source>
+        <target>Kapitel</target>
       </trans-unit>
       <trans-unit id="player.fullscreen">
         <source>Fullscreen</source>
@@ -194,6 +202,10 @@
       <trans-unit id="player.previous">
         <source>Previous</source>
         <target>Zurück</target>
+      </trans-unit>
+      <trans-unit id="player.region">
+        <source>Media player</source>
+        <target>Medienplayer</target>
       </trans-unit>
       <trans-unit id="player.stop">
         <source>Stop</source>

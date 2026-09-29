@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mpc\MpcVidply\Service\Player;
 
 use Mpc\MpcVidply\Enums\MediaMimeType;
+use Mpc\MpcVidply\Utility\HttpUrlGuard;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -146,18 +147,39 @@ final class DownloadResolver
         // Prefer a progressive source from multi-source tracks
         if (!empty($track['sources'])) {
             foreach ($track['sources'] as $source) {
-                if (in_array($source['type'] ?? '', self::PROGRESSIVE_TYPES, true)) {
+                $src = (string)($source['src'] ?? '');
+                if (in_array($source['type'] ?? '', self::PROGRESSIVE_TYPES, true) && HttpUrlGuard::isSafeLinkTarget($src)) {
                     return [
-                        'src' => (string)$source['src'],
+                        'src' => $src,
                         'type' => (string)$source['type'],
                     ];
                 }
             }
         }
 
+        // The track's own source only qualifies when it is a media file: embeds
+        // (YouTube, Vimeo, SoundCloud) and stream manifests cannot be saved.
         $src = (string)($track['src'] ?? '');
+        $type = (string)($track['type'] ?? '');
+        if (!$this->isMediaFileType($type) || !HttpUrlGuard::isSafeLinkTarget($src)) {
+            return null;
+        }
 
-        return $src !== '' ? ['src' => $src, 'type' => (string)($track['type'] ?? '')] : null;
+        return ['src' => $src, 'type' => $type];
+    }
+
+    private function isMediaFileType(string $mimeType): bool
+    {
+        $normalized = $this->normalizeMimeType($mimeType);
+
+        return (str_starts_with($normalized, 'video/') || str_starts_with($normalized, 'audio/'))
+            && !MediaMimeType::isStreaming($normalized)
+            && !str_contains($normalized, 'mpegurl');
+    }
+
+    private function normalizeMimeType(string $mimeType): string
+    {
+        return strtolower(trim(explode(';', $mimeType)[0]));
     }
 
     /**
@@ -166,7 +188,7 @@ final class DownloadResolver
      */
     private function resolveFormat(string $url, string $mimeType): string
     {
-        $normalizedMime = strtolower(trim(explode(';', $mimeType)[0]));
+        $normalizedMime = $this->normalizeMimeType($mimeType);
         if (isset(self::FORMAT_BY_MIME[$normalizedMime])) {
             return self::FORMAT_BY_MIME[$normalizedMime];
         }

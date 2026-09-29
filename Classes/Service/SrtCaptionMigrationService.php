@@ -273,18 +273,42 @@ final class SrtCaptionMigrationService
         return is_numeric($mediaUid) ? (int)$mediaUid : 0;
     }
 
+    /**
+     * Rename first, write afterwards: if the rename fails, the original SRT file
+     * is untouched; if the write fails, the captions are still there (only under
+     * the new name) and the rename is rolled back. Writing first would lose the
+     * SRT content whenever the subsequent rename fails.
+     */
     private function replaceFileWithVtt(File $file, string $vttContent): string
     {
-        $file->setContents($vttContent);
-        $targetName = $this->buildVttFileName($file->getName());
-        if ($file->getName() === $targetName) {
-            return $targetName;
+        $originalName = $file->getName();
+        $targetName = $this->buildVttFileName($originalName);
+        $target = $file;
+
+        if ($originalName !== $targetName) {
+            $originalMimeType = $file->getMimeType();
+            $this->alignMimeTypeWithExtension($file, $targetName);
+            try {
+                $target = $file->rename($targetName, DuplicationBehavior::RENAME);
+            } catch (\Throwable $exception) {
+                $file->updateProperties(['mime_type' => $originalMimeType]);
+                throw $exception;
+            }
         }
 
-        $this->alignMimeTypeWithExtension($file, $targetName);
+        try {
+            $target->setContents($vttContent);
+        } catch (\Throwable $exception) {
+            if ($target instanceof File && $originalName !== '' && $target->getName() !== $originalName) {
+                try {
+                    $target->rename($originalName, DuplicationBehavior::CANCEL);
+                } catch (\Throwable) {
+                }
+            }
+            throw $exception;
+        }
 
-        $renamedFile = $file->rename($targetName, DuplicationBehavior::RENAME);
-        return $renamedFile->getName();
+        return $target->getName();
     }
 
     /**

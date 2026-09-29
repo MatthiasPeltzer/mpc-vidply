@@ -1,6 +1,9 @@
 /*!
  * VidPly Listview & Detail styles
- * Plain CSS, theme-aware via data-bs-theme / prefers-color-scheme.
+ * Plain CSS. The dark palette is opt-in (data-bs-theme="dark" on the page or
+ * data-theme="dark" on the component): the text colour follows the palette, but
+ * the page background is the site's, so the OS colour scheme alone must not
+ * switch to light text (WCAG 1.4.3).
  */
 
 /* Colours, radius and timing shared with the episode card live in shared.css. */
@@ -20,12 +23,6 @@
     --mpc-vidply-listview-surface: #1a1a1a;
 }
 
-@media (prefers-color-scheme: dark) {
-    :root:not([data-bs-theme="light"]) {
-        --mpc-vidply-listview-overlay: rgb(0 0 0 / 75%);
-        --mpc-vidply-listview-surface: #1a1a1a;
-    }
-}
 
 /* ==========================================================================
    Section / Row
@@ -157,12 +154,11 @@
     opacity: 0.5;
 }
 
-.mpc-vidply-pager__item--active .mpc-vidply-pager__btn:disabled,
-.mpc-vidply-pager__btn--active:disabled {
+.mpc-vidply-pager__item--active .mpc-vidply-pager__btn,
+.mpc-vidply-pager__btn--active {
     border-color: var(--mpc-vidply-text);
     cursor: default;
     font-weight: 600;
-    opacity: 0.95;
 }
 
 .mpc-vidply-pager__btn:focus-visible {
@@ -314,10 +310,12 @@
     outline-offset: 2px;
 }
 
-.mpc-vidply-listview-shelf__arrow[disabled],
+/* Stays visible and focusable at the ends of the shelf: hiding the focused
+   arrow would leave keyboard users without a visible focus. */
 .mpc-vidply-listview-shelf__arrow[aria-disabled="true"] {
-    opacity: 0;
-    pointer-events: none;
+    cursor: default;
+    opacity: 0.45;
+    transform: none;
 }
 
 /* ==========================================================================

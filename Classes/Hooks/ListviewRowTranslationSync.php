@@ -36,9 +36,4 @@ final class ListviewRowTranslationSync extends AbstractContentTranslationSyncHoo
     {
         $this->localizationService->ensureLocalizedRowsForTranslation($sourceUid, $translationUid, $languageId);
     }
-
-    protected function syncAllTranslations(int $sourceUid): void
-    {
-        $this->localizationService->ensureLocalizedRowsForAllTranslations($sourceUid);
-    }
 }

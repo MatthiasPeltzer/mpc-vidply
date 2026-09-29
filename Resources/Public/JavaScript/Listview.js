@@ -1,5 +1,5 @@
 /**
- * VidPly Listview: shelf scroller, sort, client-side row pagination, card fade-in.
+ * VidPly Listview: shelf scroller, sort and client-side row pagination.
  * No external dependencies. ESM module.
  */
 
@@ -41,19 +41,23 @@ const getScrollStep = (track) => {
     return Math.max(240, track.clientWidth * 0.8);
 };
 
+/*
+ * The arrows only get `aria-disabled`, never `disabled`: a disabled button
+ * drops keyboard focus when the shelf reaches its end right after the press.
+ */
 const updateArrows = (track, prevBtn, nextBtn) => {
     const max = track.scrollWidth - track.clientWidth;
     const atStart = track.scrollLeft <= 2;
     const atEnd = track.scrollLeft >= max - 2;
     if (prevBtn) {
         prevBtn.setAttribute('aria-disabled', atStart ? 'true' : 'false');
-        prevBtn.disabled = atStart;
     }
     if (nextBtn) {
         nextBtn.setAttribute('aria-disabled', atEnd ? 'true' : 'false');
-        nextBtn.disabled = atEnd;
     }
 };
+
+const isArrowDisabled = (button) => button.getAttribute('aria-disabled') === 'true';
 
 const scrollByPage = (track, direction) => {
     const step = getScrollStep(track);
@@ -206,15 +210,27 @@ const initShelf = (track) => {
     const nextBtn = wrapper.querySelector(NEXT_SELECTOR);
 
     if (prevBtn) {
-        prevBtn.addEventListener('click', () => scrollByPage(track, -1));
+        prevBtn.addEventListener('click', () => {
+            if (!isArrowDisabled(prevBtn)) {
+                scrollByPage(track, -1);
+            }
+        });
     }
     if (nextBtn) {
-        nextBtn.addEventListener('click', () => scrollByPage(track, 1));
+        nextBtn.addEventListener('click', () => {
+            if (!isArrowDisabled(nextBtn)) {
+                scrollByPage(track, 1);
+            }
+        });
     }
 
     track.addEventListener('scroll', () => updateArrows(track, prevBtn, nextBtn), { passive: true });
 
     track.addEventListener('keydown', (event) => {
+        // Keys pressed inside a focused card (links, buttons) belong to the card.
+        if (event.target !== track) {
+            return;
+        }
         if (event.key === 'ArrowRight') {
             event.preventDefault();
             scrollByPage(track, 1);
@@ -245,24 +261,6 @@ const initShelf = (track) => {
     }
 };
 
-const initCardFadeIn = (scope) => {
-    if (prefersReducedMotion() || typeof IntersectionObserver === 'undefined') {
-        return;
-    }
-    const observer = new IntersectionObserver(
-        (entries) => {
-            for (const entry of entries) {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('is-in-view');
-                    observer.unobserve(entry.target);
-                }
-            }
-        },
-        { rootMargin: '0px 0px -10% 0px', threshold: 0.1 }
-    );
-    scope.querySelectorAll('.mpc-vidply-card').forEach((card) => observer.observe(card));
-};
-
 /**
  * Initialize every listview feature within a DOM subtree.
  *
@@ -273,7 +271,6 @@ const init = (root = document) => {
     initListPagination(scope);
     initSortSelects(scope);
     scope.querySelectorAll(SHELF_SELECTOR).forEach((track) => initShelf(track));
-    initCardFadeIn(scope);
 };
 
 bootstrap(init);

@@ -131,12 +131,18 @@ Detail** CE and the URL carries a resolvable `media` parameter. On
 regular pages the default behaviour is untouched.
 
 If you set the detail page to **Hide in menu** (so it does not appear in
-the main navigation), enable the Site Set’s TypoScript addition
-`page.10.dataProcessing.70.includeNotInMenu = 1` — it is shipped with
-`mpc-vidply` so the **breadcrumb** rootline still lists the hidden page
-and its parents (e.g. *Home › Mediathek › …*). Without it, TYPO3’s default
-HMENU drops `nav_hide` pages from the breadcrumb and the path can look
-wrong.
+the main navigation), the breadcrumb rootline must include hidden pages.
+The Site Set registers a rootline `MenuProcessor` as `breadcrumb` at
+`page.10.dataProcessing.70` with `includeNotInMenu = 1`, so the
+**breadcrumb** still lists the hidden page and its parents (e.g.
+*Home › Mediathek › …*). Without it, TYPO3’s default HMENU drops `nav_hide`
+pages from the breadcrumb and the path can look wrong.
+
+If your site template uses `page.10.dataProcessing.70` for a different
+processor, switch the site setting **Register the breadcrumb menu processor**
+(`mpcVidply.registerBreadcrumbMenu`) off and set `includeNotInMenu = 1` on
+your own breadcrumb processor instead. The media title is still written into
+the `breadcrumb` variable.
 
 ## 2. Administrator guide
 

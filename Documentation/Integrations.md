@@ -56,7 +56,9 @@ Extension Configuration (`Admin → Settings → Extension Configuration → mpc
 | `theme` | Default player theme: `dark` or `light` |
 | `themeSyncEnabled` | When enabled, adds `data-vidply-theme-sync="1"` on the player wrapper |
 
-When theme sync is on, the player follows page light/dark mode (body class changes and custom events).
+When theme sync is on, the player follows page light/dark mode (`data-bs-theme`, body/html classes, `#themeSwitch` and `theme:change` events). Only players whose wrapper carries `data-vidply-theme-sync="1"` are updated, and only when the detected theme actually changes. `VidPlyTheme.setTheme()` is an explicit request and applies to every player.
+
+The listview, episode and privacy-layer styles switch to their dark palette only on an explicit opt-in — `data-bs-theme="dark"` on the page or `data-theme="dark"` on the component — never on the operating system's colour scheme alone, because the page background belongs to the site.
 
 Programmatic API (after `PlaylistInit.js` loads):
 
@@ -72,15 +74,17 @@ See [Settings Architecture → Extension Configuration](SettingsArchitecture.md#
 
 ## Content Security Policy (CSP)
 
-VidPly registers CSP mutations in `Configuration/ContentSecurityPolicies.php` and extends `connect-src` via `PolicyMutatedEvent` for streaming CDNs.
+VidPly registers CSP mutations in `Configuration/ContentSecurityPolicies.php` and extends `connect-src` / `media-src` via `PolicyMutatedEvent` with the hosts from the extension configuration.
 
-### Streaming (HLS / DASH)
+### Streaming (HLS / DASH) and external media files
 
 Required for adaptive streaming in modern browsers:
 
-- `media-src`: `blob:`, `data:`, `https:` (and `'self'`)
+- `media-src`: `blob:`, `data:` (and `'self'`), plus the hosts in `allowedVideoDomains` / `allowedAudioDomains`
 - `worker-src`: `blob:`
-- `connect-src`: `blob:`, `data:`, `https:` (segment/manifest fetches)
+- `connect-src`: `blob:`, plus the hosts in `allowedVideoDomains` / `allowedAudioDomains` (segment/manifest fetches)
+
+The extension no longer adds the whole `https:` scheme. An allow-list entry `*.cdn.example.com` becomes `https://cdn.example.com` and `https://*.cdn.example.com`; an entry with a scheme (`http://…`) keeps it. If a stream loads its segments from another host than the manifest, add that host to the allow-list as well.
 
 Details and troubleshooting: [HLS-Implementation.md](HLS-Implementation.md).
 

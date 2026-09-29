@@ -26,7 +26,8 @@ defined('TYPO3') or die('Access denied.');
 // Standalone content rendering bootstrap (normally provided by fluid_styled_content).
 $GLOBALS['TYPO3_CONF_VARS']['FE']['contentRenderingTemplates'][] = 'mpc_vidply/Configuration/TypoScript/';
 
-// VidPly debug overlay (`?vidplyDebug=1`) is client-only; allow it without cHash (enforceValidation).
+// VidPly debug overlay (`?vidplyDebug=1`) is read by the player from `location.search`
+// only; the server output never depends on it, so it can bypass the cHash.
 $GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'][] = 'vidplyDebug';
 
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = VidPlyPlaylistTranslationSync::class;

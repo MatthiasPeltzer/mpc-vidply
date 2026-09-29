@@ -107,9 +107,9 @@ final class PlayerOptionsBuilder
         $playerOptions['resumePlayback'] = $this->resolveResumePlayback($request)
             || (int)($data['tx_mpcvidply_resume_playback'] ?? 0) === 1;
 
-        if ($request !== null && ($request->getQueryParams()['vidplyDebug'] ?? null) === '1') {
-            $playerOptions['debugOverlay'] = true;
-        }
+        // `?vidplyDebug=1` is deliberately not read here: the parameter is
+        // excluded from the cHash, so a server-side flag would be cached for
+        // every visitor. The player reads it from `location.search` itself.
 
         return $playerOptions;
     }

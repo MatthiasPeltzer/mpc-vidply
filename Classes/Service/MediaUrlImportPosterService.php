@@ -70,8 +70,6 @@ final class MediaUrlImportPosterService
                     'uid_foreign' => $mediaUid,
                     'tablenames' => self::MEDIA_TABLE,
                     'fieldname' => 'poster',
-                    'table_local' => 'sys_file',
-                    'table_foreign' => self::MEDIA_TABLE,
                     'pid' => $pid,
                 ],
             ],

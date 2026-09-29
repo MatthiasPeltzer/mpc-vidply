@@ -15,15 +15,22 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  * Priority:
  * 1. Explicit listview detail page when the media item is manually selected in a shelf.
  * 2. A detail page placed inside the media storage folder (common editor setup).
- * 3. The site-wide first {@code mpc_vidply_detail} content element.
+ * 3. The first {@code mpc_vidply_detail} content element of the record's site.
+ *
+ * Candidates from 1. and 3. are limited to the site the media record is stored
+ * in, so a preview never opens a detail page on another site's domain.
  */
 final class MediaPreviewDetailPageResolver
 {
-    private readonly ConnectionPool $connectionPool;
+    private const MAX_CANDIDATES = 100;
 
-    public function __construct(?ConnectionPool $connectionPool = null)
+    private readonly ConnectionPool $connectionPool;
+    private readonly SiteRecordScope $siteRecordScope;
+
+    public function __construct(?ConnectionPool $connectionPool = null, ?SiteRecordScope $siteRecordScope = null)
     {
         $this->connectionPool = $connectionPool ?? GeneralUtility::makeInstance(ConnectionPool::class);
+        $this->siteRecordScope = $siteRecordScope ?? GeneralUtility::makeInstance(SiteRecordScope::class);
     }
 
     public function resolveDetailPageUidForMedia(int $defaultMediaUid, int $storagePid = 0): int
@@ -32,7 +39,12 @@ final class MediaPreviewDetailPageResolver
             return 0;
         }
 
-        $detailPageUid = $this->resolveFromListviewReferences($defaultMediaUid);
+        $siteIdentifier = $this->siteRecordScope->getSiteIdentifier($storagePid);
+
+        $detailPageUid = $this->siteRecordScope->findFirstPageOfSite(
+            $this->resolveFromListviewReferences($defaultMediaUid),
+            $siteIdentifier
+        );
         if ($detailPageUid > 0) {
             return $detailPageUid;
         }
@@ -44,10 +56,13 @@ final class MediaPreviewDetailPageResolver
             }
         }
 
-        return $this->resolveSiteWideDetailPageUid();
+        return $this->siteRecordScope->findFirstPageOfSite($this->resolveSiteWideDetailPageUids(), $siteIdentifier);
     }
 
-    private function resolveFromListviewReferences(int $mediaUid): int
+    /**
+     * @return list<int>
+     */
+    private function resolveFromListviewReferences(int $mediaUid): array
     {
         $qb = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_listview_row_media_mm');
         $qb->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
@@ -74,11 +89,11 @@ final class MediaPreviewDetailPageResolver
                 $qb->expr()->gt('ce.tx_mpcvidply_detail_page', $qb->createNamedParameter(0, Connection::PARAM_INT)),
             )
             ->orderBy('ce.uid', 'ASC')
-            ->setMaxResults(1)
+            ->setMaxResults(self::MAX_CANDIDATES)
             ->executeQuery()
-            ->fetchOne();
+            ->fetchFirstColumn();
 
-        return ($detailPageUid !== false && (int)$detailPageUid > 0) ? (int)$detailPageUid : 0;
+        return $this->toPositiveInts($detailPageUid);
     }
 
     private function resolveFromStorageFolder(int $storagePid): int
@@ -112,7 +127,10 @@ final class MediaPreviewDetailPageResolver
         return ($pageUid !== false && (int)$pageUid > 0) ? (int)$pageUid : 0;
     }
 
-    private function resolveSiteWideDetailPageUid(): int
+    /**
+     * @return list<int>
+     */
+    private function resolveSiteWideDetailPageUids(): array
     {
         $qb = $this->connectionPool->getQueryBuilderForTable('tt_content');
         $qb->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
@@ -124,11 +142,24 @@ final class MediaPreviewDetailPageResolver
                 $qb->expr()->eq('CType', $qb->createNamedParameter('mpc_vidply_detail')),
                 $qb->expr()->eq('deleted', $qb->createNamedParameter(0, Connection::PARAM_INT)),
             )
+            ->groupBy('pid')
             ->orderBy('pid', 'ASC')
-            ->setMaxResults(1)
+            ->setMaxResults(self::MAX_CANDIDATES)
             ->executeQuery()
-            ->fetchOne();
+            ->fetchFirstColumn();
 
-        return ($pageUid !== false && (int)$pageUid > 0) ? (int)$pageUid : 0;
+        return $this->toPositiveInts($pageUid);
+    }
+
+    /**
+     * @param array<int, mixed> $values
+     * @return list<int>
+     */
+    private function toPositiveInts(array $values): array
+    {
+        return array_values(array_filter(
+            array_map(static fn (mixed $value): int => (int)$value, $values),
+            static fn (int $value): bool => $value > 0
+        ));
     }
 }

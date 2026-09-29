@@ -66,7 +66,10 @@ final class MediaFromUrlServiceTest extends TestCase
     {
         $previewPath = tempnam(sys_get_temp_dir(), 'vidply-poster-');
         self::assertNotFalse($previewPath);
-        file_put_contents($previewPath, "\xFF\xD8\xFF\xD9");
+        file_put_contents($previewPath, (string)base64_decode(
+            '/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=',
+            true
+        ));
 
         $file = $this->createMock(File::class);
         $file->method('getExtension')->willReturn('youtube');
@@ -118,6 +121,40 @@ final class MediaFromUrlServiceTest extends TestCase
                 unlink($previewPath);
             }
         }
+    }
+
+    #[Test]
+    public function importSkipsPlaceholderSvgPreviewAsPoster(): void
+    {
+        $file = $this->createMock(File::class);
+        $file->method('getExtension')->willReturn('hls');
+        $file->method('getUid')->willReturn(8);
+        $file->method('getName')->willReturn('stream.hls');
+
+        $folder = $this->createMock(Folder::class);
+        $folder->expects(self::never())->method('createFile');
+        $file->method('getParentFolder')->willReturn($folder);
+
+        $helper = $this->createMock(OnlineMediaHelperInterface::class);
+        $helper->method('getMetaData')->willReturn(['title' => 'stream.m3u8']);
+        $helper->method('getPreviewImage')->willReturn(dirname(__DIR__, 3) . '/Resources/Public/Icons/Extension.svg');
+        $helper->method('getOnlineMediaId')->willReturn('https://cdn.example.com/stream.m3u8');
+
+        $registry = $this->createMock(OnlineMediaHelperRegistry::class);
+        $registry->method('transformUrlToFile')->willReturn($file);
+        $registry->method('getOnlineMediaHelper')->willReturn($helper);
+
+        $subject = new MediaFromUrlService(
+            new MediaUrlNormalizer(),
+            $registry,
+            $this->createMock(ExtensionConfiguration::class),
+            new MediaOEmbedMetadataService(),
+        );
+
+        $result = $subject->import('https://cdn.example.com/stream.m3u8', $folder, MediaType::Video);
+
+        self::assertTrue($result->success);
+        self::assertSame(0, $result->posterFileUid);
     }
 
     #[Test]

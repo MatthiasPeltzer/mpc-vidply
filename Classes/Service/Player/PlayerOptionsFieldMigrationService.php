@@ -6,6 +6,7 @@ namespace Mpc\MpcVidply\Service\Player;
 
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -44,13 +45,17 @@ final class PlayerOptionsFieldMigrationService
             $resumePlayback = ($options & self::BITMASK_RESUME_PLAYBACK) !== 0 ? 1 : 0;
         }
 
+        $hasLegacyOnlyBits = ($options & (self::LEGACY_OPT_AUTO_ADVANCE | self::BITMASK_RESUME_PLAYBACK | 1024)) !== 0;
+
         $options &= ~self::BITMASK_RESUME_PLAYBACK;
         $options &= ~1024;
         if ($showTrackInfoFromBitmask) {
             $options &= ~32;
         }
 
-        $options = self::remapLegacyKeyboardAndAutoAdvanceBits($options);
+        if ($hasLegacyOnlyBits) {
+            $options = self::remapLegacyKeyboardAndAutoAdvanceBits($options);
+        }
 
         return [
             'showTrackInfo' => $showTrackInfo,
@@ -59,6 +64,12 @@ final class PlayerOptionsFieldMigrationService
         ];
     }
 
+    /**
+     * Bit 64 is the legacy keyboard bit *and* the current auto-advance bit, so
+     * the bits alone cannot tell the two schemes apart. Callers only get here
+     * when a bit that exists solely in the legacy scheme (256, 128, 512, 1024)
+     * proves the record predates the positional FormEngine bitmask.
+     */
     private static function remapLegacyKeyboardAndAutoAdvanceBits(int $options): int
     {
         if (($options & self::LEGACY_OPT_AUTO_ADVANCE) !== 0) {
@@ -95,6 +106,8 @@ final class PlayerOptionsFieldMigrationService
     {
         $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('tt_content');
         $queryBuilder = $connection->createQueryBuilder();
+        // Hidden and scheduled elements need the migration just as much.
+        $queryBuilder->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
         $rows = $queryBuilder
             ->select(
                 'uid',

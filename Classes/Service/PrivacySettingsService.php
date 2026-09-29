@@ -8,6 +8,8 @@ use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
+use TYPO3\CMS\Core\Site\Entity\Site;
+use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -19,17 +21,25 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  *
  * Uses constructor injection with fallback for TYPO3 13/14 compatibility.
  */
-final readonly class PrivacySettingsService
+final class PrivacySettingsService
 {
-    private ConnectionPool $connectionPool;
-    private LanguageServiceFactory $languageServiceFactory;
+    private readonly ConnectionPool $connectionPool;
+    private readonly LanguageServiceFactory $languageServiceFactory;
+    private readonly SiteRecordScope $siteRecordScope;
+
+    /**
+     * @var array<string, array<string, mixed>|null>
+     */
+    private array $settingsCache = [];
 
     public function __construct(
         ?ConnectionPool $connectionPool = null,
-        ?LanguageServiceFactory $languageServiceFactory = null
+        ?LanguageServiceFactory $languageServiceFactory = null,
+        ?SiteRecordScope $siteRecordScope = null
     ) {
         $this->connectionPool = $connectionPool ?? GeneralUtility::makeInstance(ConnectionPool::class);
         $this->languageServiceFactory = $languageServiceFactory ?? GeneralUtility::makeInstance(LanguageServiceFactory::class);
+        $this->siteRecordScope = $siteRecordScope ?? GeneralUtility::makeInstance(SiteRecordScope::class);
     }
 
     /**
@@ -42,7 +52,7 @@ final readonly class PrivacySettingsService
      */
     public function getSettingsForService(string $service, int $languageId = 0, ?ServerRequestInterface $request = null): array
     {
-        $settings = $this->getAllSettings($languageId);
+        $settings = $this->getAllSettings($languageId, $request);
 
         if ($settings === null) {
             return $this->getFallbackSettings($service, $languageId, $request);
@@ -92,44 +102,65 @@ final readonly class PrivacySettingsService
     ];
 
     /**
+     * Settings record of the site the request belongs to. Records stored
+     * outside of every site tree are shared by all sites; a record of the
+     * request's own site wins over a shared one. The result is cached per
+     * site and language, as it is read once per service and player.
+     *
      * @param int $languageId Language ID (0 for default language)
      * @return array<string, mixed>|null Settings array or null if not found
      */
-    public function getAllSettings(int $languageId = 0): ?array
+    public function getAllSettings(int $languageId = 0, ?ServerRequestInterface $request = null): ?array
     {
-        if ($languageId > 0) {
-            $qb = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_privacy_settings');
-            $translatedSettings = $qb
-                ->select(...self::SETTINGS_COLUMNS)
-                ->from('tx_mpcvidply_privacy_settings')
-                ->where(
-                    $qb->expr()->eq('sys_language_uid', $qb->createNamedParameter($languageId, Connection::PARAM_INT)),
-                    $qb->expr()->eq('deleted', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-                    $qb->expr()->eq('hidden', $qb->createNamedParameter(0, Connection::PARAM_INT))
-                )
-                ->setMaxResults(1)
-                ->executeQuery()
-                ->fetchAssociative();
+        $request ??= $GLOBALS['TYPO3_REQUEST'] ?? null;
+        $site = $request instanceof ServerRequestInterface ? $request->getAttribute('site') : null;
+        $site = $site instanceof SiteInterface ? $site : null;
 
-            if ($translatedSettings !== false) {
-                return $translatedSettings;
-            }
+        $cacheKey = ($site instanceof Site ? $site->getIdentifier() : '') . '|' . $languageId;
+        if (array_key_exists($cacheKey, $this->settingsCache)) {
+            return $this->settingsCache[$cacheKey];
         }
 
+        $settings = null;
+        if ($languageId > 0) {
+            $settings = $this->findSettingsForSite($languageId, $site);
+        }
+        $settings ??= $this->findSettingsForSite(0, $site);
+
+        return $this->settingsCache[$cacheKey] = $settings;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function findSettingsForSite(int $languageId, ?SiteInterface $site): ?array
+    {
         $qb = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_privacy_settings');
-        $settings = $qb
-            ->select(...self::SETTINGS_COLUMNS)
+        $rows = $qb
+            ->select('pid', ...self::SETTINGS_COLUMNS)
             ->from('tx_mpcvidply_privacy_settings')
             ->where(
-                $qb->expr()->eq('sys_language_uid', $qb->createNamedParameter(0, Connection::PARAM_INT)),
+                $qb->expr()->eq('sys_language_uid', $qb->createNamedParameter($languageId, Connection::PARAM_INT)),
                 $qb->expr()->eq('deleted', $qb->createNamedParameter(0, Connection::PARAM_INT)),
                 $qb->expr()->eq('hidden', $qb->createNamedParameter(0, Connection::PARAM_INT))
             )
-            ->setMaxResults(1)
+            ->orderBy('uid', 'ASC')
             ->executeQuery()
-            ->fetchAssociative();
+            ->fetchAllAssociative();
 
-        return $settings !== false ? $settings : null;
+        $shared = null;
+        foreach ($rows as $row) {
+            $pid = (int)($row['pid'] ?? 0);
+            if (!$this->siteRecordScope->isPageInSite($pid, $site)) {
+                continue;
+            }
+            if (!$site instanceof Site || $this->siteRecordScope->getSiteIdentifier($pid) !== null) {
+                return $row;
+            }
+            $shared ??= $row;
+        }
+
+        return $shared;
     }
 
     /**

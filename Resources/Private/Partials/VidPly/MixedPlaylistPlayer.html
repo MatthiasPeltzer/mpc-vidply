@@ -1,9 +1,14 @@
 <html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
 
+<f:comment>
+    No region role of its own: the wrapper in Player.html already is the named
+    region, and a nested region with the same name is announced twice.
+    `data-vidply-player` stays on the element after PlaylistInit removes
+    `data-playlist` (external media), so EpisodeInit can still find the player.
+</f:comment>
 <div
     id="{vidply.uniqueId}"
-    role="region"
-    aria-label="{f:if(condition: data.header, then: data.header, else: 'Media playlist')}"
+    data-vidply-player
     <f:if condition="{vidply.privacyPlayIconUrl}">data-vidply-play-icon="{vidply.privacyPlayIconUrl}"</f:if>
     data-vidply-play-position="{vidply.privacyPlayButtonPosition}"
     data-vidply-options='{f:format.json(value: vidply.options)}'
@@ -16,6 +21,7 @@
     data-playlist-has-external="true"
     data-playlist-external-services='{f:format.json(value: vidply.externalServiceTypes)}'
     data-playlist-privacy-settings='{f:format.json(value: vidply.privacySettings)}'
+    data-playlist-privacy-headline-level="{vidply.privacyHeadlineLevel}"
     data-vidply-media-type="{vidply.mediaType}"
 ></div>
 

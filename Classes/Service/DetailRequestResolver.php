@@ -8,6 +8,7 @@ use Mpc\MpcVidply\Repository\MediaRepository;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -28,6 +29,7 @@ final class DetailRequestResolver
 {
     private readonly MediaRepository $mediaRepository;
     private readonly ConnectionPool $connectionPool;
+    private readonly SiteRecordScope $siteRecordScope;
 
     /**
      * Per-request memoization keyed by "pageId|languageId|mediaParam".
@@ -43,10 +45,12 @@ final class DetailRequestResolver
 
     public function __construct(
         ?MediaRepository $mediaRepository = null,
-        ?ConnectionPool $connectionPool = null
+        ?ConnectionPool $connectionPool = null,
+        ?SiteRecordScope $siteRecordScope = null
     ) {
         $this->mediaRepository = $mediaRepository ?? GeneralUtility::makeInstance(MediaRepository::class);
         $this->connectionPool = $connectionPool ?? GeneralUtility::makeInstance(ConnectionPool::class);
+        $this->siteRecordScope = $siteRecordScope ?? GeneralUtility::makeInstance(SiteRecordScope::class);
     }
 
     /**
@@ -81,8 +85,12 @@ final class DetailRequestResolver
         $media = is_numeric($mediaParam)
             ? $this->mediaRepository->findByUid((int)$mediaParam, $languageId)
             : $this->mediaRepository->findBySlug($mediaParam, $languageId);
+        $site = $request->getAttribute('site');
 
-        return $this->cache[$cacheKey] = $media;
+        return $this->cache[$cacheKey] = $this->siteRecordScope->scopeRecord(
+            $media,
+            $site instanceof SiteInterface ? $site : null
+        );
     }
 
     private function pageHostsDetailCe(int $pageId): bool

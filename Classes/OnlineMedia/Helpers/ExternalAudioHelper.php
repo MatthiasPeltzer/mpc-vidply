@@ -12,7 +12,7 @@ final class ExternalAudioHelper extends AbstractExternalMediaHelper
     protected function getSupportedFileExtensions(): array
     {
         // `.m3u8` is included so radio streams can be imported as audio.
-        return ['mp3', 'wav', 'm4a', 'aac', 'flac', 'oga', 'm3u8'];
+        return ['mp3', 'ogg', 'wav', 'm4a', 'aac', 'flac', 'oga', 'm3u8'];
     }
 
     protected function getAllowedDomainsConfigKey(): string

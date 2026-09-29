@@ -31,9 +31,11 @@ return Map::fromEntries([
             MutationMode::Extend,
             Directive::MediaSrc,
             SourceScheme::blob,
-            SourceScheme::data,
-            SourceScheme::https
+            SourceScheme::data
         ),
+        // External media hosts (allowedVideoDomains / allowedAudioDomains) are
+        // added to media-src and connect-src via PolicyMutatedEvent, see
+        // StreamingContentSecurityPolicyEventListener.
 
         // blob: for worker sources (hls.js web workers)
         new Mutation(
@@ -42,8 +44,9 @@ return Map::fromEntries([
             SourceScheme::blob
         ),
 
-        // connect-src (blob:, https:) is applied via PolicyMutatedEvent so it
-        // survives themes that Set connect-src to 'self' after this file runs.
+        // connect-src (blob: and the configured media hosts) is applied via
+        // PolicyMutatedEvent so it survives themes that Set connect-src to
+        // 'self' after this file runs.
 
         // blob: for object-src (Firefox blob URL handling)
         new Mutation(

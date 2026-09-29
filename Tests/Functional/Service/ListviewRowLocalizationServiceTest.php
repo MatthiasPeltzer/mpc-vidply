@@ -58,4 +58,57 @@ final class ListviewRowLocalizationServiceTest extends FunctionalTestCase
 
         self::assertSame(1, $count);
     }
+
+    #[Test]
+    public function hiddenLocalizedRowIsNotDuplicatedOnRepeatedSaves(): void
+    {
+        $this->importCSVDataSet(__DIR__ . '/../Fixtures/ListviewRowLocalization.csv');
+        $connection = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_mpcvidply_listview_row');
+
+        $this->subject->ensureLocalizedRowsForTranslation(400, 401, 1);
+        $connection->update('tx_mpcvidply_listview_row', ['hidden' => 1], ['l10n_parent' => 10, 'sys_language_uid' => 1]);
+        $connection->update('tx_mpcvidply_listview_row', ['hidden' => 1], ['uid' => 10]);
+
+        $this->subject->ensureLocalizedRowsForTranslation(400, 401, 1);
+        $this->subject->ensureLocalizedRowsForTranslation(400, 401, 1);
+
+        self::assertCount(1, $this->fetchLocalizedRowsIncludingHidden());
+    }
+
+    #[Test]
+    public function hiddenDefaultRowPassesItsVisibilityToTheTranslation(): void
+    {
+        $this->importCSVDataSet(__DIR__ . '/../Fixtures/ListviewRowLocalization.csv');
+        $connection = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_mpcvidply_listview_row');
+
+        $this->subject->ensureLocalizedRowsForTranslation(400, 401, 1);
+        $connection->update('tx_mpcvidply_listview_row', ['hidden' => 1], ['uid' => 10]);
+        $this->subject->ensureLocalizedRowsForTranslation(400, 401, 1);
+
+        $localized = $this->fetchLocalizedRowsIncludingHidden();
+
+        self::assertCount(1, $localized);
+        self::assertSame(1, (int)$localized[0]['hidden']);
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function fetchLocalizedRowsIncludingHidden(): array
+    {
+        $qb = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_mpcvidply_listview_row');
+        $qb->getRestrictions()->removeAll();
+
+        return $qb->select('*')
+            ->from('tx_mpcvidply_listview_row')
+            ->where(
+                $qb->expr()->eq('l10n_parent', 10),
+                $qb->expr()->eq('sys_language_uid', 1),
+                $qb->expr()->eq('deleted', 0)
+            )
+            ->executeQuery()
+            ->fetchAllAssociative();
+    }
 }

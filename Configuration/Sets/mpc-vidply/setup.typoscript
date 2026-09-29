@@ -32,13 +32,17 @@ tt_content.mpc_vidply_detail {
 }
 
 # Breadcrumb: include detail pages that are hidden from the main menu in the rootline trail.
-# Also registers the breadcrumb MenuProcessor when the site template has not defined one yet.
+# Registers a breadcrumb MenuProcessor at page.10.dataProcessing.70, the key mp-core and
+# many site packages use for their own breadcrumb. Sites that use key 70 for something
+# else switch this off with the site setting `mpcVidply.registerBreadcrumbMenu`.
+["{$mpcVidply.registerBreadcrumbMenu}" in ["1", "true"]]
 page.10.dataProcessing.70 = TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
 page.10.dataProcessing.70 {
     as = breadcrumb
     special = rootline
     includeNotInMenu = 1
 }
+[END]
 
 # Override the breadcrumb's current-item title with the resolved media title on
 # detail pages. Runs after the breadcrumb MenuProcessor at priority 70.

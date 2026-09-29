@@ -68,4 +68,25 @@ final class PlayerOptionsFieldMigrationServiceTest extends UnitTestCase
         self::assertSame(1, $result['showTrackInfo']);
         self::assertSame(60, $result['options']);
     }
+
+    #[Test]
+    public function migrateRecordKeepsCurrentAutoAdvanceWithKeyboardOff(): void
+    {
+        // Current scheme: controls (8) + auto-advance (64), keyboard (32) off.
+        $result = $this->subject->migrateRecord(72);
+
+        self::assertSame(72, $result['options']);
+        self::assertSame(0, $result['showTrackInfo']);
+        self::assertSame(0, $result['resumePlayback']);
+    }
+
+    #[Test]
+    public function migrateRecordRemapsLegacyKeyboardWhenALegacyOnlyBitIsSet(): void
+    {
+        // Legacy: controls (8) + keyboard (64) + resume (128), auto-advance off.
+        $result = $this->subject->migrateRecord(8 + 64 + 128);
+
+        self::assertSame(8 + 32, $result['options']);
+        self::assertSame(1, $result['resumePlayback']);
+    }
 }

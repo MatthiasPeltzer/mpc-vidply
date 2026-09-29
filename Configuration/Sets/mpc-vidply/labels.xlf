@@ -21,6 +21,12 @@
       <trans-unit id="settings.description.mpcVidply.resumePlayback">
         <source>When enabled, the player remembers where a visitor stopped watching or listening and offers to continue from that point on the next visit. Applies to all VidPly players on this site unless a content element overrides it.</source>
       </trans-unit>
+      <trans-unit id="settings.mpcVidply.registerBreadcrumbMenu">
+        <source>Register the breadcrumb menu processor</source>
+      </trans-unit>
+      <trans-unit id="settings.description.mpcVidply.registerBreadcrumbMenu">
+        <source>Registers a rootline MenuProcessor as "breadcrumb" at page.10.dataProcessing.70 so detail pages hidden from menus still appear in the breadcrumb. Switch this off when the site template uses page.10.dataProcessing.70 for another processor; the media title is then written into the site's own "breadcrumb" variable.</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>

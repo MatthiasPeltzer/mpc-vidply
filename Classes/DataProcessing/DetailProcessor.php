@@ -11,8 +11,10 @@ use Mpc\MpcVidply\Service\DurationFormatter;
 use Mpc\MpcVidply\Service\FileReferencePrefetcher;
 use Mpc\MpcVidply\Service\FrontendLanguageResolver;
 use Mpc\MpcVidply\Service\MediaCategoryResolver;
+use Mpc\MpcVidply\Service\SiteRecordScope;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Resource\FileReference;
+use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
@@ -33,6 +35,7 @@ final class DetailProcessor implements DataProcessorInterface
     private readonly FileReferencePrefetcher $fileReferencePrefetcher;
     private readonly DetailUrlBuilder $detailUrlBuilder;
     private readonly DurationFormatter $durationFormatter;
+    private readonly SiteRecordScope $siteRecordScope;
 
     public function __construct(
         ?MediaRepository $mediaRepository = null,
@@ -41,7 +44,8 @@ final class DetailProcessor implements DataProcessorInterface
         ?DetailMetaTagService $metaTagService = null,
         ?FileReferencePrefetcher $fileReferencePrefetcher = null,
         ?DetailUrlBuilder $detailUrlBuilder = null,
-        ?DurationFormatter $durationFormatter = null
+        ?DurationFormatter $durationFormatter = null,
+        ?SiteRecordScope $siteRecordScope = null
     ) {
         $this->mediaRepository = $mediaRepository ?? GeneralUtility::makeInstance(MediaRepository::class);
         $this->vidPlyProcessor = $vidPlyProcessor ?? GeneralUtility::makeInstance(VidPlyProcessor::class);
@@ -51,6 +55,7 @@ final class DetailProcessor implements DataProcessorInterface
             ?? GeneralUtility::makeInstance(FileReferencePrefetcher::class);
         $this->detailUrlBuilder = $detailUrlBuilder ?? GeneralUtility::makeInstance(DetailUrlBuilder::class);
         $this->durationFormatter = $durationFormatter ?? GeneralUtility::makeInstance(DurationFormatter::class);
+        $this->siteRecordScope = $siteRecordScope ?? GeneralUtility::makeInstance(SiteRecordScope::class);
     }
 
     /**
@@ -90,7 +95,8 @@ final class DetailProcessor implements DataProcessorInterface
         // Override description + OpenGraph/Twitter meta tags with the media
         // element's own title/description/poster (the HTML <title> is handled by
         // VidPlyDetailPageTitleProvider). Runs before EXT:seo's meta tag hook.
-        $this->metaTagService->applyForMedia($media, $this->resolvePosterReference((int)($media['uid'] ?? 0)));
+        $posterReference = $this->resolvePosterReference($media);
+        $this->metaTagService->applyForMedia($media, $posterReference);
 
         // Delegate the full player assembly to the existing VidPlyProcessor so we inherit
         // every capability (privacy layer, playlist detection, HLS/DASH, etc.) without duplication.
@@ -100,12 +106,20 @@ final class DetailProcessor implements DataProcessorInterface
             $request,
             $languageId
         );
+        // The detail template hides the content element header; the media
+        // title is the <h1>, so a privacy headline is the next level.
+        $vidply['privacyHeadlineLevel'] = 2;
         $processedData['vidply'] = $vidply;
 
-        $detail = $this->assembleDetailData($media, $languageId);
+        $detail = $this->assembleDetailData($media, $languageId, $posterReference);
         $showRelated = (int)($data['tx_mpcvidply_show_related'] ?? 1) === 1;
         if ($showRelated) {
-            $relatedRaw = $this->mediaRepository->findNextInCategory((int)$media['uid'], $languageId, 6);
+            // Categories are stored on the default-language record.
+            $defaultMediaUid = (int)($media['l10n_parent'] ?? 0) ?: (int)($media['uid'] ?? 0);
+            $relatedRaw = $this->siteRecordScope->filterRecords(
+                $this->mediaRepository->findNextInCategory($defaultMediaUid, $languageId, 6),
+                $this->resolveSite($request)
+            );
             $detail['related'] = $this->buildRelatedCards($relatedRaw, $cObj, (int)($data['pid'] ?? 0), $languageId);
         } else {
             $detail['related'] = [];
@@ -124,20 +138,28 @@ final class DetailProcessor implements DataProcessorInterface
         $queryParams = $request->getQueryParams();
         $mediaParam = $queryParams['media'] ?? null;
 
+        $media = null;
         if (is_numeric($mediaParam)) {
-            return $this->mediaRepository->findByUid((int)$mediaParam, $languageId);
+            $media = $this->mediaRepository->findByUid((int)$mediaParam, $languageId);
+        } elseif (is_string($mediaParam) && trim($mediaParam) !== '') {
+            $media = $this->mediaRepository->findBySlug(trim($mediaParam), $languageId);
         }
-        if (is_string($mediaParam) && trim($mediaParam) !== '') {
-            return $this->mediaRepository->findBySlug(trim($mediaParam), $languageId);
-        }
-        return null;
+
+        return $this->siteRecordScope->scopeRecord($media, $this->resolveSite($request));
+    }
+
+    private function resolveSite(ServerRequestInterface $request): ?SiteInterface
+    {
+        $site = $request->getAttribute('site');
+
+        return $site instanceof SiteInterface ? $site : null;
     }
 
     /**
      * @param array<string, mixed> $media
      * @return array<string, mixed>
      */
-    private function assembleDetailData(array $media, int $languageId): array
+    private function assembleDetailData(array $media, int $languageId, ?FileReference $posterReference): array
     {
         $mediaUid = (int)($media['uid'] ?? 0);
         $title = (string)($media['title'] ?? '');
@@ -147,8 +169,8 @@ final class DetailProcessor implements DataProcessorInterface
         $duration = (int)($media['duration'] ?? 0);
         $mediaType = (string)($media['media_type'] ?? 'video');
 
-        $poster = $this->resolvePosterFile($mediaUid);
-        $posterUrl = $poster['url'] ?? null;
+        $posterUrl = $posterReference !== null ? (string)$posterReference->getPublicUrl() : '';
+        $posterUrl = $posterUrl !== '' ? $posterUrl : null;
 
         $categories = $this->mediaCategoryResolver->fetchForMedia($media, $languageId);
 
@@ -179,10 +201,14 @@ final class DetailProcessor implements DataProcessorInterface
             return [];
         }
 
-        $mediaUids = array_values(array_filter(
-            array_map(static fn (array $m): int => (int)($m['uid'] ?? 0), $relatedRaw),
-            static fn (int $uid): bool => $uid > 0
-        ));
+        // Translated records without a poster of their own fall back to the
+        // default-language poster, so both uids are prefetched.
+        $mediaUids = [];
+        foreach ($relatedRaw as $m) {
+            $mediaUids[] = (int)($m['uid'] ?? 0);
+            $mediaUids[] = (int)($m['l10n_parent'] ?? 0);
+        }
+        $mediaUids = array_values(array_unique(array_filter($mediaUids, static fn (int $uid): bool => $uid > 0)));
         $posterRefsByMediaUid = $this->fileReferencePrefetcher->prefetchField($mediaUids, 'poster');
 
         $cards = [];
@@ -234,32 +260,22 @@ final class DetailProcessor implements DataProcessorInterface
     }
 
     /**
-     * Resolve the first poster FileReference for a media record (used for the
-     * OpenGraph/Twitter image meta tags).
+     * First poster of a media record, falling back to the default-language
+     * record's poster for translations without one. Used for the detail data
+     * and the OpenGraph/Twitter image meta tags alike.
+     *
+     * @param array<string, mixed> $media
      */
-    private function resolvePosterReference(int $mediaUid): ?FileReference
+    private function resolvePosterReference(array $media): ?FileReference
     {
-        if ($mediaUid <= 0) {
+        $mediaUid = (int)($media['uid'] ?? 0);
+        $defaultUid = (int)($media['l10n_parent'] ?? 0);
+        $uids = array_values(array_filter([$mediaUid, $defaultUid], static fn (int $uid): bool => $uid > 0));
+        if ($uids === []) {
             return null;
         }
-        $refs = $this->fileReferencePrefetcher->prefetchField([$mediaUid], 'poster')[$mediaUid] ?? [];
-        return $refs[0] ?? null;
-    }
+        $refs = $this->fileReferencePrefetcher->prefetchField($uids, 'poster');
 
-    /**
-     * @return array{url: ?string}
-     */
-    private function resolvePosterFile(int $mediaUid): array
-    {
-        if ($mediaUid <= 0) {
-            return ['url' => null];
-        }
-        $refs = $this->fileReferencePrefetcher->prefetchField([$mediaUid], 'poster')[$mediaUid] ?? [];
-        if ($refs === []) {
-            return ['url' => null];
-        }
-        $url = (string)$refs[0]->getPublicUrl();
-        return ['url' => $url !== '' ? $url : null];
+        return $refs[$mediaUid][0] ?? $refs[$defaultUid][0] ?? null;
     }
-
 }

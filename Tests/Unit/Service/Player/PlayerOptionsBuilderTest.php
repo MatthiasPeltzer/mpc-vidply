@@ -68,13 +68,13 @@ final class PlayerOptionsBuilderTest extends TestCase
     }
 
     #[Test]
-    public function buildEnablesDebugOverlayWhenVidplyDebugQueryIsSet(): void
+    public function buildIgnoresVidplyDebugQuerySoCachedOutputStaysNeutral(): void
     {
         $request = (new ServerRequest())->withQueryParams(['vidplyDebug' => '1']);
 
         $options = $this->subject->build([], $request);
 
-        self::assertTrue($options['debugOverlay']);
+        self::assertArrayNotHasKey('debugOverlay', $options);
     }
 
     #[Test]

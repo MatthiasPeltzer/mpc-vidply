@@ -6,11 +6,18 @@ namespace Mpc\MpcVidply\Service;
 
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\QueryBuilder;
+use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
+use TYPO3\CMS\Core\Database\ReferenceIndex;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Ensures localized `tx_mpcvidply_listview_row` child records exist for translated
  * listview content elements so editors can translate row headlines in the backend.
+ *
+ * Rows are written directly rather than through DataHandler, so callers are
+ * responsible for running this on live data only and for checking the editor's
+ * language permissions (see AbstractContentTranslationSyncHook).
  */
 final class ListviewRowLocalizationService
 {
@@ -69,11 +76,14 @@ final class ListviewRowLocalizationService
     ];
 
     private readonly ConnectionPool $connectionPool;
+    private readonly ReferenceIndex $referenceIndex;
 
     public function __construct(
-        ?ConnectionPool $connectionPool = null
+        ?ConnectionPool $connectionPool = null,
+        ?ReferenceIndex $referenceIndex = null
     ) {
         $this->connectionPool = $connectionPool ?? GeneralUtility::makeInstance(ConnectionPool::class);
+        $this->referenceIndex = $referenceIndex ?? GeneralUtility::makeInstance(ReferenceIndex::class);
     }
 
     public function ensureLocalizedRowsForTranslation(int $sourceContentUid, int $targetContentUid, int $languageId): void
@@ -113,6 +123,7 @@ final class ListviewRowLocalizationService
                     $insert[$field] = $this->normalizeRowFieldValue($field, $defaultRow);
                 }
                 $connection->insert(self::ROW_TABLE, $insert);
+                $this->referenceIndex->updateRefIndexTable(self::ROW_TABLE, (int)$connection->lastInsertId());
                 continue;
             }
 
@@ -126,14 +137,15 @@ final class ListviewRowLocalizationService
             return;
         }
 
-        $qb = $this->connectionPool->getQueryBuilderForTable(self::PARENT_TABLE);
+        $qb = $this->createQueryBuilderIgnoringVisibility(self::PARENT_TABLE);
         $translations = $qb
             ->select('uid', 'sys_language_uid')
             ->from(self::PARENT_TABLE)
             ->where(
                 $qb->expr()->eq('l18n_parent', $qb->createNamedParameter($sourceContentUid, Connection::PARAM_INT)),
                 $qb->expr()->eq('CType', $qb->createNamedParameter('mpc_vidply_listview')),
-                $qb->expr()->eq('deleted', $qb->createNamedParameter(0, Connection::PARAM_INT))
+                $qb->expr()->eq('deleted', $qb->createNamedParameter(0, Connection::PARAM_INT)),
+                $qb->expr()->eq('t3ver_wsid', $qb->createNamedParameter(0, Connection::PARAM_INT))
             )
             ->executeQuery()
             ->fetchAllAssociative();
@@ -153,7 +165,7 @@ final class ListviewRowLocalizationService
      */
     private function fetchDefaultRowsForContentElement(int $contentUid): array
     {
-        $qb = $this->connectionPool->getQueryBuilderForTable(self::ROW_TABLE);
+        $qb = $this->createQueryBuilderIgnoringVisibility(self::ROW_TABLE);
 
         return $qb
             ->select('*')
@@ -163,7 +175,8 @@ final class ListviewRowLocalizationService
                 $qb->expr()->eq('parenttable', $qb->createNamedParameter(self::PARENT_TABLE)),
                 $qb->expr()->eq('parentfield', $qb->createNamedParameter(self::PARENT_FIELD)),
                 $qb->expr()->eq('deleted', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-                $qb->expr()->lte('sys_language_uid', $qb->createNamedParameter(0, Connection::PARAM_INT))
+                $qb->expr()->lte('sys_language_uid', $qb->createNamedParameter(0, Connection::PARAM_INT)),
+                $qb->expr()->eq('t3ver_wsid', $qb->createNamedParameter(0, Connection::PARAM_INT))
             )
             ->orderBy('sorting', 'ASC')
             ->executeQuery()
@@ -175,14 +188,15 @@ final class ListviewRowLocalizationService
      */
     private function fetchLocalizedRowForDefault(int $defaultRowUid, int $languageId): ?array
     {
-        $qb = $this->connectionPool->getQueryBuilderForTable(self::ROW_TABLE);
+        $qb = $this->createQueryBuilderIgnoringVisibility(self::ROW_TABLE);
         $row = $qb
             ->select('*')
             ->from(self::ROW_TABLE)
             ->where(
                 $qb->expr()->eq('l10n_parent', $qb->createNamedParameter($defaultRowUid, Connection::PARAM_INT)),
                 $qb->expr()->eq('sys_language_uid', $qb->createNamedParameter($languageId, Connection::PARAM_INT)),
-                $qb->expr()->eq('deleted', $qb->createNamedParameter(0, Connection::PARAM_INT))
+                $qb->expr()->eq('deleted', $qb->createNamedParameter(0, Connection::PARAM_INT)),
+                $qb->expr()->eq('t3ver_wsid', $qb->createNamedParameter(0, Connection::PARAM_INT))
             )
             ->setMaxResults(1)
             ->executeQuery()
@@ -210,6 +224,19 @@ final class ListviewRowLocalizationService
             $update,
             ['uid' => $localizedRowUid]
         );
+        $this->referenceIndex->updateRefIndexTable(self::ROW_TABLE, $localizedRowUid);
+    }
+
+    /**
+     * Only deleted records are excluded: a hidden or scheduled row still has
+     * (or needs) its translation, otherwise every save would add another copy.
+     */
+    private function createQueryBuilderIgnoringVisibility(string $table): QueryBuilder
+    {
+        $qb = $this->connectionPool->getQueryBuilderForTable($table);
+        $qb->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
+
+        return $qb;
     }
 
     /**

@@ -56,18 +56,22 @@ div[data-vidply-play-position="left-top"] ~ .vidply-play-overlay {
     transform: none !important;
 }
 
-[data-vidply-play-position="left-top"] .vidply-play-overlay:hover,
-video[data-vidply-play-position="left-top"] ~ .vidply-play-overlay:hover,
-audio[data-vidply-play-position="left-top"] ~ .vidply-play-overlay:hover,
-div[data-vidply-play-position="left-top"] ~ .vidply-play-overlay:hover {
-    transform: scale(1.1) !important;
+@media (prefers-reduced-motion: no-preference) {
+    [data-vidply-play-position="left-top"] .vidply-play-overlay:hover,
+    video[data-vidply-play-position="left-top"] ~ .vidply-play-overlay:hover,
+    audio[data-vidply-play-position="left-top"] ~ .vidply-play-overlay:hover,
+    div[data-vidply-play-position="left-top"] ~ .vidply-play-overlay:hover {
+        transform: scale(1.1) !important;
+    }
 }
 
-[data-vidply-play-position="left-top"] .vidply-play-overlay:active,
-video[data-vidply-play-position="left-top"] ~ .vidply-play-overlay:active,
-audio[data-vidply-play-position="left-top"] ~ .vidply-play-overlay:active,
-div[data-vidply-play-position="left-top"] ~ .vidply-play-overlay:active {
-    transform: scale(.95) !important;
+@media (prefers-reduced-motion: no-preference) {
+    [data-vidply-play-position="left-top"] .vidply-play-overlay:active,
+    video[data-vidply-play-position="left-top"] ~ .vidply-play-overlay:active,
+    audio[data-vidply-play-position="left-top"] ~ .vidply-play-overlay:active,
+    div[data-vidply-play-position="left-top"] ~ .vidply-play-overlay:active {
+        transform: scale(.95) !important;
+    }
 }
 
 /* RIGHT-TOP position */
@@ -82,18 +86,22 @@ div[data-vidply-play-position="right-top"] ~ .vidply-play-overlay {
     transform: none !important;
 }
 
-[data-vidply-play-position="right-top"] .vidply-play-overlay:hover,
-video[data-vidply-play-position="right-top"] ~ .vidply-play-overlay:hover,
-audio[data-vidply-play-position="right-top"] ~ .vidply-play-overlay:hover,
-div[data-vidply-play-position="right-top"] ~ .vidply-play-overlay:hover {
-    transform: scale(1.1) !important;
+@media (prefers-reduced-motion: no-preference) {
+    [data-vidply-play-position="right-top"] .vidply-play-overlay:hover,
+    video[data-vidply-play-position="right-top"] ~ .vidply-play-overlay:hover,
+    audio[data-vidply-play-position="right-top"] ~ .vidply-play-overlay:hover,
+    div[data-vidply-play-position="right-top"] ~ .vidply-play-overlay:hover {
+        transform: scale(1.1) !important;
+    }
 }
 
-[data-vidply-play-position="right-top"] .vidply-play-overlay:active,
-video[data-vidply-play-position="right-top"] ~ .vidply-play-overlay:active,
-audio[data-vidply-play-position="right-top"] ~ .vidply-play-overlay:active,
-div[data-vidply-play-position="right-top"] ~ .vidply-play-overlay:active {
-    transform: scale(.95) !important;
+@media (prefers-reduced-motion: no-preference) {
+    [data-vidply-play-position="right-top"] .vidply-play-overlay:active,
+    video[data-vidply-play-position="right-top"] ~ .vidply-play-overlay:active,
+    audio[data-vidply-play-position="right-top"] ~ .vidply-play-overlay:active,
+    div[data-vidply-play-position="right-top"] ~ .vidply-play-overlay:active {
+        transform: scale(.95) !important;
+    }
 }
 
 /* LEFT-BOTTOM position */
@@ -108,18 +116,22 @@ div[data-vidply-play-position="left-bottom"] ~ .vidply-play-overlay {
     transform: none !important;
 }
 
-[data-vidply-play-position="left-bottom"] .vidply-play-overlay:hover,
-video[data-vidply-play-position="left-bottom"] ~ .vidply-play-overlay:hover,
-audio[data-vidply-play-position="left-bottom"] ~ .vidply-play-overlay:hover,
-div[data-vidply-play-position="left-bottom"] ~ .vidply-play-overlay:hover {
-    transform: scale(1.1) !important;
+@media (prefers-reduced-motion: no-preference) {
+    [data-vidply-play-position="left-bottom"] .vidply-play-overlay:hover,
+    video[data-vidply-play-position="left-bottom"] ~ .vidply-play-overlay:hover,
+    audio[data-vidply-play-position="left-bottom"] ~ .vidply-play-overlay:hover,
+    div[data-vidply-play-position="left-bottom"] ~ .vidply-play-overlay:hover {
+        transform: scale(1.1) !important;
+    }
 }
 
-[data-vidply-play-position="left-bottom"] .vidply-play-overlay:active,
-video[data-vidply-play-position="left-bottom"] ~ .vidply-play-overlay:active,
-audio[data-vidply-play-position="left-bottom"] ~ .vidply-play-overlay:active,
-div[data-vidply-play-position="left-bottom"] ~ .vidply-play-overlay:active {
-    transform: scale(.95) !important;
+@media (prefers-reduced-motion: no-preference) {
+    [data-vidply-play-position="left-bottom"] .vidply-play-overlay:active,
+    video[data-vidply-play-position="left-bottom"] ~ .vidply-play-overlay:active,
+    audio[data-vidply-play-position="left-bottom"] ~ .vidply-play-overlay:active,
+    div[data-vidply-play-position="left-bottom"] ~ .vidply-play-overlay:active {
+        transform: scale(.95) !important;
+    }
 }
 
 /* RIGHT-BOTTOM position */
@@ -134,18 +146,22 @@ div[data-vidply-play-position="right-bottom"] ~ .vidply-play-overlay {
     transform: none !important;
 }
 
-[data-vidply-play-position="right-bottom"] .vidply-play-overlay:hover,
-video[data-vidply-play-position="right-bottom"] ~ .vidply-play-overlay:hover,
-audio[data-vidply-play-position="right-bottom"] ~ .vidply-play-overlay:hover,
-div[data-vidply-play-position="right-bottom"] ~ .vidply-play-overlay:hover {
-    transform: scale(1.1) !important;
+@media (prefers-reduced-motion: no-preference) {
+    [data-vidply-play-position="right-bottom"] .vidply-play-overlay:hover,
+    video[data-vidply-play-position="right-bottom"] ~ .vidply-play-overlay:hover,
+    audio[data-vidply-play-position="right-bottom"] ~ .vidply-play-overlay:hover,
+    div[data-vidply-play-position="right-bottom"] ~ .vidply-play-overlay:hover {
+        transform: scale(1.1) !important;
+    }
 }
 
-[data-vidply-play-position="right-bottom"] .vidply-play-overlay:active,
-video[data-vidply-play-position="right-bottom"] ~ .vidply-play-overlay:active,
-audio[data-vidply-play-position="right-bottom"] ~ .vidply-play-overlay:active,
-div[data-vidply-play-position="right-bottom"] ~ .vidply-play-overlay:active {
-    transform: scale(.95) !important;
+@media (prefers-reduced-motion: no-preference) {
+    [data-vidply-play-position="right-bottom"] .vidply-play-overlay:active,
+    video[data-vidply-play-position="right-bottom"] ~ .vidply-play-overlay:active,
+    audio[data-vidply-play-position="right-bottom"] ~ .vidply-play-overlay:active,
+    div[data-vidply-play-position="right-bottom"] ~ .vidply-play-overlay:active {
+        transform: scale(.95) !important;
+    }
 }
 
 /* Privacy button hover states - positioned variants should NOT scale, center should maintain translate */
@@ -171,6 +187,8 @@ div[data-vidply-play-position="right-bottom"] ~ .vidply-play-overlay:active {
     bottom: 4rem !important;
 }
 
+/* The positioned hover/active scales above only apply without a reduced-motion
+   preference; this block covers the player's own centred overlay. */
 @media (prefers-reduced-motion: reduce) {
     .vidply-play-overlay:hover,
     .vidply-play-overlay:active,

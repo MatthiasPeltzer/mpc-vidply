@@ -11,7 +11,9 @@ return [
         'tstamp' => 'tstamp',
         'crdate' => 'crdate',
         'delete' => 'deleted',
-        'sortby' => 'crdate',
+        // Newest first. Not `sortby`: DataHandler would write its sort numbers
+        // (256, 512, …) into that column on insert, move and copy.
+        'default_sortby' => 'crdate DESC',
         'type' => 'media_type',
         'typeicon_classes' => [
             'default' => 'mpc_vidply-plugin',

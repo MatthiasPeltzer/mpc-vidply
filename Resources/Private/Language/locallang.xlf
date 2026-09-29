@@ -123,11 +123,17 @@
       <trans-unit id="listview.shelf.prev">
         <source>Previous items</source>
       </trans-unit>
+      <trans-unit id="listview.shelf.region">
+        <source>Media shelf</source>
+      </trans-unit>
       <trans-unit id="listview.sort.label">
         <source>Sort by</source>
       </trans-unit>
       <trans-unit id="player.captions">
         <source>Captions</source>
+      </trans-unit>
+      <trans-unit id="player.chapters">
+        <source>Chapters</source>
       </trans-unit>
       <trans-unit id="player.fullscreen">
         <source>Fullscreen</source>
@@ -146,6 +152,9 @@
       </trans-unit>
       <trans-unit id="player.previous">
         <source>Previous</source>
+      </trans-unit>
+      <trans-unit id="player.region">
+        <source>Media player</source>
       </trans-unit>
       <trans-unit id="player.stop">
         <source>Stop</source>

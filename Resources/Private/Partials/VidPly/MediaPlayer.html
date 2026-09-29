@@ -11,6 +11,7 @@
 <{mediaKind}
     id="{vidply.uniqueId}"
     controls
+    data-vidply-player
     <f:if condition="{vidply.privacyPlayIconUrl}">data-vidply-play-icon="{vidply.privacyPlayIconUrl}"</f:if>
     data-vidply-play-position="{vidply.privacyPlayButtonPosition}"
     <f:if condition="{vidply.playlistData}">
@@ -25,6 +26,7 @@
             <f:if condition="{vidply.hasExternalMedia}">
                 data-playlist-has-external="true"
                 data-playlist-external-services='{f:format.json(value: vidply.externalServiceTypes)}'
+                data-playlist-privacy-headline-level="{vidply.privacyHeadlineLevel}"
             </f:if>
         </f:then>
         <f:else>

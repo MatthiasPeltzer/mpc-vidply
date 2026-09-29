@@ -575,6 +575,32 @@ async function handleRefresh(wrap, button) {
   }
 }
 
+/**
+ * Run one import/refresh request per wrap at a time. The wrap is marked busy
+ * and both buttons are marked disabled while the request runs, so a double
+ * click cannot import the same URL twice. `aria-disabled` rather than
+ * `disabled` keeps keyboard focus on the button that was pressed.
+ *
+ * @param {HTMLElement} wrap
+ * @param {() => Promise<void>} task
+ */
+async function runExclusive(wrap, task) {
+  if (wrap.getAttribute('aria-busy') === 'true') {
+    return;
+  }
+
+  const buttons = Array.from(wrap.querySelectorAll(`${SELECTORS.importButton}, ${SELECTORS.refreshButton}`));
+  wrap.setAttribute('aria-busy', 'true');
+  buttons.forEach((button) => button.setAttribute('aria-disabled', 'true'));
+
+  try {
+    await task();
+  } finally {
+    buttons.forEach((button) => button.removeAttribute('aria-disabled'));
+    wrap.removeAttribute('aria-busy');
+  }
+}
+
 function registerEvents() {
   if (registerEvents.initialized) {
     return;
@@ -585,7 +611,7 @@ function registerEvents() {
     event.preventDefault();
     const wrap = button.closest(SELECTORS.wrap);
     if (wrap) {
-      handleImport(wrap);
+      runExclusive(wrap, () => handleImport(wrap));
     }
   }).delegateTo(document, SELECTORS.importButton);
 
@@ -593,7 +619,7 @@ function registerEvents() {
     event.preventDefault();
     const wrap = button.closest(SELECTORS.wrap);
     if (wrap) {
-      handleRefresh(wrap, button);
+      runExclusive(wrap, () => handleRefresh(wrap, button));
     }
   }).delegateTo(document, SELECTORS.refreshButton);
 }

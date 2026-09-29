@@ -8,6 +8,7 @@ use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
+use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -162,13 +163,12 @@ final class MediaRepository
      */
     private function fetchReferencedRecords(array $uids): array
     {
-        $qb = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_media');
+        $qb = $this->createMediaQueryBuilder();
         $rows = $qb
             ->select(...self::MEDIA_COLUMNS)
             ->from('tx_mpcvidply_media')
             ->where(
-                $qb->expr()->in('uid', $qb->createNamedParameter($uids, Connection::PARAM_INT_ARRAY)),
-                ...$this->buildAccessConditions($qb)
+                $qb->expr()->in('uid', $qb->createNamedParameter($uids, Connection::PARAM_INT_ARRAY))
             )
             ->executeQuery()
             ->fetchAllAssociative();
@@ -228,14 +228,13 @@ final class MediaRepository
         ));
 
         if ($missingUids !== []) {
-            $qb = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_media');
+            $qb = $this->createMediaQueryBuilder();
             $rows = $qb
                 ->select(...self::MEDIA_COLUMNS)
                 ->from('tx_mpcvidply_media')
                 ->where(
                     $qb->expr()->in('uid', $qb->createNamedParameter($missingUids, Connection::PARAM_INT_ARRAY)),
-                    $qb->expr()->eq('sys_language_uid', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-                    ...$this->buildAccessConditions($qb)
+                    $qb->expr()->eq('sys_language_uid', $qb->createNamedParameter(0, Connection::PARAM_INT))
                 )
                 ->executeQuery()
                 ->fetchAllAssociative();
@@ -257,14 +256,13 @@ final class MediaRepository
      */
     private function fetchTranslatedRecords(array $defaultUids, int $languageId): array
     {
-        $qb = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_media');
+        $qb = $this->createMediaQueryBuilder();
         $rows = $qb
             ->select(...self::MEDIA_COLUMNS)
             ->from('tx_mpcvidply_media')
             ->where(
                 $qb->expr()->in('l10n_parent', $qb->createNamedParameter($defaultUids, Connection::PARAM_INT_ARRAY)),
-                $qb->expr()->eq('sys_language_uid', $qb->createNamedParameter($languageId, Connection::PARAM_INT)),
-                ...$this->buildAccessConditions($qb)
+                $qb->expr()->eq('sys_language_uid', $qb->createNamedParameter($languageId, Connection::PARAM_INT))
             )
             ->executeQuery()
             ->fetchAllAssociative();
@@ -325,36 +323,17 @@ final class MediaRepository
     }
 
     /**
-     * Enable-field conditions for `tx_mpcvidply_media`.
-     *
-     * @param string $alias Table alias to qualify the columns with, for joined queries
-     * @return list<\TYPO3\CMS\Core\Database\Query\Expression\CompositeExpression|string>
+     * Query builder for `tx_mpcvidply_media` with the frontend enable-field
+     * restrictions. Unlike hard-coded `hidden = 0` / time conditions, these
+     * honour the visibility aspect, so previews of hidden or scheduled records
+     * ("show hidden records") work, and they apply to aliased joins as well.
      */
-    private function buildAccessConditions(QueryBuilder $qb, string $alias = ''): array
+    private function createMediaQueryBuilder(): QueryBuilder
     {
-        $prefix = $alias !== '' ? $alias . '.' : '';
+        $qb = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_media');
+        $qb->setRestrictions(GeneralUtility::makeInstance(FrontendRestrictionContainer::class, $this->context));
 
-        $conditions = [
-            $qb->expr()->eq($prefix . 'deleted', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-            $qb->expr()->eq($prefix . 'hidden', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-        ];
-
-        try {
-            $now = $this->context->getPropertyFromAspect('date', 'timestamp', 0);
-        } catch (\Throwable) {
-            $now = time();
-        }
-
-        $conditions[] = $qb->expr()->or(
-            $qb->expr()->eq($prefix . 'starttime', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-            $qb->expr()->lte($prefix . 'starttime', $qb->createNamedParameter($now, Connection::PARAM_INT))
-        );
-        $conditions[] = $qb->expr()->or(
-            $qb->expr()->eq($prefix . 'endtime', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-            $qb->expr()->gte($prefix . 'endtime', $qb->createNamedParameter($now, Connection::PARAM_INT))
-        );
-
-        return $conditions;
+        return $qb;
     }
 
     /**
@@ -409,13 +388,12 @@ final class MediaRepository
             return null;
         }
 
-        $qb = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_media');
+        $qb = $this->createMediaQueryBuilder();
         $row = $qb
             ->select(...self::MEDIA_COLUMNS)
             ->from('tx_mpcvidply_media')
             ->where(
-                $qb->expr()->eq('uid', $qb->createNamedParameter($uid, Connection::PARAM_INT)),
-                ...$this->buildAccessConditions($qb)
+                $qb->expr()->eq('uid', $qb->createNamedParameter($uid, Connection::PARAM_INT))
             )
             ->executeQuery()
             ->fetchAssociative();
@@ -462,7 +440,7 @@ final class MediaRepository
             return null;
         }
 
-        $qb = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_media');
+        $qb = $this->createMediaQueryBuilder();
         $row = $qb
             ->select(...self::MEDIA_COLUMNS)
             ->from('tx_mpcvidply_media')
@@ -471,8 +449,7 @@ final class MediaRepository
                 $qb->expr()->in(
                     'sys_language_uid',
                     $qb->createNamedParameter([0, $languageId], Connection::PARAM_INT_ARRAY)
-                ),
-                ...$this->buildAccessConditions($qb)
+                )
             )
             ->orderBy('sys_language_uid', 'DESC')
             ->setMaxResults(1)
@@ -523,7 +500,7 @@ final class MediaRepository
             return [];
         }
 
-        $qb = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_media');
+        $qb = $this->createMediaQueryBuilder();
         $qb
             ->select('media.uid', 'media.sys_language_uid', 'media.l10n_parent', 'media.crdate', 'media.title')
             ->from('tx_mpcvidply_media', 'media')
@@ -542,14 +519,19 @@ final class MediaRepository
                     'mm.uid_local',
                     $qb->createNamedParameter($categoryUids, Connection::PARAM_INT_ARRAY)
                 ),
-                $qb->expr()->eq('media.sys_language_uid', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-                ...$this->buildAccessConditions($qb, 'media')
+                $qb->expr()->eq('media.sys_language_uid', $qb->createNamedParameter(0, Connection::PARAM_INT))
             )
             // Group by every selected, non-aggregated column so the query is valid
             // under MySQL/MariaDB ONLY_FULL_GROUP_BY (a media record can match more
             // than one of the requested categories, producing duplicate join rows).
-            ->groupBy('media.uid', 'media.sys_language_uid', 'media.l10n_parent', 'media.crdate', 'media.title')
-            ->setMaxResults(max(1, $limit));
+            ->groupBy('media.uid', 'media.sys_language_uid', 'media.l10n_parent', 'media.crdate', 'media.title');
+
+        // Translated titles are only known after the overlay, so title sorting
+        // in another language happens in PHP on the full candidate list.
+        $sortByTranslatedTitle = $sortBy === 'title_asc' && $languageId > 0;
+        if (!$sortByTranslatedTitle) {
+            $qb->setMaxResults(max(1, $limit));
+        }
 
         switch ($sortBy) {
             case 'title_asc':
@@ -595,6 +577,14 @@ final class MediaRepository
             }
         }
 
+        if ($sortByTranslatedTitle) {
+            usort(
+                $result,
+                static fn (array $a, array $b): int => strnatcasecmp((string)($a['title'] ?? ''), (string)($b['title'] ?? ''))
+            );
+            $result = array_slice($result, 0, $limit);
+        }
+
         return $result;
     }
 
@@ -632,11 +622,13 @@ final class MediaRepository
 
         $records = $this->findByCategories($categoryUids, $languageId, $limit + 1, 'crdate_desc');
 
-        return array_values(array_filter(
+        // One extra record was fetched to make up for the current one; when it
+        // is not among the results, the extra one must be dropped again.
+        return array_slice(array_values(array_filter(
             $records,
             static fn (array $row): bool => (int)($row['uid'] ?? 0) !== $mediaUid
                 && (int)($row['l10n_parent'] ?? 0) !== $mediaUid
-        ));
+        )), 0, $limit);
     }
 
     /**
@@ -647,14 +639,13 @@ final class MediaRepository
         if ($defaultUid <= 0) {
             return null;
         }
-        $qb = $this->connectionPool->getQueryBuilderForTable('tx_mpcvidply_media');
+        $qb = $this->createMediaQueryBuilder();
         $row = $qb
             ->select(...self::MEDIA_COLUMNS)
             ->from('tx_mpcvidply_media')
             ->where(
                 $qb->expr()->eq('uid', $qb->createNamedParameter($defaultUid, Connection::PARAM_INT)),
-                $qb->expr()->eq('sys_language_uid', $qb->createNamedParameter(0, Connection::PARAM_INT)),
-                ...$this->buildAccessConditions($qb)
+                $qb->expr()->eq('sys_language_uid', $qb->createNamedParameter(0, Connection::PARAM_INT))
             )
             ->executeQuery()
             ->fetchAssociative();

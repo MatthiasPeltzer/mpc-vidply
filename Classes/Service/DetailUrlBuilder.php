@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\Service;
 
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 /**
@@ -19,14 +18,9 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
  */
 final class DetailUrlBuilder
 {
-    private readonly MediaUrlNormalizer $urlNormalizer;
-
-    public function __construct(?MediaUrlNormalizer $urlNormalizer = null)
-    {
-        $this->urlNormalizer = $urlNormalizer ?? GeneralUtility::makeInstance(MediaUrlNormalizer::class);
-    }
-
     /**
+     * @param string $slug Unused: the route enhancer resolves the slug from the
+     *                     media uid. Kept for the callers' signature.
      * @param bool $absolute Structured data needs fully qualified URLs; in-page
      *                       links stay relative.
      */
@@ -53,23 +47,11 @@ final class DetailUrlBuilder
         }
 
         try {
-            $url = (string)$cObj->typoLink_URL($config);
+            return (string)$cObj->typoLink_URL($config);
         } catch (\Throwable) {
-            $url = '';
+            // No hand-built fallback: a bare `/<slug>` path ignores the detail
+            // page and the site base and would 404. Callers render no link.
+            return '';
         }
-
-        if ($url !== '') {
-            return $url;
-        }
-
-        // Last-resort: no `id`, site routing removes it; a relative query is
-        // enough on the same host.
-        $fallback = $slug !== '' ? '/' . ltrim($slug, '/') : '?media=' . $mediaUid;
-
-        if (!$absolute) {
-            return $fallback;
-        }
-
-        return $this->urlNormalizer->makeAbsolute($fallback, $cObj->getRequest());
     }
 }

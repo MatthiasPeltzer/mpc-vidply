@@ -31,7 +31,7 @@
                 data-mpc-vidply-list-root
                 role="list"
                 tabindex="0"
-                aria-label="{f:if(condition: row.headline, then: row.headline, else: 'Media shelf')}">
+                aria-label="{f:if(condition: row.headline, then: row.headline, else: '{f:translate(key: \'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:listview.shelf.region\', default: \'Media shelf\')}')}">
                 <f:for each="{row.cards}" as="card" iteration="i">
                     <li class="mpc-vidply-listview-shelf__item" role="listitem"
                         data-mpc-vidply-order="{i.index}"

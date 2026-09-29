@@ -16,6 +16,7 @@ use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Resource\DefaultUploadFolderResolver;
 use TYPO3\CMS\Core\Resource\Folder;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
+use TYPO3\CMS\Core\Type\Bitmask\Permission;
 
 #[AsController]
 final readonly class MediaImportAjaxController
@@ -96,6 +97,10 @@ final readonly class MediaImportAjaxController
         $recordIdentifier = trim((string)($body['recordIdentifier'] ?? ''));
         $tableName = trim((string)($body['tableName'] ?? 'tx_mpcvidply_media'));
 
+        if ($tableName !== 'tx_mpcvidply_media') {
+            return new JsonResponse(['success' => false, 'errorMessage' => 'Invalid table.']);
+        }
+
         if ($fileUid <= 0) {
             return new JsonResponse(['success' => false, 'errorMessage' => 'No media file linked to refresh.']);
         }
@@ -103,6 +108,16 @@ final readonly class MediaImportAjaxController
         try {
             $file = $this->resourceFactory->getFileObject($fileUid);
         } catch (\Throwable) {
+            return new JsonResponse(['success' => false, 'errorMessage' => 'Media file not found.']);
+        }
+
+        // The refresh writes a poster next to the media file, so the editor
+        // needs read access to the file and write access to its folder.
+        if (
+            !$this->mediaFromUrlService->isOnlineMediaFile($file)
+            || !$file->checkActionPermission('read')
+            || !$file->getParentFolder()->checkActionPermission('write')
+        ) {
             return new JsonResponse(['success' => false, 'errorMessage' => 'Media file not found.']);
         }
 
@@ -116,7 +131,7 @@ final readonly class MediaImportAjaxController
         if ($recordIdentifier !== '') {
             $recordKey = $this->sessionService->buildRecordKey($tableName, $recordIdentifier);
             $this->sessionService->store($recordKey, [
-                'mediaType' => $currentMediaType !== '' ? $currentMediaType : $result->mediaType,
+                'mediaType' => $mediaType->value ?? $result->mediaType,
                 'mediaFileUid' => $result->mediaFileUid,
                 'title' => $result->title,
                 'artist' => $result->artist,
@@ -139,7 +154,7 @@ final readonly class MediaImportAjaxController
 
     private function canAccessStoragePage(int $pid): bool
     {
-        return BackendUtility::readPageAccess($pid, $this->getBackendUser()->getPagePermsClause(1)) !== false;
+        return BackendUtility::readPageAccess($pid, $this->getBackendUser()->getPagePermsClause(Permission::CONTENT_EDIT)) !== false;
     }
 
     /**

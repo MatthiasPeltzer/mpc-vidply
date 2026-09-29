@@ -41,36 +41,6 @@ final class VidPlyPlaylistTranslationSync extends AbstractContentTranslationSync
         $this->replicateFromParentToTranslationUids($sourceUid, [$translationUid], self::CTYPE);
     }
 
-    protected function syncAllTranslations(int $sourceUid): void
-    {
-        $this->replicateSourcePlaylistToTranslations($sourceUid);
-    }
-
-    private function replicateSourcePlaylistToTranslations(int $sourceContentUid): void
-    {
-        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
-        $qb = $connectionPool->getQueryBuilderForTable('tt_content');
-        $translatedUids = $qb
-            ->select('uid')
-            ->from('tt_content')
-            ->where(
-                $qb->expr()->eq('l18n_parent', $qb->createNamedParameter($sourceContentUid, Connection::PARAM_INT)),
-                $qb->expr()->eq('CType', $qb->createNamedParameter(self::CTYPE)),
-                $qb->expr()->eq('deleted', $qb->createNamedParameter(0, Connection::PARAM_INT))
-            )
-            ->executeQuery()
-            ->fetchFirstColumn();
-        if ($translatedUids === []) {
-            return;
-        }
-
-        $this->replicateFromParentToTranslationUids(
-            $sourceContentUid,
-            array_map(static fn (mixed $v): int => (int)$v, $translatedUids),
-            self::CTYPE
-        );
-    }
-
     /**
      * Copy playlist MM rows from the default-language `tt_content` to one or more
      * target `tt_content` uids (local sides). Used for translation saves and localize.

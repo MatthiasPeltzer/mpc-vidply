@@ -16,6 +16,8 @@ use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 
 final class SrtCaptionConversionHook
 {
+    use CollectsSavedRecordsTrait;
+
     private const MEDIA_TABLE = 'tx_mpcvidply_media';
 
     public function __construct(
@@ -23,25 +25,14 @@ final class SrtCaptionConversionHook
         private readonly FlashMessageService $flashMessageService,
     ) {}
 
+    /**
+     * Only records the DataHandler actually wrote are converted, so a denied
+     * save cannot be used to rewrite caption files of a foreign record.
+     */
     public function processDatamap_afterAllOperations(DataHandler $dataHandler): void
     {
-        if (!isset($dataHandler->datamap[self::MEDIA_TABLE]) || !is_array($dataHandler->datamap[self::MEDIA_TABLE])) {
-            return;
-        }
-
-        if (!$this->isBackendRequest()) {
-            return;
-        }
-
-        $mediaUids = [];
-        foreach (array_keys($dataHandler->datamap[self::MEDIA_TABLE]) as $id) {
-            $uid = $this->resolveMediaUid($id, $dataHandler);
-            if ($uid > 0) {
-                $mediaUids[] = $uid;
-            }
-        }
-
-        if ($mediaUids === []) {
+        $mediaUids = array_keys($this->takeSavedRecords($dataHandler));
+        if ($mediaUids === [] || !$this->isBackendRequest()) {
             return;
         }
 
@@ -49,13 +40,9 @@ final class SrtCaptionConversionHook
         $this->enqueueFlashMessages($batchResult->results);
     }
 
-    private function resolveMediaUid(string|int $id, DataHandler $dataHandler): int
+    protected function getCollectedTable(): string
     {
-        if (is_string($id) && str_starts_with($id, 'NEW')) {
-            return (int)($dataHandler->substNEWwithIDs[$id] ?? 0);
-        }
-
-        return (int)$id;
+        return self::MEDIA_TABLE;
     }
 
     private function isBackendRequest(): bool

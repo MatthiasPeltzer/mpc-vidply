@@ -175,8 +175,23 @@ final class MediaCategoryResolver
             $categoriesByMediaUid[$mediaUid][] = ['uid' => $categoryUid, 'title' => (string)($row['title'] ?? '')];
         }
 
+        // Localize every distinct category in one query instead of once per media record.
+        $distinctCategories = [];
+        foreach ($categoriesByMediaUid as $categories) {
+            foreach ($categories as $category) {
+                $distinctCategories[$category['uid']] ??= $category;
+            }
+        }
+        $localizedByDefaultUid = array_combine(
+            array_keys($distinctCategories),
+            $this->categoryTitleResolver->localizeCategories(array_values($distinctCategories), $languageId)
+        );
+
         foreach ($categoriesByMediaUid as $mediaUid => $categories) {
-            $categoriesByMediaUid[$mediaUid] = $this->categoryTitleResolver->localizeCategories($categories, $languageId);
+            $categoriesByMediaUid[$mediaUid] = array_map(
+                static fn (array $category): array => $localizedByDefaultUid[$category['uid']] ?? $category,
+                $categories
+            );
         }
 
         return $categoriesByMediaUid;

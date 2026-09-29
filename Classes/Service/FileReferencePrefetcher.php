@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\Service;
 
+use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
@@ -26,13 +27,16 @@ final class FileReferencePrefetcher
 
     private readonly ConnectionPool $connectionPool;
     private readonly ResourceFactory $resourceFactory;
+    private readonly Context $context;
 
     public function __construct(
         ?ConnectionPool $connectionPool = null,
-        ?ResourceFactory $resourceFactory = null
+        ?ResourceFactory $resourceFactory = null,
+        ?Context $context = null
     ) {
         $this->connectionPool = $connectionPool ?? GeneralUtility::makeInstance(ConnectionPool::class);
         $this->resourceFactory = $resourceFactory ?? GeneralUtility::makeInstance(ResourceFactory::class);
+        $this->context = $context ?? GeneralUtility::makeInstance(Context::class);
     }
 
     /**
@@ -54,7 +58,7 @@ final class FileReferencePrefetcher
         $queryBuilder->setRestrictions(GeneralUtility::makeInstance(FrontendRestrictionContainer::class));
 
         $rows = $queryBuilder
-            ->select('uid', 'uid_foreign', 'fieldname')
+            ->select('*')
             ->from(self::TABLE)
             ->where(
                 $queryBuilder->expr()->eq(
@@ -76,6 +80,11 @@ final class FileReferencePrefetcher
             ->executeQuery()
             ->fetchAllAssociative();
 
+        // In the live workspace the fetched rows are final, so they are handed
+        // to FAL directly instead of being queried again one by one. Workspace
+        // previews still go through FAL to get the version overlay.
+        $isLiveWorkspace = $this->isLiveWorkspace();
+
         foreach ($rows as $row) {
             $uid = (int)($row['uid'] ?? 0);
             $uidForeign = (int)($row['uid_foreign'] ?? 0);
@@ -85,7 +94,7 @@ final class FileReferencePrefetcher
             }
 
             try {
-                $fileReference = $this->resourceFactory->getFileReferenceObject($uid);
+                $fileReference = $this->resourceFactory->getFileReferenceObject($uid, $isLiveWorkspace ? $row : []);
             } catch (ResourceDoesNotExistException) {
                 continue;
             }
@@ -104,6 +113,15 @@ final class FileReferencePrefetcher
         }
 
         return $result;
+    }
+
+    private function isLiveWorkspace(): bool
+    {
+        try {
+            return (int)$this->context->getPropertyFromAspect('workspace', 'id', 0) === 0;
+        } catch (\Throwable) {
+            return true;
+        }
     }
 
     /**

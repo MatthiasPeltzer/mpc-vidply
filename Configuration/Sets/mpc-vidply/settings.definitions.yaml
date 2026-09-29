@@ -12,3 +12,7 @@ settings:
     default: false
     type: bool
     category: mpcVidply
+  mpcVidply.registerBreadcrumbMenu:
+    default: true
+    type: bool
+    category: mpcVidply

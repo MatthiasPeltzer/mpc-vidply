@@ -5,6 +5,10 @@
  * tab order and the accessibility tree instead of merely being invisible.
  * Paging moves focus to the first row of the new page.
  *
+ * The controls are rebuilt on every page change, so they are not a live region
+ * themselves. A single visually hidden status element next to the nav is
+ * created empty once and announces "Page X of Y" after a visitor pages.
+ *
  * The episode list and the listview rows use different class names but the
  * same algorithm and the same markup shape, so the caller supplies labels and
  * class names and gets the controls rendered for it.
@@ -54,6 +58,11 @@ export const createPagination = ({ list, nav, perPage, labels, classes, onPageCh
     const pageSize = Math.max(1, perPage);
     let currentPage = 1;
 
+    const announcer = document.createElement('p');
+    announcer.className = 'vidply-sr-only';
+    announcer.setAttribute('role', 'status');
+    nav.after(announcer);
+
     const totalPages = (count) => Math.max(1, Math.ceil(count / pageSize));
 
     const addButton = (parent, text, { disabled, current, onClick }) => {
@@ -66,9 +75,9 @@ export const createPagination = ({ list, nav, perPage, labels, classes, onPageCh
         button.textContent = text;
         button.disabled = Boolean(disabled);
         if (current) {
+            // The current page stays focusable and is announced as current.
             button.setAttribute('aria-current', 'page');
-        }
-        if (!button.disabled) {
+        } else if (!button.disabled) {
             button.addEventListener('click', onClick);
         }
 
@@ -103,7 +112,6 @@ export const createPagination = ({ list, nav, perPage, labels, classes, onPageCh
 
             const status = document.createElement('p');
             status.className = classes.status;
-            status.setAttribute('role', 'status');
             status.textContent = formatPageLabel(labels.pageOf, currentPage, pages);
 
             item.appendChild(status);
@@ -112,7 +120,7 @@ export const createPagination = ({ list, nav, perPage, labels, classes, onPageCh
             for (let page = 1; page <= pages; page += 1) {
                 const isCurrent = page === currentPage;
                 addButton(pageList, String(page), {
-                    disabled: isCurrent,
+                    disabled: false,
                     current: isCurrent,
                     onClick: () => renderPage(page, true),
                 });
@@ -147,6 +155,7 @@ export const createPagination = ({ list, nav, perPage, labels, classes, onPageCh
             if (control instanceof HTMLElement) {
                 control.focus();
             }
+            announcer.textContent = pages > 1 ? formatPageLabel(labels.pageOf, currentPage, pages) : '';
         }
 
         onPageChange?.();

@@ -12,7 +12,7 @@
 <div class="{wrapperClasses}"
      id="{vidply.uniqueId}-wrapper"
      role="region"
-     aria-label="{f:if(condition: data.header, then: data.header, else: 'Media player')}"
+     aria-label="{f:if(condition: data.header, then: data.header, else: '{f:translate(key: \'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:player.region\', default: \'Media player\')}')}"
      <f:if condition="{vidply.privacyPlayIconUrl}">data-vidply-play-icon="{vidply.privacyPlayIconUrl}"</f:if>
      data-vidply-play-position="{vidply.privacyPlayButtonPosition}"
      <f:if condition="{vidply.privacyPlayIconInlineSvg}">data-vidply-play-inline-svg="1"</f:if>
@@ -31,6 +31,7 @@
                 title: data.header,
                 uniqueId: vidply.uniqueId,
                 privacySettings: vidply.privacySettings,
+                headlineLevel: vidply.privacyHeadlineLevel,
                 playIconUrl: vidply.privacyPlayIconUrl,
                 playIconInlineSvg: vidply.privacyPlayIconInlineSvg,
                 playButtonPosition: vidply.privacyPlayButtonPosition

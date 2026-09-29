@@ -64,6 +64,11 @@ services:
   Mpc\MpcVidply\Service\SrtCaptionMigrationService:
     public: true
 
+  # Also resolved via makeInstance() from the SoundCloud online media helper,
+  # which TYPO3's helper registry instantiates outside the container.
+  Mpc\MpcVidply\Service\RemoteContentFetcher:
+    public: true
+
   # Preview renderers are resolved by TYPO3 core via the service container when
   # registered on a CE type's `previewRenderer` entry.
   Mpc\MpcVidply\Backend\Preview\VidPlyPreviewRenderer:

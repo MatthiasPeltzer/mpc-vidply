@@ -16,6 +16,7 @@
   "license": ["GPL-2.0-or-later"],
   "require": {
     "php": "^8.2",
+    "typo3/cms-backend": "^13.4 || ^14.3",
     "typo3/cms-core": "^13.4 || ^14.3",
     "typo3/cms-fluid": "^13.4 || ^14.3",
     "typo3/cms-extbase": "^13.4 || ^14.3"
@@ -30,7 +31,6 @@
     "phpunit/phpunit": "^10.5 || ^11.5",
     "saschaegerer/phpstan-typo3": "^3.0",
     "typo3/coding-standards": "^0.8.0",
-    "typo3/cms-backend": "^13.4 || ^14.3",
     "typo3/cms-install": "^13.4 || ^14.3",
     "typo3/testing-framework": "^9.3"
   },

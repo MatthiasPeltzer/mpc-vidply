@@ -45,6 +45,7 @@ final class MediaFromUrlService
         private readonly OnlineMediaHelperRegistry $onlineMediaHelperRegistry,
         private readonly ExtensionConfiguration $extensionConfiguration,
         private readonly MediaOEmbedMetadataService $oEmbedMetadataService,
+        private ?RemoteContentFetcher $remoteContentFetcher = null,
     ) {}
 
     public function import(string $url, Folder $targetFolder, ?MediaType $preferredMediaType = null): MediaImportResult
@@ -62,6 +63,15 @@ final class MediaFromUrlService
         }
 
         return $this->buildResultFromFile($file, $normalizedUrl);
+    }
+
+    /**
+     * Whether the file is an online-media container this service can import
+     * or refresh (YouTube, Vimeo, SoundCloud, external/streaming URLs).
+     */
+    public function isOnlineMediaFile(File $file): bool
+    {
+        return isset(self::EXTENSION_TO_MEDIA_TYPE[$file->getExtension()]);
     }
 
     /**
@@ -202,11 +212,15 @@ final class MediaFromUrlService
         FolderInterface $targetFolder,
         string $thumbnailUrl,
     ): int {
+        // The helper's preview is a local file (core helpers download the
+        // provider thumbnail to typo3temp). Placeholders such as the extension
+        // icon SVG fail the image type check and are skipped.
         $previewPath = (string)$helper->getPreviewImage($file);
         if ($previewPath !== '' && is_file($previewPath)) {
             $binary = file_get_contents($previewPath);
-            if (is_string($binary) && $binary !== '') {
-                $posterFile = $this->importPosterBinary($targetFolder, $binary, $file);
+            $extension = is_string($binary) ? RemoteContentFetcher::detectImageExtension($binary) : null;
+            if (is_string($binary) && $extension !== null) {
+                $posterFile = $this->importPosterBinary($targetFolder, $binary, $extension, $file);
                 if ($posterFile instanceof File) {
                     return $posterFile->getUid();
                 }
@@ -214,9 +228,9 @@ final class MediaFromUrlService
         }
 
         if ($thumbnailUrl !== '') {
-            $binary = GeneralUtility::getUrl($thumbnailUrl);
-            if (is_string($binary) && $binary !== '') {
-                $posterFile = $this->importPosterBinary($targetFolder, $binary, $file);
+            $image = $this->getRemoteContentFetcher()->fetchThumbnail($thumbnailUrl);
+            if ($image !== null) {
+                $posterFile = $this->importPosterBinary($targetFolder, $image['binary'], $image['extension'], $file);
                 if ($posterFile instanceof File) {
                     return $posterFile->getUid();
                 }
@@ -260,20 +274,38 @@ final class MediaFromUrlService
         };
     }
 
-    private function importPosterBinary(FolderInterface $targetFolder, string $binary, File $sourceFile): ?File
+    /**
+     * Store the poster next to the media file. A poster with identical content
+     * from an earlier import or refresh is reused instead of piling up
+     * `-poster_N` copies, and a file whose write failed is removed again.
+     */
+    private function importPosterBinary(FolderInterface $targetFolder, string $binary, string $extension, File $sourceFile): ?File
     {
         if ($binary === '' || !$targetFolder instanceof Folder) {
             return null;
         }
 
         $baseName = $this->buildPosterBaseName($sourceFile);
-        $extension = 'jpg';
+        $sha1 = sha1($binary);
 
         for ($attempt = 1; $attempt <= 20; ++$attempt) {
             $fileName = $attempt === 1
                 ? $baseName . '-poster.' . $extension
                 : $baseName . '-poster_' . $attempt . '.' . $extension;
 
+            try {
+                $existing = $targetFolder->getFile($fileName);
+            } catch (\Throwable) {
+                $existing = null;
+            }
+            if ($existing instanceof File) {
+                if ($existing->getSha1() === $sha1) {
+                    return $existing;
+                }
+                continue;
+            }
+
+            $posterFile = null;
             try {
                 $posterFile = $targetFolder->createFile($fileName);
                 $posterFile->setContents($binary);
@@ -282,11 +314,23 @@ final class MediaFromUrlService
             } catch (ExistingTargetFileNameException) {
                 continue;
             } catch (\Throwable) {
+                if ($posterFile instanceof File) {
+                    try {
+                        $posterFile->delete();
+                    } catch (\Throwable) {
+                    }
+                }
+
                 return null;
             }
         }
 
         return null;
+    }
+
+    private function getRemoteContentFetcher(): RemoteContentFetcher
+    {
+        return $this->remoteContentFetcher ??= GeneralUtility::makeInstance(RemoteContentFetcher::class);
     }
 
     private function buildPosterBaseName(File $file): string

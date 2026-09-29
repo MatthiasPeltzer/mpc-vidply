@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\OnlineMedia\Helpers;
 
+use Mpc\MpcVidply\Service\RemoteContentFetcher;
+use Mpc\MpcVidply\Utility\HttpUrlGuard;
 use TYPO3\CMS\Core\Resource\Exception\OnlineMediaAlreadyExistsException;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\Folder;
@@ -18,17 +20,23 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 final class SoundCloudHelper extends AbstractOnlineMediaHelper
 {
-    /** @return string|null */
+    /**
+     * The container file content is editor-controlled (`.soundcloud` is also a
+     * regular upload extension), so the URL is re-validated on every read.
+     *
+     * @return string|null
+     */
     public function getPublicUrl(File $file)
     {
-        $url = $this->getOnlineMediaId($file);
-        return $url !== '' ? $url : null;
+        $parts = $this->parseSoundCloudUrl($this->getOnlineMediaId($file));
+
+        return $parts !== null ? HttpUrlGuard::build($parts) : null;
     }
 
     /** @return string */
     public function getPreviewImage(File $file)
     {
-        $url = $this->getOnlineMediaId($file);
+        $url = (string)$this->getPublicUrl($file);
         if ($url === '') {
             return (string)GeneralUtility::getFileAbsFileName('EXT:mpc_vidply/Resources/Public/Icons/Extension.svg');
         }
@@ -38,9 +46,9 @@ final class SoundCloudHelper extends AbstractOnlineMediaHelper
             $oEmbed = $this->getOEmbedData($url);
             $thumbUrl = is_array($oEmbed) ? (string)($oEmbed['thumbnail_url'] ?? '') : '';
             if ($thumbUrl !== '' && $this->isSafeThumbnailUrl($thumbUrl)) {
-                $image = GeneralUtility::getUrl($thumbUrl);
-                if ($image !== false && $image !== '') {
-                    GeneralUtility::writeFile($cacheFile, $image, true);
+                $image = $this->getRemoteContentFetcher()->fetchThumbnail($thumbUrl);
+                if ($image !== null) {
+                    GeneralUtility::writeFile($cacheFile, $image['binary'], true);
                 }
             }
         }
@@ -53,7 +61,7 @@ final class SoundCloudHelper extends AbstractOnlineMediaHelper
     /** @return array<string, mixed> */
     public function getMetaData(File $file)
     {
-        $url = $this->getOnlineMediaId($file);
+        $url = (string)$this->getPublicUrl($file);
         if ($url === '') {
             return [];
         }
@@ -71,6 +79,23 @@ final class SoundCloudHelper extends AbstractOnlineMediaHelper
             $metadata['author'] = (string)$oEmbed['author_name'];
         }
         return $metadata;
+    }
+
+    /**
+     * Accepts the canonical host, its subdomains and the `on.soundcloud.com`
+     * short-link host.
+     *
+     * @return array{scheme: string, host: string, port?: int, path?: string, query?: string, fragment?: string}|null
+     */
+    private function parseSoundCloudUrl(string $url): ?array
+    {
+        $parts = HttpUrlGuard::parse($url);
+        if ($parts === null) {
+            return null;
+        }
+        $host = $parts['host'];
+
+        return $host === 'soundcloud.com' || str_ends_with($host, '.soundcloud.com') ? $parts : null;
     }
 
     private function isSafeThumbnailUrl(string $url): bool
@@ -93,27 +118,12 @@ final class SoundCloudHelper extends AbstractOnlineMediaHelper
     /** @return File|null */
     public function transformUrlToFile($url, Folder $targetFolder)
     {
-        $url = trim((string)$url);
-        if ($url === '') {
+        $parts = $this->parseSoundCloudUrl((string)$url);
+        if ($parts === null) {
             return null;
         }
 
-        $parts = parse_url($url);
-        if (!is_array($parts) || empty($parts['scheme']) || empty($parts['host'])) {
-            return null;
-        }
-
-        $scheme = strtolower((string)$parts['scheme']);
-        if (!in_array($scheme, ['http', 'https'], true)) {
-            return null;
-        }
-
-        $host = strtolower((string)$parts['host']);
-        // Accept both canonical and short-link hosts
-        if (!($host === 'soundcloud.com' || str_ends_with($host, '.soundcloud.com') || $host === 'on.soundcloud.com')) {
-            return null;
-        }
-
+        $url = HttpUrlGuard::build($parts);
         $onlineMediaId = $url;
         $existing = $this->findExistingFileByOnlineMediaId($onlineMediaId, $targetFolder, $this->extension);
         if ($existing !== null) {
@@ -157,11 +167,16 @@ final class SoundCloudHelper extends AbstractOnlineMediaHelper
             'https://soundcloud.com/oembed?format=json&url=%s',
             rawurlencode($url)
         );
-        $raw = (string)GeneralUtility::getUrl($oEmbedUrl);
+        $raw = (string)$this->getRemoteContentFetcher()->fetch($oEmbedUrl, 512 * 1024);
         if ($raw === '') {
             return null;
         }
         $decoded = json_decode($raw, true);
         return is_array($decoded) ? $decoded : null;
+    }
+
+    private function getRemoteContentFetcher(): RemoteContentFetcher
+    {
+        return GeneralUtility::makeInstance(RemoteContentFetcher::class);
     }
 }

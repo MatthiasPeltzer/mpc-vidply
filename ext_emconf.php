@@ -11,7 +11,8 @@ $EM_CONF['mpc_vidply'] = [
     'documentation' => 'Documentation/',
     'constraints' => [
         'depends' => [
-            'typo3' => '13.4.0-14.3.99',
+            'typo3' => '13.4.0-14.99.99',
+            'backend' => '13.4.0-14.99.99',
         ],
         'conflicts' => [],
         'suggests' => [],

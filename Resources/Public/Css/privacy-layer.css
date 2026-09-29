@@ -91,9 +91,13 @@
     transform: translate(-50%, -50%);
 }
 
+/* Two-tone ring: the white inner ring contrasts with the dark overlay
+   (#343a40), the blue outer ring with light posters (WCAG 1.4.11). */
 .vidply-privacy-button:focus-visible {
-    outline: 3px solid #005fcc;
-    outline-offset: 4px;
+    border-radius: 0.25rem;
+    box-shadow: 0 0 0 6px #005fcc;
+    outline: 3px solid #fff;
+    outline-offset: 0;
 }
 
 .vidply-privacy-button--pos-left-top {

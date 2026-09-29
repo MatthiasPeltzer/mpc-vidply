@@ -54,7 +54,14 @@
     
     <div class="vidply-privacy-text">
         <f:if condition="{headline}">
-            <h2 class="vidply-privacy-headline">{headline}</h2>
+            <f:comment>One level below the content element's header (see VidPlyProcessor).</f:comment>
+            <f:switch expression="{headlineLevel}">
+                <f:case value="3"><h3 class="vidply-privacy-headline">{headline}</h3></f:case>
+                <f:case value="4"><h4 class="vidply-privacy-headline">{headline}</h4></f:case>
+                <f:case value="5"><h5 class="vidply-privacy-headline">{headline}</h5></f:case>
+                <f:case value="6"><h6 class="vidply-privacy-headline">{headline}</h6></f:case>
+                <f:defaultCase><h2 class="vidply-privacy-headline">{headline}</h2></f:defaultCase>
+            </f:switch>
         </f:if>
         <p>
             {introText}
