@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.43] - 2026-10-15
+
+### Security
+- Custom play icons are passed through the TYPO3 core `SvgSanitizer` (allowlist, no remote references) before the extension's own cleanup, so namespaced elements such as `<h:script>` or `<h:iframe>` no longer reach the inline SVG.
+
+### Fixed
+- Vimeo tracks load again after consent: `connect-src` allows the Vimeo oEmbed endpoint (`https://vimeo.com/api/oembed.json`) that the Vimeo player SDK uses to build its iframe.
+- Playlists: after consent (or when switching to an already accepted YouTube/Vimeo/SoundCloud track) the VidPly control bar no longer shows while the embed loads.
+- Translations can be synchronized with the default language again for layout, playlist position, episode sorting and pagination, resume playback and track info (content element) and publish date and episode number (media record): `allowLanguageSynchronization` sat outside `config` and was ignored by TYPO3.
+- The breadcrumb `MenuProcessor` is registered again when the extension is included through the legacy static TypoScript instead of the Site Set: the static include defines the constant `mpcVidply.registerBreadcrumbMenu` (default on, Constant Editor category *mpc_vidply*) to switch it off.
+- German backend labels for the media URL import ("Von URL importieren", "Metadaten aktualisieren", …) and German labels for the Site Set settings.
+
+### Changed
+- `typo3/cms-frontend` is a runtime requirement in `composer.json` and `ext_emconf.php`.
+- `ext_tables.sql` only declares columns and keys TYPO3 does not derive from TCA; MM tables, system and language fields come from TCA. The database analyzer suggests non-destructive changes on update: core's standard unsigned types for `uid`, `pid`, `l10n_parent`, `l10n_source` and `sorting`, and the `parent` index including `deleted`/`hidden`.
+- External media files (`.externalvideo`, `.externalaudio`, `.soundcloud`, `.hls`, `.dash`) show the VidPly icon in the file list instead of the core video/audio icons.
+- External media files use the poster of the VidPly media record that uses them as their file list thumbnail (default-language record first, then the oldest). The VidPly logo is only the fallback when no record has a poster; SoundCloud artwork is replaced by the record poster when one is set. Adding, replacing or removing a poster, switching the media file, or deleting or restoring a record renews the thumbnail and its URL, so browsers do not keep the old image.
+- Shipped VidPly player assets updated (external embeds hide the VidPly controls from the start of loading; the caption-style menu now looks like the transcript style dialog in dark, light and high-contrast themes, with readable dropdown options on dark pages).
+- `VidPlyProcessor` delegates single-track data, render decisions and template data to the new `SingleTrackDataExtractor`, `RenderDecisionResolver` and `PlayerTemplateDataBuilder` services; `LocaleFormatter` now resolves the site default language. Output is unchanged.
+- `PlaylistInit.js` is split into ES modules under `Resources/Public/JavaScript/playlist/` (privacy overlay, theme sync, HLS tracks, autoplay, single and playlist players, …). The bundled `PlaylistInit.min.js`, `window.VidPlyInit` and `window.VidPlyTheme` behave as before.
+- Frontend build: CSS minification runs through `Build/minify-css.mjs` with the `clean-css` library; `package.json` adds Vitest + jsdom for the playlist module tests (`npm test`).
+
+### Tests
+- Unit tests for `SingleTrackDataExtractor`, `RenderDecisionResolver` (replaces the reflection-based `VidPlyProcessorLogicTest`) and `PlayerTemplateDataBuilder`.
+- Vitest + jsdom suite (`npm test`, `Tests/JavaScript`) for the playlist i18n, track-type, privacy-overlay, overlay-DOM, theme and URL-safety modules; runs in the CI frontend job.
+- `Build/Scripts/runFunctionalTestsLocal.sh` runs the functional tests in parallel with the test instances in `/tmp`, for DDEV setups where `.Build` sits on a slow host mount (Windows): about 3 minutes instead of over 30.
+- Functional tests for `MediaPosterResolver`, `MediaPosterPreviewEventListener` and `MediaPosterThumbnailHook` (poster lookup, file list thumbnail, renewal on poster changes).
+- Unit test for the Vimeo oEmbed `connect-src` source in `StreamingContentSecurityPolicyEventListener`.
+- Functional tests that `behaviour` is only configured inside a column's `config` and that the synchronizable fields are recognised by TYPO3; unit test for elements outside the SVG allowlist.
+- CI runs the functional tests against TYPO3 13.4 and 14.3 (previously only the newest resolvable version), uses MySQL 8.4 instead of 8.0, and checks XLIFF files with the new `composer lint:xliff` (part of `lint:all`): well-formed, unique ids, matching `target-language`, every source unit translated.
+
 ## [1.2.42] - 2026-09-29
 
 ### Security
@@ -1102,7 +1133,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-
+[1.2.43]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.42...v1.2.43
 [1.2.42]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.41...v1.2.42
 [1.2.41]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.40...v1.2.41
 [1.2.40]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.39...v1.2.40
