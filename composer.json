@@ -19,7 +19,8 @@
     "typo3/cms-backend": "^13.4 || ^14.3",
     "typo3/cms-core": "^13.4 || ^14.3",
     "typo3/cms-fluid": "^13.4 || ^14.3",
-    "typo3/cms-extbase": "^13.4 || ^14.3"
+    "typo3/cms-extbase": "^13.4 || ^14.3",
+    "typo3/cms-frontend": "^13.4 || ^14.3"
   },
   "require-dev": {
     "codeception/codeception": "^5.2",
@@ -67,10 +68,12 @@
     "lint:php": "find Classes Tests -name '*.php' -print0 | xargs -0 -n1 php -l",
     "lint:yaml": "find Configuration -name '*.yaml' -o -name '*.yml' | xargs -r .Build/bin/yaml-lint --parse-tags",
     "lint:typoscript": "php Build/Scripts/lintTypoScript.php",
+    "lint:xliff": "php Build/Scripts/lintXliff.php",
     "lint:all": [
       "@lint:php",
       "@lint:yaml",
-      "@lint:typoscript"
+      "@lint:typoscript",
+      "@lint:xliff"
     ]
   },
   "extra": {

@@ -1,3 +1,6 @@
 # VidPly Player Constants
 # Can be used for global configuration if needed
 
+# Same switch as the site setting of the Site Set, for installations using this static include.
+# cat=mpc_vidply/enable/10; type=boolean; label=Register breadcrumb menu processor: Registers a rootline MenuProcessor as "breadcrumb" at page.10.dataProcessing.70. Switch off if your site template uses that key for something else.
+mpcVidply.registerBreadcrumbMenu = 1

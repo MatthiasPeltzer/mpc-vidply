@@ -9,6 +9,7 @@ node_modules/
 *.swp
 *.swo
 *~
+/.github/instructions/
 
 # OS files
 .DS_Store

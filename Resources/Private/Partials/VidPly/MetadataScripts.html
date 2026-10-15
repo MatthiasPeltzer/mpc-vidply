@@ -1,7 +1,7 @@
 <html data-namespace-typo3-fluid="true" xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers">
 
 <f:comment>
-    The *Json variables below are pre-encoded in PHP via VidPlyProcessor::safeJsonEncode()
+    The *Json variables below are pre-encoded in PHP via PlayerTemplateDataBuilder::safeJsonEncode()
     using JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT, which escapes any
     characters that could close the <script> tag or break out of attribute context. Using
     f:format.raw here is therefore safe. Never substitute a raw json_encode() or

@@ -22,10 +22,16 @@ use TYPO3\CMS\Core\Security\ContentSecurityPolicy\UriValue;
  * Only the hosts from the `allowedVideoDomains` / `allowedAudioDomains`
  * allow-lists are added — never the whole `https:` scheme — so the extension
  * does not widen connect-src / media-src for every other script on the site.
+ *
+ * The Vimeo player SDK (player.vimeo.com/api/player.js) builds its iframe from
+ * the oEmbed response of vimeo.com, so that single endpoint needs connect-src
+ * as well; without it Vimeo tracks stay empty after consent.
  */
 final readonly class StreamingContentSecurityPolicyEventListener
 {
     private const DOMAIN_CONFIG_KEYS = ['allowedVideoDomains', 'allowedAudioDomains'];
+
+    private const EMBED_CONNECT_SOURCES = ['https://vimeo.com/api/oembed.json'];
 
     public function __construct(
         private ExtensionConfiguration $extensionConfiguration,
@@ -38,7 +44,11 @@ final readonly class StreamingContentSecurityPolicyEventListener
         }
 
         $sources = $this->buildAllowedMediaSources();
-        $policy = $event->getCurrentPolicy()->extend(Directive::ConnectSrc, SourceScheme::blob, ...$sources);
+        $embedSources = array_map(
+            static fn (string $source): UriValue => new UriValue($source),
+            self::EMBED_CONNECT_SOURCES
+        );
+        $policy = $event->getCurrentPolicy()->extend(Directive::ConnectSrc, SourceScheme::blob, ...$embedSources, ...$sources);
         if ($sources !== []) {
             $policy = $policy->extend(Directive::MediaSrc, ...$sources);
         }

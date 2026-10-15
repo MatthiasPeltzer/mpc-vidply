@@ -68,6 +68,19 @@ final class StreamingContentSecurityPolicyEventListenerTest extends TestCase
     }
 
     #[Test]
+    public function frontendScopeAllowsOnlyTheVimeoOEmbedEndpoint(): void
+    {
+        $event = $this->createEvent(Scope::frontend(), new Policy());
+
+        $this->createSubject()($event);
+
+        $current = $event->getCurrentPolicy();
+        self::assertTrue($current->containsDirective(Directive::ConnectSrc, new UriValue('https://vimeo.com/api/oembed.json')));
+        self::assertFalse($current->containsDirective(Directive::ConnectSrc, new UriValue('https://vimeo.com')));
+        self::assertFalse($current->containsDirective(Directive::MediaSrc, new UriValue('https://vimeo.com/api/oembed.json')));
+    }
+
+    #[Test]
     public function bareTopLevelWildcardIsIgnored(): void
     {
         $sources = $this->createSubject(['allowedAudioDomains' => '*.com'])->buildAllowedMediaSources();

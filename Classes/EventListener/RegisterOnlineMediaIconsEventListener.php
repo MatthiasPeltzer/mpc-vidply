@@ -16,10 +16,10 @@ final readonly class RegisterOnlineMediaIconsEventListener
     public function __invoke(BootCompletedEvent $event): void
     {
         // Register external video/audio online media container file extensions
-        $this->iconRegistry->registerFileExtension('externalvideo', 'mimetypes-media-video');
-        $this->iconRegistry->registerFileExtension('externalaudio', 'mimetypes-media-audio');
-        $this->iconRegistry->registerFileExtension('soundcloud', 'mimetypes-media-audio');
-        $this->iconRegistry->registerFileExtension('hls', 'mimetypes-media-video');
-        $this->iconRegistry->registerFileExtension('dash', 'mimetypes-media-video');
+        $this->iconRegistry->registerFileExtension('externalvideo', 'mpc_vidply-plugin');
+        $this->iconRegistry->registerFileExtension('externalaudio', 'mpc_vidply-plugin');
+        $this->iconRegistry->registerFileExtension('soundcloud', 'mpc_vidply-plugin');
+        $this->iconRegistry->registerFileExtension('hls', 'mpc_vidply-plugin');
+        $this->iconRegistry->registerFileExtension('dash', 'mpc_vidply-plugin');
     }
 }

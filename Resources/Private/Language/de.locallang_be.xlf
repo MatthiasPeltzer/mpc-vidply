@@ -27,6 +27,30 @@
         <source>VidPly Player</source>
         <target>VidPly Player</target>
       </trans-unit>
+      <trans-unit id="mediaUrlImport.description">
+        <source>Paste a YouTube, Vimeo, SoundCloud, streaming, or allowlisted MP4/MP3 URL. VidPly detects the media type, imports the source, and pre-fills title, artist, and poster where available.</source>
+        <target>Fügen Sie eine YouTube-, Vimeo-, SoundCloud- oder Streaming-URL oder eine freigegebene MP4-/MP3-URL ein. VidPly erkennt den Medientyp, importiert die Quelle und füllt Titel, Künstler und Poster vor, sofern verfügbar.</target>
+      </trans-unit>
+      <trans-unit id="mediaUrlImport.import">
+        <source>Import</source>
+        <target>Importieren</target>
+      </trans-unit>
+      <trans-unit id="mediaUrlImport.importSuccess">
+        <source>Imported %s. Review the fields below and save the record.</source>
+        <target>%s importiert. Prüfen Sie die Felder unten und speichern Sie den Datensatz.</target>
+      </trans-unit>
+      <trans-unit id="mediaUrlImport.label">
+        <source>Import from URL</source>
+        <target>Von URL importieren</target>
+      </trans-unit>
+      <trans-unit id="mediaUrlImport.placeholder">
+        <source>https://…</source>
+        <target>https://…</target>
+      </trans-unit>
+      <trans-unit id="mediaUrlImport.refreshMetadata">
+        <source>Refresh metadata</source>
+        <target>Metadaten aktualisieren</target>
+      </trans-unit>
       <trans-unit id="preview.external_audio">
         <source>External Audio</source>
         <target>Externes Audio</target>

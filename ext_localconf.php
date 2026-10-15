@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Mpc\MpcVidply\Form\Element\MediaUrlImportElement;
 use Mpc\MpcVidply\Form\FormDataProvider\MediaUrlImportFormDataProvider;
 use Mpc\MpcVidply\Hooks\ListviewRowTranslationSync;
+use Mpc\MpcVidply\Hooks\MediaPosterThumbnailHook;
 use Mpc\MpcVidply\Hooks\MediaUrlImportPosterPersistHook;
 use Mpc\MpcVidply\Hooks\SrtCaptionConversionHook;
 use Mpc\MpcVidply\Hooks\VidPlyPlaylistTranslationSync;
@@ -34,8 +35,11 @@ $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['proc
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = ListviewRowTranslationSync::class;
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = SrtCaptionConversionHook::class;
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = MediaUrlImportPosterPersistHook::class;
+// After MediaUrlImportPosterPersistHook: it may still attach the imported poster.
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = MediaPosterThumbnailHook::class;
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processCmdmapClass'][] = VidPlyPlaylistTranslationSync::class;
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processCmdmapClass'][] = ListviewRowTranslationSync::class;
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processCmdmapClass'][] = MediaPosterThumbnailHook::class;
 
 // Custom route aspect for `route-enhancers.yaml` (slug optional → query fallback).
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['routing']['aspects']['MpcVidplyMediaRoute'] = VidPlyMediaRouteAspect::class;

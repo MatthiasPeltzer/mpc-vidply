@@ -58,6 +58,9 @@ services:
   Mpc\MpcVidply\Hooks\MediaUrlImportPosterPersistHook:
     public: true
 
+  Mpc\MpcVidply\Hooks\MediaPosterThumbnailHook:
+    public: true
+
   Mpc\MpcVidply\Service\MediaUrlImportPosterService:
     public: true
 
@@ -92,6 +95,12 @@ services:
       - name: event.listener
         identifier: 'mpc/mpc-vidply/register-online-media-icons'
         event: TYPO3\CMS\Core\Core\Event\BootCompletedEvent
+
+  Mpc\MpcVidply\EventListener\MediaPosterPreviewEventListener:
+    tags:
+      - name: event.listener
+        identifier: 'mpc/mpc-vidply/media-poster-preview'
+        event: TYPO3\CMS\Core\Resource\OnlineMedia\Event\AfterVideoPreviewFetchedEvent
 
   Mpc\MpcVidply\EventListener\StreamingContentSecurityPolicyEventListener:
     tags:

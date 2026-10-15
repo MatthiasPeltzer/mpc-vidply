@@ -14,9 +14,6 @@ CREATE TABLE sys_file_reference
 # Standalone media records that can be reused across the site
 #
 CREATE TABLE tx_mpcvidply_media (
-	uid int NOT NULL auto_increment,
-	pid int DEFAULT '0' NOT NULL,
-	
 	# Media Type
 	media_type varchar(50) DEFAULT 'video' NOT NULL,
 
@@ -61,43 +58,11 @@ CREATE TABLE tx_mpcvidply_media (
 	hide_help_button tinyint unsigned DEFAULT '0' NOT NULL,
 	allow_download tinyint unsigned DEFAULT '0' NOT NULL,
 	enable_floating_player tinyint unsigned DEFAULT '0' NOT NULL,
-	
-	# Standard TYPO3 fields
-	tstamp int unsigned DEFAULT '0' NOT NULL,
-	crdate int unsigned DEFAULT '0' NOT NULL,
-	deleted tinyint unsigned DEFAULT '0' NOT NULL,
-	hidden tinyint unsigned DEFAULT '0' NOT NULL,
-	starttime int unsigned DEFAULT '0' NOT NULL,
-	endtime int unsigned DEFAULT '0' NOT NULL,
-	
-	# Language/Translation fields
-	sys_language_uid int DEFAULT '0' NOT NULL,
-	l10n_parent int DEFAULT '0' NOT NULL,
-	l10n_diffsource mediumblob,
-	l10n_state text,
-	l10n_source int DEFAULT '0' NOT NULL,
-	
+
 	# Categorization
 	categories int unsigned DEFAULT '0' NOT NULL,
-	
-	PRIMARY KEY (uid),
-	KEY parent (pid),
-	KEY language (l10n_parent,sys_language_uid),
+
 	KEY slug (slug(191))
-);
-
-#
-# MM table for content element to media records relation
-#
-CREATE TABLE tx_mpcvidply_content_media_mm (
-	uid_local int unsigned DEFAULT '0' NOT NULL,
-	uid_foreign int unsigned DEFAULT '0' NOT NULL,
-	sorting int unsigned DEFAULT '0' NOT NULL,
-	sorting_foreign int unsigned DEFAULT '0' NOT NULL,
-
-	PRIMARY KEY (uid_local, uid_foreign),
-	KEY uid_local (uid_local),
-	KEY uid_foreign (uid_foreign)
 );
 
 #
@@ -105,14 +70,10 @@ CREATE TABLE tx_mpcvidply_content_media_mm (
 # One row per "shelf" inside a listview content element (Mediathek style)
 #
 CREATE TABLE tx_mpcvidply_listview_row (
-	uid int NOT NULL auto_increment,
-	pid int DEFAULT '0' NOT NULL,
-
 	# IRRE parent relation to tt_content
 	parentid int unsigned DEFAULT '0' NOT NULL,
 	parenttable varchar(64) DEFAULT '' NOT NULL,
 	parentfield varchar(64) DEFAULT '' NOT NULL,
-	sorting int unsigned DEFAULT '0' NOT NULL,
 
 	# Presentation
 	headline varchar(255) DEFAULT '' NOT NULL,
@@ -129,37 +90,7 @@ CREATE TABLE tx_mpcvidply_listview_row (
 	media_items int unsigned DEFAULT '0' NOT NULL,
 	categories int unsigned DEFAULT '0' NOT NULL,
 
-	# Standard TYPO3 fields
-	tstamp int unsigned DEFAULT '0' NOT NULL,
-	crdate int unsigned DEFAULT '0' NOT NULL,
-	deleted tinyint unsigned DEFAULT '0' NOT NULL,
-	hidden tinyint unsigned DEFAULT '0' NOT NULL,
-
-	# Language/Translation fields
-	sys_language_uid int DEFAULT '0' NOT NULL,
-	l10n_parent int DEFAULT '0' NOT NULL,
-	l10n_diffsource mediumblob,
-	l10n_state text,
-	l10n_source int DEFAULT '0' NOT NULL,
-
-	PRIMARY KEY (uid),
-	KEY parent (pid),
-	KEY parentid (parentid),
-	KEY language (l10n_parent,sys_language_uid)
-);
-
-#
-# MM table for listview row to media records relation (manual selection)
-#
-CREATE TABLE tx_mpcvidply_listview_row_media_mm (
-	uid_local int unsigned DEFAULT '0' NOT NULL,
-	uid_foreign int unsigned DEFAULT '0' NOT NULL,
-	sorting int unsigned DEFAULT '0' NOT NULL,
-	sorting_foreign int unsigned DEFAULT '0' NOT NULL,
-
-	PRIMARY KEY (uid_local, uid_foreign),
-	KEY uid_local (uid_local),
-	KEY uid_foreign (uid_foreign)
+	KEY parentid (parentid)
 );
 
 #
@@ -184,9 +115,6 @@ CREATE TABLE tt_content (
 # Supports multilingual content via sys_language_uid
 #
 CREATE TABLE tx_mpcvidply_privacy_settings (
-	uid int NOT NULL auto_increment,
-	pid int DEFAULT '0' NOT NULL,
-	
 	# YouTube Settings
 	youtube_headline varchar(255) DEFAULT '' NOT NULL,
 	youtube_intro_text text,
@@ -209,20 +137,5 @@ CREATE TABLE tx_mpcvidply_privacy_settings (
 	soundcloud_outro_text text,
 	soundcloud_policy_link varchar(255) DEFAULT '' NOT NULL,
 	soundcloud_link_text varchar(255) DEFAULT '' NOT NULL,
-	soundcloud_button_label varchar(255) DEFAULT '' NOT NULL,
-	
-	# Standard TYPO3 fields
-	tstamp int unsigned DEFAULT '0' NOT NULL,
-	crdate int unsigned DEFAULT '0' NOT NULL,
-	deleted tinyint unsigned DEFAULT '0' NOT NULL,
-	hidden tinyint unsigned DEFAULT '0' NOT NULL,
-	
-	# Language/Translation fields
-	sys_language_uid int DEFAULT '0' NOT NULL,
-	l10n_parent int DEFAULT '0' NOT NULL,
-	l10n_diffsource mediumblob,
-	
-	PRIMARY KEY (uid),
-	KEY parent (pid),
-	KEY language (l10n_parent,sys_language_uid)
+	soundcloud_button_label varchar(255) DEFAULT '' NOT NULL
 );

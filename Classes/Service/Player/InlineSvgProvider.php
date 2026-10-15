@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mpc\MpcVidply\Service\Player;
 
+use TYPO3\CMS\Core\Resource\Security\SvgSanitizer;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -11,10 +12,15 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  * inline SVG, so the privacy layer can print it without a second HTTP request.
  *
  * Everything that could execute, animate or phone home is removed: an icon is
- * editable configuration, and it is rendered unescaped.
+ * editable configuration, and it is rendered unescaped. The core allowlist
+ * sanitizer runs first; the stripping below stays as a second layer.
  */
 final class InlineSvgProvider
 {
+    public function __construct(
+        private readonly SvgSanitizer $svgSanitizer = new SvgSanitizer(),
+    ) {}
+
     /** Icons are decoration; anything larger is not one and is not read. */
     private const MAX_BYTES = 256 * 1024;
 
@@ -68,6 +74,11 @@ final class InlineSvgProvider
 
         $raw = @file_get_contents($absolutePath);
         if (!is_string($raw) || trim($raw) === '') {
+            return null;
+        }
+
+        $raw = $this->svgSanitizer->sanitizeContent($raw);
+        if (trim($raw) === '') {
             return null;
         }
 

@@ -38,6 +38,35 @@ final class LocaleFormatter
     }
 
     /**
+     * Resolve the site's default two-letter language code for use as a fallback
+     * for <track srclang> and audio-description/sign-language `lang` fields.
+     *
+     * `SiteLanguage::getTwoLetterIsoCode()` was removed in TYPO3 13 (Breaking
+     * #100963), so we read `Locale::getLanguageCode()` instead, which has been
+     * available since TYPO3 12 and works identically on 13.4 and 14.x.
+     */
+    public function resolveSiteDefaultLanguageCode(ServerRequestInterface $request): string
+    {
+        $site = $request->getAttribute('site');
+        if ($site !== null && method_exists($site, 'getDefaultLanguage')) {
+            try {
+                $locale = $site->getDefaultLanguage()->getLocale();
+                $code = strtolower($locale->getLanguageCode());
+                if ($code !== '') {
+                    return $code;
+                }
+                $localeName = (string)$locale;
+                if ($localeName !== '') {
+                    return strtolower(explode('_', explode('-', $localeName)[0])[0]);
+                }
+            } catch (\Throwable) {
+            }
+        }
+
+        return 'en';
+    }
+
+    /**
      * Format a date-only timestamp for the current site language.
      *
      * TYPO3 stores date-only `datetime` fields as midnight **UTC**, so the

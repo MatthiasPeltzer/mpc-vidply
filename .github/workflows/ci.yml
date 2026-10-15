@@ -36,6 +36,7 @@ jobs:
             typo3/cms-fluid:"${{ matrix.typo3 }}" \
             typo3/cms-extbase:"${{ matrix.typo3 }}" \
             typo3/cms-backend:"${{ matrix.typo3 }}" \
+            typo3/cms-frontend:"${{ matrix.typo3 }}" \
             typo3/cms-install:"${{ matrix.typo3 }}" \
             typo3/testing-framework:^9.3
           composer update --no-interaction --no-progress
@@ -67,6 +68,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: JavaScript unit tests
+        run: npm test
+
       - name: Build assets
         run: npm run build
 
@@ -76,11 +80,12 @@ jobs:
             || { echo "::error::Built assets differ from the committed ones. Run 'npm run build' and commit the result."; exit 1; }
 
   functional:
-    name: Functional (${{ matrix.db }})
+    name: Functional TYPO3 ${{ matrix.typo3 }} (${{ matrix.db }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
+        typo3: ['^13.4', '^14.3']
         db: [sqlite, mariadb, mysql]
     services:
       mariadb:
@@ -94,7 +99,7 @@ jobs:
           --health-cmd="healthcheck.sh --connect --innodb_initialized"
           --health-interval=10s --health-timeout=5s --health-retries=5
       mysql:
-        image: mysql:8.0
+        image: mysql:8.4
         env:
           MYSQL_ROOT_PASSWORD: funcp
           MYSQL_DATABASE: func_test
@@ -114,9 +119,16 @@ jobs:
           tools: composer:v2
           coverage: none
 
-      - name: Install dependencies
+      - name: Install dependencies for TYPO3 ${{ matrix.typo3 }}
         run: |
-          composer require --no-update typo3/testing-framework:^9.3
+          composer require --no-update \
+            typo3/cms-core:"${{ matrix.typo3 }}" \
+            typo3/cms-fluid:"${{ matrix.typo3 }}" \
+            typo3/cms-extbase:"${{ matrix.typo3 }}" \
+            typo3/cms-backend:"${{ matrix.typo3 }}" \
+            typo3/cms-frontend:"${{ matrix.typo3 }}" \
+            typo3/cms-install:"${{ matrix.typo3 }}" \
+            typo3/testing-framework:^9.3
           composer update --no-interaction --no-progress
 
       - name: Functional tests (sqlite)

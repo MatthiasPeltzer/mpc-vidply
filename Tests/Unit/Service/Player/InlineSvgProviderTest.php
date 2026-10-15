@@ -64,6 +64,22 @@ SVG;
     }
 
     #[Test]
+    public function stripsElementsOutsideTheSvgAllowlist(): void
+    {
+        $result = $this->sanitizeSvg(
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:h="http://www.w3.org/1999/xhtml">'
+            . '<h:script>alert(1)</h:script><h:iframe src="https://evil.example/" />'
+            . '<polygon points="0,0 10,0 5,10" /></svg>'
+        );
+
+        self::assertIsString($result);
+        self::assertStringNotContainsString('script', $result);
+        self::assertStringNotContainsString('iframe', $result);
+        self::assertStringNotContainsString('evil.example', $result);
+        self::assertStringContainsString('<polygon', $result);
+    }
+
+    #[Test]
     public function removesFixedWidthAndHeight(): void
     {
         $result = $this->sanitizeSvg(

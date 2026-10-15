@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<xliff version="1.0">
+  <file source-language="en" target-language="de" datatype="plaintext" original="messages" date="2026-10-05T00:00:00Z" product-name="mpc_vidply">
+    <header/>
+    <body>
+      <trans-unit id="categories.mpcVidply">
+        <source>VidPly Player</source>
+        <target>VidPly Player</target>
+      </trans-unit>
+      <trans-unit id="categories.mpcVidply.accessibility">
+        <source>Accessibility</source>
+        <target>Barrierefreiheit</target>
+      </trans-unit>
+      <trans-unit id="settings.mpcVidply.screenReaderAnnouncements">
+        <source>Announce player status to screen readers</source>
+        <target>Player-Status für Screenreader ansagen</target>
+      </trans-unit>
+      <trans-unit id="settings.description.mpcVidply.screenReaderAnnouncements">
+        <source>The player announces play, pause, volume, mute, captions, fullscreen and speed changes in a live region, so screen reader users notice state changes they did not trigger themselves (WCAG 4.1.3 Status Messages). Switch this off only if another component on the page already announces the same states.</source>
+        <target>Der Player sagt Wiedergabe, Pause, Lautstärke, Stummschaltung, Untertitel, Vollbild und Geschwindigkeitsänderungen in einer Live-Region an, damit Screenreader-Nutzende auch Zustandsänderungen bemerken, die sie nicht selbst ausgelöst haben (WCAG 4.1.3 Statusmeldungen). Schalten Sie dies nur aus, wenn eine andere Komponente auf der Seite dieselben Zustände bereits ansagt.</target>
+      </trans-unit>
+      <trans-unit id="settings.mpcVidply.resumePlayback">
+        <source>Resume playback from last position</source>
+        <target>Wiedergabe an der letzten Position fortsetzen</target>
+      </trans-unit>
+      <trans-unit id="settings.description.mpcVidply.resumePlayback">
+        <source>When enabled, the player remembers where a visitor stopped watching or listening and offers to continue from that point on the next visit. Applies to all VidPly players on this site unless a content element overrides it.</source>
+        <target>Wenn aktiviert, merkt sich der Player, an welcher Stelle Besuchende das Ansehen oder Anhören beendet haben, und bietet beim nächsten Besuch an, dort fortzufahren. Gilt für alle VidPly-Player dieser Site, sofern ein Inhaltselement dies nicht überschreibt.</target>
+      </trans-unit>
+      <trans-unit id="settings.mpcVidply.registerBreadcrumbMenu">
+        <source>Register the breadcrumb menu processor</source>
+        <target>Breadcrumb-MenuProcessor registrieren</target>
+      </trans-unit>
+      <trans-unit id="settings.description.mpcVidply.registerBreadcrumbMenu">
+        <source>Registers a rootline MenuProcessor as "breadcrumb" at page.10.dataProcessing.70 so detail pages hidden from menus still appear in the breadcrumb. Switch this off when the site template uses page.10.dataProcessing.70 for another processor; the media title is then written into the site's own "breadcrumb" variable.</source>
+        <target>Registriert einen Rootline-MenuProcessor als "breadcrumb" unter page.10.dataProcessing.70, damit im Menü verborgene Detailseiten trotzdem in der Breadcrumb erscheinen. Schalten Sie dies aus, wenn das Site-Template page.10.dataProcessing.70 für einen anderen Processor nutzt; der Medientitel wird dann in die eigene "breadcrumb"-Variable der Site geschrieben.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

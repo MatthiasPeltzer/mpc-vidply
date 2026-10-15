@@ -101,9 +101,9 @@ $vidplyFields = [
                 ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_layout.episodes', 'value' => 'episodes'],
             ],
             'default' => 'default',
-        ],
-        'behaviour' => [
-            'allowLanguageSynchronization' => true,
+            'behaviour' => [
+                'allowLanguageSynchronization' => true,
+            ],
         ],
     ],
 
@@ -120,9 +120,9 @@ $vidplyFields = [
                 ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_playlist_position.right', 'value' => 'right'],
             ],
             'default' => 'below',
-        ],
-        'behaviour' => [
-            'allowLanguageSynchronization' => true,
+            'behaviour' => [
+                'allowLanguageSynchronization' => true,
+            ],
         ],
     ],
 
@@ -142,9 +142,9 @@ $vidplyFields = [
                 ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_be.xlf:tt_content.tx_mpcvidply_episode_sort.title_asc', 'value' => 'title_asc'],
             ],
             'default' => 'sorting',
-        ],
-        'behaviour' => [
-            'allowLanguageSynchronization' => true,
+            'behaviour' => [
+                'allowLanguageSynchronization' => true,
+            ],
         ],
     ],
     'tx_mpcvidply_episode_pagination' => [
@@ -161,9 +161,9 @@ $vidplyFields = [
                     'invertStateDisplay' => false,
                 ],
             ],
-        ],
-        'behaviour' => [
-            'allowLanguageSynchronization' => true,
+            'behaviour' => [
+                'allowLanguageSynchronization' => true,
+            ],
         ],
     ],
     'tx_mpcvidply_episode_per_page' => [
@@ -181,9 +181,9 @@ $vidplyFields = [
             'size' => 6,
             'default' => 10,
             'range' => ['lower' => 1, 'upper' => 200],
-        ],
-        'behaviour' => [
-            'allowLanguageSynchronization' => true,
+            'behaviour' => [
+                'allowLanguageSynchronization' => true,
+            ],
         ],
     ],
 
@@ -220,9 +220,9 @@ $vidplyFields = [
                     'value' => 1,
                 ],
             ],
-        ],
-        'behaviour' => [
-            'allowLanguageSynchronization' => true,
+            'behaviour' => [
+                'allowLanguageSynchronization' => true,
+            ],
         ],
     ],
 
@@ -239,9 +239,9 @@ $vidplyFields = [
                     'value' => 1,
                 ],
             ],
-        ],
-        'behaviour' => [
-            'allowLanguageSynchronization' => true,
+            'behaviour' => [
+                'allowLanguageSynchronization' => true,
+            ],
         ],
     ],
 

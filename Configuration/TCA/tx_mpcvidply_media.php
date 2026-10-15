@@ -415,10 +415,10 @@ return [
                 'range' => [
                     'lower' => 0,
                 ],
-            ],
-            // Translations inherit the date until an editor unlinks the field.
-            'behaviour' => [
-                'allowLanguageSynchronization' => true,
+                // Translations inherit the date until an editor unlinks the field.
+                'behaviour' => [
+                    'allowLanguageSynchronization' => true,
+                ],
             ],
         ],
         'episode_number' => [
@@ -430,9 +430,9 @@ return [
                 'size' => 10,
                 'max' => 20,
                 'eval' => 'trim',
-            ],
-            'behaviour' => [
-                'allowLanguageSynchronization' => true,
+                'behaviour' => [
+                    'allowLanguageSynchronization' => true,
+                ],
             ],
         ],
         'audio_description_mode' => [

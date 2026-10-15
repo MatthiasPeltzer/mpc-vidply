@@ -144,6 +144,14 @@ processor, switch the site setting **Register the breadcrumb menu processor**
 your own breadcrumb processor instead. The media title is still written into
 the `breadcrumb` variable.
 
+Installations that include the legacy static TypoScript instead of the Site
+Set get the same processor. There the switch is the TypoScript constant of
+the same name (Constant Editor, category *mpc_vidply*):
+
+```typoscript
+mpcVidply.registerBreadcrumbMenu = 0
+```
+
 ## 2. Administrator guide
 
 ### 2.1 Automatic route enhancer (TYPO3 14.1+)

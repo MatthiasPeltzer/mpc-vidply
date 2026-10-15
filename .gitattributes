@@ -30,3 +30,5 @@
 /.github export-ignore
 /.gitignore export-ignore
 /.gitattributes export-ignore
+/Tests/JavaScript export-ignore
+/vitest.config.mjs export-ignore

@@ -6,6 +6,7 @@ namespace Mpc\MpcVidply\Tests\Functional\Configuration;
 
 use Mpc\MpcVidply\Tests\Support\MpcVidplyTcaManifest;
 use PHPUnit\Framework\Attributes\Test;
+use TYPO3\CMS\Core\DataHandling\Localization\State;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
@@ -63,6 +64,49 @@ final class TcaBootstrapFunctionalTest extends FunctionalTestCase
 
             foreach ($columns as $column) {
                 self::assertArrayHasKey($column, $GLOBALS['TCA'][$table]['columns']);
+            }
+        }
+    }
+
+    #[Test]
+    public function behaviourIsOnlyConfiguredInsideColumnConfig(): void
+    {
+        $tables = array_merge(
+            MpcVidplyTcaManifest::CUSTOM_TABLES,
+            array_keys(MpcVidplyTcaManifest::OVERRIDDEN_CORE_TABLE_COLUMNS),
+        );
+
+        foreach (array_unique($tables) as $table) {
+            foreach ($GLOBALS['TCA'][$table]['columns'] as $column => $columnConfig) {
+                self::assertArrayNotHasKey(
+                    'behaviour',
+                    $columnConfig,
+                    sprintf('%s.%s: "behaviour" must sit inside "config", core ignores it on column level.', $table, $column),
+                );
+            }
+        }
+    }
+
+    #[Test]
+    public function translatedFieldsCanBeSynchronizedWithTheirParent(): void
+    {
+        $expected = [
+            'tt_content' => [
+                'tx_mpcvidply_layout',
+                'tx_mpcvidply_playlist_position',
+                'tx_mpcvidply_episode_sort',
+                'tx_mpcvidply_episode_pagination',
+                'tx_mpcvidply_episode_per_page',
+                'tx_mpcvidply_resume_playback',
+                'tx_mpcvidply_show_track_info',
+            ],
+            'tx_mpcvidply_media' => ['publish_date', 'episode_number'],
+        ];
+
+        foreach ($expected as $table => $columns) {
+            $synchronizable = State::getFieldNames($table);
+            foreach ($columns as $column) {
+                self::assertContains($column, $synchronizable, $table . '.' . $column);
             }
         }
     }

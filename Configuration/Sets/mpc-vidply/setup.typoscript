@@ -34,7 +34,8 @@ tt_content.mpc_vidply_detail {
 # Breadcrumb: include detail pages that are hidden from the main menu in the rootline trail.
 # Registers a breadcrumb MenuProcessor at page.10.dataProcessing.70, the key mp-core and
 # many site packages use for their own breadcrumb. Sites that use key 70 for something
-# else switch this off with the site setting `mpcVidply.registerBreadcrumbMenu`.
+# else switch this off with the site setting `mpcVidply.registerBreadcrumbMenu` (or the
+# constant of the same name when using the legacy static include).
 ["{$mpcVidply.registerBreadcrumbMenu}" in ["1", "true"]]
 page.10.dataProcessing.70 = TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
 page.10.dataProcessing.70 {

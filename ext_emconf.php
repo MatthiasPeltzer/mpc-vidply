@@ -13,6 +13,7 @@ $EM_CONF['mpc_vidply'] = [
         'depends' => [
             'typo3' => '13.4.0-14.99.99',
             'backend' => '13.4.0-14.99.99',
+            'frontend' => '13.4.0-14.99.99',
         ],
         'conflicts' => [],
         'suggests' => [],

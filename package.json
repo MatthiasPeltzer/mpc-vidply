@@ -3,20 +3,18 @@
   "private": true,
   "type": "module",
   "devDependencies": {
-    "clean-css-cli": "^5.6.3",
-    "esbuild": "^0.28.2"
+    "clean-css": "^5.3.3",
+    "esbuild": "^0.28.2",
+    "jsdom": "^30.1.2",
+    "vitest": "^5.0.4"
   },
   "allowScripts": {
     "esbuild@0.28.2": true
   },
   "scripts": {
     "build:js": "node Build/build-js.mjs",
-    "minify:css:privacy": "cleancss -o Resources/Public/Css/privacy-layer.min.css Resources/Public/Css/shared.css Resources/Public/Css/privacy-layer.css",
-    "minify:css:overrides": "cleancss -o Resources/Public/Css/vidply-overrides.min.css Resources/Public/Css/vidply-overrides.css",
-    "minify:css:icons": "cleancss -o Resources/Public/Css/vidply-icons.min.css Resources/Public/Css/vidply-icons.css",
-    "minify:css:listview": "cleancss -o Resources/Public/Css/listview.min.css Resources/Public/Css/shared.css Resources/Public/Css/listview.css",
-    "minify:css:episode": "cleancss -o Resources/Public/Css/episode.min.css Resources/Public/Css/shared.css Resources/Public/Css/episode.css",
-    "minify:css": "npm run minify:css:privacy && npm run minify:css:overrides && npm run minify:css:icons && npm run minify:css:listview && npm run minify:css:episode",
-    "build": "npm run build:js && npm run minify:css"
+    "minify:css": "node Build/minify-css.mjs",
+    "build": "npm run build:js && npm run minify:css",
+    "test": "vitest run"
   }
 }
