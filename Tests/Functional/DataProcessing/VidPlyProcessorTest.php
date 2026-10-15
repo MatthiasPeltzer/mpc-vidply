@@ -13,9 +13,9 @@ use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Resource\StorageRepository;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
+use Mpc\MpcVidply\Tests\Functional\MpcVidplyFunctionalTestCase;
 
-final class VidPlyProcessorTest extends FunctionalTestCase
+final class VidPlyProcessorTest extends MpcVidplyFunctionalTestCase
 {
     protected array $testExtensionsToLoad = ['mpc/mpc-vidply'];
 

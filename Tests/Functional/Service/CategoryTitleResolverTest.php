@@ -7,9 +7,9 @@ namespace Mpc\MpcVidply\Tests\Functional\Service;
 use Mpc\MpcVidply\Service\CategoryTitleResolver;
 use PHPUnit\Framework\Attributes\Test;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
+use Mpc\MpcVidply\Tests\Functional\MpcVidplyFunctionalTestCase;
 
-final class CategoryTitleResolverTest extends FunctionalTestCase
+final class CategoryTitleResolverTest extends MpcVidplyFunctionalTestCase
 {
     protected array $testExtensionsToLoad = ['mpc/mpc-vidply'];
 

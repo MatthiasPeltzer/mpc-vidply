@@ -18,6 +18,13 @@ final class MpcVidplyTcaManifest
     public const FUNCTIONAL_TEST_EXTENSIONS = ['mpc/mpc-vidply'];
 
     /**
+     * Sysext keys loaded in addition to the testing-framework defaults (core, backend, …).
+     *
+     * @var list<string>
+     */
+    public const CORE_EXTENSIONS_TO_LOAD = ['install'];
+
+    /**
      * @var list<string>
      */
     public const CUSTOM_TABLES = [

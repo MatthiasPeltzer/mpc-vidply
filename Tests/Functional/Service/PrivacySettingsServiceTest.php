@@ -7,9 +7,9 @@ namespace Mpc\MpcVidply\Tests\Functional\Service;
 use Mpc\MpcVidply\Service\PrivacySettingsService;
 use PHPUnit\Framework\Attributes\Test;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
+use Mpc\MpcVidply\Tests\Functional\MpcVidplyFunctionalTestCase;
 
-final class PrivacySettingsServiceTest extends FunctionalTestCase
+final class PrivacySettingsServiceTest extends MpcVidplyFunctionalTestCase
 {
     protected array $testExtensionsToLoad = ['mpc/mpc-vidply'];
 

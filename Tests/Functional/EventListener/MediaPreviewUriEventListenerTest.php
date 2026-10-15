@@ -11,9 +11,9 @@ use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Routing\UnableToLinkToPageException;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
+use Mpc\MpcVidply\Tests\Functional\MpcVidplyFunctionalTestCase;
 
-final class MediaPreviewUriEventListenerTest extends FunctionalTestCase
+final class MediaPreviewUriEventListenerTest extends MpcVidplyFunctionalTestCase
 {
     protected array $testExtensionsToLoad = ['mpc/mpc-vidply'];
 

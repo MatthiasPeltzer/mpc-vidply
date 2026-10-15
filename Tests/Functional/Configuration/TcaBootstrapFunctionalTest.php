@@ -9,9 +9,9 @@ use PHPUnit\Framework\Attributes\Test;
 use TYPO3\CMS\Core\DataHandling\Localization\State;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
+use Mpc\MpcVidply\Tests\Functional\MpcVidplyFunctionalTestCase;
 
-final class TcaBootstrapFunctionalTest extends FunctionalTestCase
+final class TcaBootstrapFunctionalTest extends MpcVidplyFunctionalTestCase
 {
     protected array $testExtensionsToLoad = MpcVidplyTcaManifest::FUNCTIONAL_TEST_EXTENSIONS;
 

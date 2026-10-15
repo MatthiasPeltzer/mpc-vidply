@@ -7,9 +7,9 @@ namespace Mpc\MpcVidply\Tests\Functional\Service;
 use Mpc\MpcVidply\Service\MediaPreviewDetailPageResolver;
 use PHPUnit\Framework\Attributes\Test;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
+use Mpc\MpcVidply\Tests\Functional\MpcVidplyFunctionalTestCase;
 
-final class MediaPreviewDetailPageResolverTest extends FunctionalTestCase
+final class MediaPreviewDetailPageResolverTest extends MpcVidplyFunctionalTestCase
 {
     protected array $testExtensionsToLoad = ['mpc/mpc-vidply'];
 

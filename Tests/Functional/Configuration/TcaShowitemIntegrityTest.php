@@ -7,9 +7,9 @@ namespace Mpc\MpcVidply\Tests\Functional\Configuration;
 use Mpc\MpcVidply\Tests\Support\MpcVidplyTcaManifest;
 use Mpc\MpcVidply\Tests\Support\TcaShowitemInspector;
 use PHPUnit\Framework\Attributes\Test;
-use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
+use Mpc\MpcVidply\Tests\Functional\MpcVidplyFunctionalTestCase;
 
-final class TcaShowitemIntegrityTest extends FunctionalTestCase
+final class TcaShowitemIntegrityTest extends MpcVidplyFunctionalTestCase
 {
     protected array $testExtensionsToLoad = MpcVidplyTcaManifest::FUNCTIONAL_TEST_EXTENSIONS;
 

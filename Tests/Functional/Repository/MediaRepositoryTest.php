@@ -7,9 +7,9 @@ namespace Mpc\MpcVidply\Tests\Functional\Repository;
 use Mpc\MpcVidply\Repository\MediaRepository;
 use PHPUnit\Framework\Attributes\Test;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
+use Mpc\MpcVidply\Tests\Functional\MpcVidplyFunctionalTestCase;
 
-final class MediaRepositoryTest extends FunctionalTestCase
+final class MediaRepositoryTest extends MpcVidplyFunctionalTestCase
 {
     protected array $testExtensionsToLoad = ['mpc/mpc-vidply'];
 

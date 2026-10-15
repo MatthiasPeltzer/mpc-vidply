@@ -36,7 +36,8 @@ jobs:
             typo3/cms-fluid:"${{ matrix.typo3 }}" \
             typo3/cms-extbase:"${{ matrix.typo3 }}" \
             typo3/cms-backend:"${{ matrix.typo3 }}" \
-            typo3/cms-frontend:"${{ matrix.typo3 }}" \
+            typo3/cms-frontend:"${{ matrix.typo3 }}"
+          composer require --dev --no-update \
             typo3/cms-install:"${{ matrix.typo3 }}" \
             typo3/testing-framework:^9.3
           composer update --no-interaction --no-progress
@@ -126,7 +127,8 @@ jobs:
             typo3/cms-fluid:"${{ matrix.typo3 }}" \
             typo3/cms-extbase:"${{ matrix.typo3 }}" \
             typo3/cms-backend:"${{ matrix.typo3 }}" \
-            typo3/cms-frontend:"${{ matrix.typo3 }}" \
+            typo3/cms-frontend:"${{ matrix.typo3 }}"
+          composer require --dev --no-update \
             typo3/cms-install:"${{ matrix.typo3 }}" \
             typo3/testing-framework:^9.3
           composer update --no-interaction --no-progress

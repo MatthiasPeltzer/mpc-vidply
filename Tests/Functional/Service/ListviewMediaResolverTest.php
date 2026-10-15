@@ -7,9 +7,9 @@ namespace Mpc\MpcVidply\Tests\Functional\Service;
 use Mpc\MpcVidply\Service\ListviewMediaResolver;
 use PHPUnit\Framework\Attributes\Test;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
+use Mpc\MpcVidply\Tests\Functional\MpcVidplyFunctionalTestCase;
 
-final class ListviewMediaResolverTest extends FunctionalTestCase
+final class ListviewMediaResolverTest extends MpcVidplyFunctionalTestCase
 {
     protected array $testExtensionsToLoad = ['mpc/mpc-vidply'];
 
