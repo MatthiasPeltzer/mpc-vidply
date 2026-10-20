@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.44] - 2026-10-20
+
+### Added
+- Site setting `mpcVidply.embedChrome` ("Controls for YouTube and Vimeo"): `vidply` (default) or `provider`.
+- YouTube and Vimeo media records get the **Captions** tab (captions, chapters, transcript) like MP4 videos; the VidPly player shows the sidecar WebVTT and the transcript for them. SoundCloud keeps its own widget and has no Captions tab.
+- Shipped VidPly player: sidecar WebVTT captions are now displayed on YouTube/Vimeo (they were loaded but never shown).
+
+### Changed
+- YouTube and Vimeo media records no longer show **Hide speed button** and **Allow download**: embeds have no speed control in the VidPly bar and nothing that can be downloaded. SoundCloud records show none of the player options (incl. **Hide help button**), since SoundCloud keeps its own widget without the VidPly bar.
+- Single YouTube and Vimeo content elements now play inside the VidPly player (behind the same privacy overlay as playlists) instead of embedding the provider's player after consent. Set `mpcVidply.embedChrome: provider` to keep the previous behaviour. SoundCloud still uses its own widget.
+- Rebuilt `PlaylistInit.min.js` so mixed playlists only hide the VidPly controls when `embedChrome` is `provider`.
+- Shipped VidPly player: previous/next are hidden for single-track playlists, and the keyboard help no longer lists speed shortcuts for YouTube/Vimeo, which have no speed control.
+- Shipped VidPly player: unified embed chrome for YouTube/Vimeo (`embedChrome: 'vidply'` from `PlayerOptionsBuilder`); playlist privacy flow no longer forces hidden VidPly controls unless `embedChrome: 'provider'`.
+- Shipped VidPly player assets updated: chromeless YouTube is cropped to hide in-frame title bars without an empty strip below the video, the VidPly play button covers YouTube's own play button when paused, custom posters stay in place when switching between YouTube tracks, and YouTube captions are never shown (use sidecar WebVTT tracks instead).
+
 ## [1.2.43] - 2026-10-15
 
 ### Security
@@ -1133,6 +1148,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.44]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.43...v1.2.44
 [1.2.43]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.42...v1.2.43
 [1.2.42]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.41...v1.2.42
 [1.2.41]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.40...v1.2.41
