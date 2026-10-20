@@ -97,7 +97,7 @@ final class VidPlyProcessorTest extends MpcVidplyFunctionalTestCase
     }
 
     #[Test]
-    public function assemblesPrivacyRenderModeForYouTubeRecord(): void
+    public function playsSingleYouTubeRecordInsideThePlayerBehindThePrivacyOverlay(): void
     {
         $this->importCSVDataSet(__DIR__ . '/../Fixtures/PrivacySettings.csv');
         $this->attachMediaFile(2, 'clip.youtube', 'dQw4w9WgXcQ');
@@ -105,7 +105,11 @@ final class VidPlyProcessorTest extends MpcVidplyFunctionalTestCase
         $record = $this->mediaRecord(['uid' => 2, 'media_type' => 'youtube', 'title' => 'YouTube Clip']);
         $result = $this->subject->assembleForMediaRecords([$record], ['uid' => 2], $this->request(), 0);
 
-        self::assertSame('privacy', $result['renderMode']);
+        self::assertSame('mixedPlaylist', $result['renderMode']);
+        self::assertSame('vidply', $result['options']['embedChrome']);
+        self::assertCount(1, $result['playlistData']['tracks']);
+        self::assertFalse($result['playlistData']['options']['showPanel']);
+        self::assertTrue($result['needsVidPlay']);
         self::assertSame('youtube', $result['serviceType']);
         self::assertTrue($result['hasExternalMedia']);
         self::assertArrayHasKey('youtube', $result['privacySettings']);

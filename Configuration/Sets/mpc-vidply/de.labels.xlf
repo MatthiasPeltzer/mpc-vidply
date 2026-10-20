@@ -27,6 +27,22 @@
         <source>When enabled, the player remembers where a visitor stopped watching or listening and offers to continue from that point on the next visit. Applies to all VidPly players on this site unless a content element overrides it.</source>
         <target>Wenn aktiviert, merkt sich der Player, an welcher Stelle Besuchende das Ansehen oder Anhören beendet haben, und bietet beim nächsten Besuch an, dort fortzufahren. Gilt für alle VidPly-Player dieser Site, sofern ein Inhaltselement dies nicht überschreibt.</target>
       </trans-unit>
+      <trans-unit id="settings.mpcVidply.embedChrome">
+        <source>Controls for YouTube and Vimeo</source>
+        <target>Steuerung für YouTube und Vimeo</target>
+      </trans-unit>
+      <trans-unit id="settings.description.mpcVidply.embedChrome">
+        <source>"VidPly controls" plays YouTube and Vimeo inside the VidPly player with its accessible control bar, captions and transcript, also for single videos. "Provider controls" embeds the provider's own player after consent instead. SoundCloud always uses its own widget.</source>
+        <target>"VidPly-Steuerung" spielt YouTube und Vimeo im VidPly-Player mit seiner barrierefreien Steuerleiste, Untertiteln und Transkript ab, auch bei Einzelvideos. "Anbieter-Steuerung" bindet nach der Einwilligung stattdessen den Player des Anbieters ein. SoundCloud nutzt immer sein eigenes Widget.</target>
+      </trans-unit>
+      <trans-unit id="settings.mpcVidply.embedChrome.vidply">
+        <source>VidPly controls</source>
+        <target>VidPly-Steuerung</target>
+      </trans-unit>
+      <trans-unit id="settings.mpcVidply.embedChrome.provider">
+        <source>Provider controls</source>
+        <target>Anbieter-Steuerung</target>
+      </trans-unit>
       <trans-unit id="settings.mpcVidply.registerBreadcrumbMenu">
         <source>Register the breadcrumb menu processor</source>
         <target>Breadcrumb-MenuProcessor registrieren</target>

@@ -12,6 +12,13 @@ settings:
     default: false
     type: bool
     category: mpcVidply
+  mpcVidply.embedChrome:
+    default: vidply
+    type: string
+    category: mpcVidply
+    enum:
+      vidply: 'LLL:EXT:mpc_vidply/Configuration/Sets/mpc-vidply/labels.xlf:settings.mpcVidply.embedChrome.vidply'
+      provider: 'LLL:EXT:mpc_vidply/Configuration/Sets/mpc-vidply/labels.xlf:settings.mpcVidply.embedChrome.provider'
   mpcVidply.registerBreadcrumbMenu:
     default: true
     type: bool

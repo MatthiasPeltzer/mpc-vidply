@@ -141,7 +141,16 @@ class VidPlyProcessor implements DataProcessorInterface
         }
         $this->playerOptionsBuilder->applyTrackDependentOptions($playerOptions, $trackResult, $data);
 
-        $playlistResult = $this->playerOptionsBuilder->buildPlaylistData($trackResult, $playerOptions, $layout, $data);
+        $serviceType = $this->renderDecisionResolver->resolveServiceType($trackResult);
+        $singleEmbedInPlayer = $this->renderDecisionResolver->isSingleEmbedInPlayer($serviceType, $trackResult, $playerOptions);
+
+        $playlistResult = $this->playerOptionsBuilder->buildPlaylistData(
+            $trackResult,
+            $playerOptions,
+            $layout,
+            $data,
+            $singleEmbedInPlayer
+        );
         $playlistData = $playlistResult['playlistData'];
         $playerOptions = array_merge($playerOptions, $playlistResult['optionOverrides']);
 
@@ -149,14 +158,18 @@ class VidPlyProcessor implements DataProcessorInterface
         $singleTrackData = $singleTrackResult['trackData'];
         $playerOptions = array_merge($playerOptions, $singleTrackResult['optionOverrides']);
 
-        $serviceType = $this->renderDecisionResolver->resolveServiceType($trackResult);
         $privacySettings = $this->loadPrivacySettings($serviceType, $trackResult, $languageId, $request);
         $uiConfig = $this->playerOptionsBuilder->resolveUiConfig();
         $playerOptions['theme'] = $uiConfig['theme'];
 
         $resolvedMediaType = $this->renderDecisionResolver->resolveEffectiveMediaType($trackResult);
-        $renderMode = $this->renderDecisionResolver->determineRenderMode($serviceType, $trackResult, $resolvedMediaType);
-        $assetFlags = $this->renderDecisionResolver->resolveAssetFlags($serviceType, $trackResult);
+        $renderMode = $this->renderDecisionResolver->determineRenderMode(
+            $serviceType,
+            $trackResult,
+            $resolvedMediaType,
+            $singleEmbedInPlayer
+        );
+        $assetFlags = $this->renderDecisionResolver->resolveAssetFlags($serviceType, $trackResult, $singleEmbedInPlayer);
 
         $episodes = $this->episodeListBuilder->build($layout, $trackResult, $languageId, $data, $locale);
 

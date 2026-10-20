@@ -161,7 +161,19 @@ export function restorePlayerVisibility(playlist, element, wrapperElement = null
  * HTML5/HLS/DASH renderers remove the class again when switching back.
  */
 export function hideControlsForExternalEmbed(playlist) {
-    playlist?.player?.container?.classList.add('vidply-external-controls');
+    const player = playlist?.player;
+    if (!player?.container) {
+        return;
+    }
+    if (player.options?.embedChrome === 'provider') {
+        player.container.classList.add('vidply-external-controls');
+        return;
+    }
+    if (typeof player.syncEmbedChromeClass === 'function') {
+        player.syncEmbedChromeClass();
+    } else {
+        player.container.classList.remove('vidply-external-controls');
+    }
 }
 
 /**

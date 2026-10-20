@@ -99,11 +99,56 @@ final class RenderDecisionResolverTest extends TestCase
     }
 
     #[Test]
-    public function determineRenderModeUsesPrivacyForSingleExternalService(): void
+    public function determineRenderModeUsesPrivacyForSingleExternalServiceWithProviderChrome(): void
     {
         $trackResult = self::trackResult(['tracks' => [['type' => 'youtube']], 'hasExternalMedia' => true]);
 
         self::assertSame(RenderMode::Privacy, $this->subject->determineRenderMode('youtube', $trackResult, 'video'));
+    }
+
+    #[Test]
+    public function determineRenderModeUsesMixedPlaylistForSingleEmbedInPlayer(): void
+    {
+        $trackResult = self::trackResult(['tracks' => [['type' => 'youtube']], 'hasExternalMedia' => true]);
+
+        self::assertSame(
+            RenderMode::MixedPlaylist,
+            $this->subject->determineRenderMode('youtube', $trackResult, 'video', true)
+        );
+    }
+
+    /**
+     * @return array<string, array{0: ?string, 1: bool, 2: array<string, string>, 3: bool}>
+     */
+    public static function singleEmbedProvider(): array
+    {
+        $vidply = ['embedChrome' => 'vidply', 'embedChromeSoundcloud' => 'provider'];
+        $provider = ['embedChrome' => 'provider', 'embedChromeSoundcloud' => 'provider'];
+
+        return [
+            'youtube with vidply chrome' => ['youtube', false, $vidply, true],
+            'vimeo with vidply chrome' => ['vimeo', false, $vidply, true],
+            'youtube with provider chrome' => ['youtube', false, $provider, false],
+            'soundcloud keeps its widget' => ['soundcloud', false, $vidply, false],
+            'local media' => [null, false, $vidply, false],
+            'playlist' => [null, true, $vidply, false],
+        ];
+    }
+
+    /**
+     * @param array<string, string> $playerOptions
+     */
+    #[Test]
+    #[DataProvider('singleEmbedProvider')]
+    public function isSingleEmbedInPlayerFollowsTheEmbedChromeOption(
+        ?string $serviceType,
+        bool $isPlaylist,
+        array $playerOptions,
+        bool $expected
+    ): void {
+        $trackResult = self::trackResult(['tracks' => [['type' => $serviceType ?? 'video/mp4']], 'isPlaylist' => $isPlaylist]);
+
+        self::assertSame($expected, $this->subject->isSingleEmbedInPlayer($serviceType, $trackResult, $playerOptions));
     }
 
     #[Test]
@@ -173,5 +218,17 @@ final class RenderDecisionResolverTest extends TestCase
         foreach ($expected as $flag => $value) {
             self::assertSame($value, $flags[$flag], $flag);
         }
+    }
+
+    #[Test]
+    public function resolveAssetFlagsLoadsThePlayerForSingleEmbedInPlayer(): void
+    {
+        $trackResult = self::trackResult(['tracks' => [['type' => 'youtube']], 'hasExternalMedia' => true]);
+
+        $flags = $this->subject->resolveAssetFlags('youtube', $trackResult, true);
+
+        self::assertTrue($flags['needsPrivacyLayer']);
+        self::assertTrue($flags['needsVidPlay']);
+        self::assertTrue($flags['needsPlaylist']);
     }
 }

@@ -60,6 +60,40 @@ final class PlayerOptionsBuilderTest extends TestCase
     }
 
     #[Test]
+    public function buildDefaultsToVidplyEmbedChrome(): void
+    {
+        $options = $this->subject->build([]);
+
+        self::assertSame('vidply', $options['embedChrome']);
+        self::assertSame('provider', $options['embedChromeSoundcloud']);
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: string}>
+     */
+    public static function embedChromeSettingProvider(): array
+    {
+        return [
+            'provider controls' => ['provider', 'provider'],
+            'vidply controls' => ['vidply', 'vidply'],
+            'unknown value falls back' => ['native', 'vidply'],
+        ];
+    }
+
+    #[Test]
+    #[DataProvider('embedChromeSettingProvider')]
+    public function buildTakesEmbedChromeFromTheSiteSettings(string $setting, string $expected): void
+    {
+        $site = new Site('mpc', 1, [
+            'base' => '/',
+            'settings' => ['mpcVidply' => ['embedChrome' => $setting]],
+        ]);
+        $request = (new ServerRequest())->withAttribute('site', $site);
+
+        self::assertSame($expected, $this->subject->build([], $request)['embedChrome']);
+    }
+
+    #[Test]
     public function buildEnablesResumePlaybackFromTheContentElementOption(): void
     {
         $options = $this->subject->build(['tx_mpcvidply_resume_playback' => 1]);
@@ -404,6 +438,29 @@ final class PlayerOptionsBuilderTest extends TestCase
 
         self::assertNull($result['playlistData']);
         self::assertSame([], $result['optionOverrides']);
+    }
+
+    #[Test]
+    public function buildPlaylistDataWrapsASingleEmbedInAPanelLessPlaylist(): void
+    {
+        $result = $this->subject->buildPlaylistData(
+            [
+                'isPlaylist' => false,
+                'tracks' => [['title' => 'A', 'type' => 'youtube']],
+                'isMixedPlaylist' => false,
+                'hasExternalMedia' => true,
+                'externalServiceTypes' => ['youtube'],
+            ],
+            $this->playlistPlayerOptions(),
+            'default',
+            [],
+            true
+        );
+
+        self::assertIsArray($result['playlistData']);
+        self::assertCount(1, $result['playlistData']['tracks']);
+        self::assertFalse($result['playlistData']['options']['showPanel']);
+        self::assertFalse($result['optionOverrides']['playlistToggleButton']);
     }
 
     /**

@@ -37,6 +37,28 @@ final class RenderDecisionResolver
     }
 
     /**
+     * Whether a single external track plays inside the VidPly player (behind
+     * the playlist privacy overlay) instead of the provider's own embed. The
+     * chrome mode comes from the `embedChrome` / `embedChromeSoundcloud` player
+     * options.
+     *
+     * @param TrackResult $trackResult
+     * @param array<string, mixed> $playerOptions
+     */
+    public function isSingleEmbedInPlayer(?string $serviceType, array $trackResult, array $playerOptions): bool
+    {
+        if ($serviceType === null || $trackResult['isPlaylist']) {
+            return false;
+        }
+
+        $chrome = $serviceType === MediaType::SoundCloud->value
+            ? ($playerOptions['embedChromeSoundcloud'] ?? 'provider')
+            : ($playerOptions['embedChrome'] ?? 'vidply');
+
+        return $chrome !== 'provider';
+    }
+
+    /**
      * Derive effective media type for template rendering (<audio> vs <video>).
      * Handles stream types (e.g. audio HLS) that should not render a <video> element.
      *
@@ -90,14 +112,18 @@ final class RenderDecisionResolver
     /**
      * @param TrackResult $trackResult
      */
-    public function determineRenderMode(?string $serviceType, array $trackResult, string $resolvedMediaType): RenderMode
-    {
+    public function determineRenderMode(
+        ?string $serviceType,
+        array $trackResult,
+        string $resolvedMediaType,
+        bool $singleEmbedInPlayer = false
+    ): RenderMode {
         if ($trackResult['tracks'] === []) {
             return RenderMode::Video;
         }
 
         if ($serviceType !== null && !$trackResult['isPlaylist']) {
-            return RenderMode::Privacy;
+            return $singleEmbedInPlayer ? RenderMode::MixedPlaylist : RenderMode::Privacy;
         }
 
         if ($trackResult['isPlaylist'] && $trackResult['hasExternalMedia']) {
@@ -111,11 +137,11 @@ final class RenderDecisionResolver
      * @param TrackResult $trackResult
      * @return AssetFlags
      */
-    public function resolveAssetFlags(?string $serviceType, array $trackResult): array
+    public function resolveAssetFlags(?string $serviceType, array $trackResult, bool $singleEmbedInPlayer = false): array
     {
         $isPlaylist = $trackResult['isPlaylist'];
         $needsPrivacyLayer = $serviceType !== null || ($isPlaylist && $trackResult['hasExternalMedia']);
-        $needsVidPlay = $isPlaylist || $serviceType === null;
+        $needsVidPlay = $isPlaylist || $serviceType === null || $singleEmbedInPlayer;
         $needsPlaylist = $isPlaylist || $needsVidPlay;
 
         $needsHLS = false;

@@ -55,6 +55,15 @@ final class PlayerOptionsBuilder
      */
     private const SETTING_RESUME_PLAYBACK = 'mpcVidply.resumePlayback';
 
+    /**
+     * Site setting for YouTube/Vimeo controls (`{$mpcVidply.embedChrome}`):
+     * `vidply` plays them inside the VidPly player, `provider` keeps the
+     * provider's own player. SoundCloud always uses its own widget.
+     */
+    private const SETTING_EMBED_CHROME = 'mpcVidply.embedChrome';
+
+    private const EMBED_CHROME_MODES = ['vidply', 'provider'];
+
     private const PLAY_BUTTON_POSITIONS = ['center', 'left-top', 'right-top', 'left-bottom', 'right-bottom'];
 
     private const AUDIO_DESCRIPTION_MODES = ['auto', 'swap', 'vtt_speech'];
@@ -106,6 +115,9 @@ final class PlayerOptionsBuilder
         $playerOptions['screenReaderAnnouncements'] = $this->resolveScreenReaderAnnouncements($request);
         $playerOptions['resumePlayback'] = $this->resolveResumePlayback($request)
             || (int)($data['tx_mpcvidply_resume_playback'] ?? 0) === 1;
+
+        $playerOptions['embedChrome'] = $this->resolveEmbedChrome($request);
+        $playerOptions['embedChromeSoundcloud'] = 'provider';
 
         // `?vidplyDebug=1` is deliberately not read here: the parameter is
         // excluded from the cHash, so a server-side flag would be cached for
@@ -199,22 +211,25 @@ final class PlayerOptionsBuilder
      * @param TrackResult $trackResult
      * @param array<string, mixed> $playerOptions
      * @param array<string, mixed> $data
+     * @param bool $singleEmbedInPlayer A single YouTube/Vimeo track played inside
+     *     the VidPly player; it runs as a one-track playlist without a panel.
      * @return array{playlistData: ?array<string, mixed>, optionOverrides: array<string, mixed>}
      */
     public function buildPlaylistData(
         array $trackResult,
         array $playerOptions,
         string $layout = 'default',
-        array $data = []
+        array $data = [],
+        bool $singleEmbedInPlayer = false
     ): array {
-        if (!$trackResult['isPlaylist']) {
+        if (!$trackResult['isPlaylist'] && !$singleEmbedInPlayer) {
             return ['playlistData' => null, 'optionOverrides' => []];
         }
 
         // The "episodes" layout renders the track list server-side, so the
         // player's own panel would repeat the same records with a second set of
         // formatters. Suppress the panel and its toggle to keep one list.
-        $showPanel = $layout !== 'episodes';
+        $showPanel = $layout !== 'episodes' && !$singleEmbedInPlayer;
         $panelPosition = $this->resolvePlaylistPanelPosition($data, $layout);
 
         $tracks = $trackResult['tracks'];
@@ -369,6 +384,23 @@ final class PlayerOptionsBuilder
         }
 
         return (bool)$site->getSettings()->get(self::SETTING_RESUME_PLAYBACK, false);
+    }
+
+    /**
+     * YouTube and Vimeo play inside the VidPly player unless a site switches
+     * to the provider's own controls. Requests without a resolved site
+     * (backend preview, CLI) keep the default.
+     */
+    private function resolveEmbedChrome(?ServerRequestInterface $request): string
+    {
+        $site = $request?->getAttribute('site');
+        if (!$site instanceof Site) {
+            return 'vidply';
+        }
+
+        $value = (string)$site->getSettings()->get(self::SETTING_EMBED_CHROME, 'vidply');
+
+        return in_array($value, self::EMBED_CHROME_MODES, true) ? $value : 'vidply';
     }
 
     /**
