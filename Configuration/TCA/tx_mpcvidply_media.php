@@ -111,7 +111,11 @@ return [
                     media_file,
                     --palette--;;metadata,
                     poster,
-                    --palette--;;ui,
+                    --palette--;;uiEmbed,
+                --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tabs.captions,
+                    captions,
+                    chapters,
+                    enable_transcript,
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:categories,
                     categories,
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access,
@@ -135,7 +139,11 @@ return [
                     media_file,
                     --palette--;;metadata,
                     poster,
-                    --palette--;;ui,
+                    --palette--;;uiEmbed,
+                --div--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tabs.captions,
+                    captions,
+                    chapters,
+                    enable_transcript,
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:categories,
                     categories,
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access,
@@ -159,7 +167,6 @@ return [
                     media_file,
                     --palette--;;metadata,
                     poster,
-                    --palette--;;ui,
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:categories,
                     categories,
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access,
@@ -182,6 +189,12 @@ return [
         ],
         'ui' => [
             'showitem' => 'hide_speed_button,hide_help_button,allow_download,enable_floating_player',
+        ],
+        // YouTube/Vimeo have no speed control in the VidPly bar and nothing
+        // downloadable (only progressive files are offered). SoundCloud keeps
+        // its own widget without the VidPly bar, so it gets no UI options.
+        'uiEmbed' => [
+            'showitem' => 'hide_help_button',
         ],
         'timeRestriction' => [
             'showitem' => 'starttime,endtime',

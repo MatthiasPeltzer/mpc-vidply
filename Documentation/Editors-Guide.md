@@ -105,6 +105,7 @@ On existing records with a linked online-media file, use **Refresh metadata** to
 3. Paste the YouTube URL (e.g., `https://www.youtube.com/watch?v=...`)
 4. Add a **title** (required)
 5. Add a **poster image** (shown before consent) — **allowed formats: JPG / JPEG, PNG, WebP, SVG**
+6. Optional: add your own captions, chapters and the transcript on the **Captions** tab, as for MP4 videos (see [Captions & Subtitles](#captions--subtitles)). YouTube's own captions are never shown.
 
 **Privacy behavior:**
 - Video does NOT load until user clicks play
@@ -124,6 +125,7 @@ On existing records with a linked online-media file, use **Refresh metadata** to
 3. Paste the Vimeo URL (e.g., `https://vimeo.com/123456789`)
 4. Add a **title** (required)
 5. Add a **poster image** — **allowed formats: JPG / JPEG, PNG, WebP, SVG**
+6. Optional: add your own captions, chapters and the transcript on the **Captions** tab, as for MP4 videos (see [Captions & Subtitles](#captions--subtitles))
 
 ---
 
@@ -208,6 +210,8 @@ Add WebVTT (`.vtt`) or SubRip (`.srt`) files for viewers who need captions (incl
 6. **Save the media record** — SRT files are converted automatically to WebVTT; you will see a backend notification when conversion succeeds
 
 **Multiple languages:** Add multiple caption files for each language.
+
+**YouTube and Vimeo:** The Captions tab is available for YouTube and Vimeo records too. Your files are shown by the VidPly player, so they only appear while the site setting **Controls for YouTube and Vimeo** (`mpcVidply.embedChrome`) is `vidply` (default); with `provider` the provider's own player is used and VidPly captions and transcript are not shown. SoundCloud always uses its own widget and has no Captions tab.
 
 **SRT uploads:** SubRip (`.srt`) is accepted for convenience. VidPly stores WebVTT internally because browsers and the transcript feature require it. The original SRT file is replaced on save.
 

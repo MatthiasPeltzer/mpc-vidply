@@ -112,6 +112,40 @@ final class TcaBootstrapFunctionalTest extends MpcVidplyFunctionalTestCase
     }
 
     #[Test]
+    public function captionFieldsAreOfferedForMediaTypesPlayedInTheVidPlyPlayer(): void
+    {
+        $types = $GLOBALS['TCA']['tx_mpcvidply_media']['types'];
+
+        foreach (['video', 'audio', 'youtube', 'vimeo'] as $mediaType) {
+            $showitem = (string)($types[$mediaType]['showitem'] ?? '');
+            foreach (['captions', 'chapters', 'enable_transcript'] as $field) {
+                self::assertMatchesRegularExpression('/\b' . $field . '\b/', $showitem, $mediaType . ' must offer ' . $field);
+            }
+        }
+
+        // SoundCloud always keeps its own widget, which cannot show sidecar captions.
+        self::assertDoesNotMatchRegularExpression('/\bcaptions\b/', (string)$types['soundcloud']['showitem']);
+    }
+
+    #[Test]
+    public function embedMediaTypesDoNotOfferSpeedOrDownloadOptions(): void
+    {
+        $tca = $GLOBALS['TCA']['tx_mpcvidply_media'];
+
+        foreach (['youtube', 'vimeo'] as $mediaType) {
+            self::assertStringContainsString('--palette--;;uiEmbed', (string)$tca['types'][$mediaType]['showitem'], $mediaType);
+        }
+
+        // SoundCloud's own widget hides the VidPly bar, so no UI option applies.
+        self::assertDoesNotMatchRegularExpression('/--palette--;;ui\w*,/', (string)$tca['types']['soundcloud']['showitem']);
+
+        $embedPalette = (string)$tca['palettes']['uiEmbed']['showitem'];
+        self::assertStringNotContainsString('hide_speed_button', $embedPalette);
+        self::assertStringNotContainsString('allow_download', $embedPalette);
+        self::assertStringContainsString('allow_download', (string)$tca['palettes']['ui']['showitem']);
+    }
+
+    #[Test]
     public function previewRenderersAreRegisteredWhereExpected(): void
     {
         foreach (MpcVidplyTcaManifest::PREVIEW_RENDERERS as $cType => $rendererClass) {
