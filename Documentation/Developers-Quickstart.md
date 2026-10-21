@@ -337,13 +337,14 @@ VidPly only loads JavaScript needed for current media types:
 
 | Scenario | Assets Loaded | Size |
 |----------|---------------|------|
-| YouTube/Vimeo/SoundCloud only | PrivacyLayer.js | ~5KB |
+| Single SoundCloud, or YouTube/Vimeo with `embedChrome: provider` | PrivacyLayer.js | ~5KB |
+| Single YouTube/Vimeo (default `embedChrome: vidply`) | PrivacyLayer.js + `vidply/vidply.esm.min.js` (+ chunks) + PlaylistInit.js | ~185KB |
 | Local video/audio | `vidply/vidply.esm.min.js` (+ chunks) + PlaylistInit.js | ~180KB |
 | HLS streaming | + hls.min.js | +74KB |
 | DASH streaming | + dash.all.min.js | +200KB |
 | Playlist (2+ items) | + PlaylistInit.js | +5KB |
 
-**Up to 97% reduction** for external-only content.
+**Up to 97% reduction** for content on the privacy-layer-only path. See [AssetLoading.md](AssetLoading.md) for the full matrix.
 
 ### Files
 
@@ -382,8 +383,10 @@ External services (YouTube, Vimeo, SoundCloud) show consent overlay:
 1. `PrivacySettingsService` fetches settings from `tx_mpcvidply_privacy_settings` table
 2. Template renders poster + play button (no iframe) with database settings
 3. `PrivacyLayer.js` / `PlaylistInit.js` handles click
-4. On consent: Creates iframe, loads service player
+4. On consent: YouTube / Vimeo load inside the VidPly player through its renderers (site setting `mpcVidply.embedChrome: vidply`, default — also for single items); SoundCloud, and YouTube / Vimeo with `embedChrome: provider`, get the provider's own iframe
 5. No tracking until user explicitly clicks play
+
+`RenderDecisionResolver::isSingleEmbedInPlayer()` decides the single-item case; the setting reaches the player as the `embedChrome` option (`PlayerOptionsBuilder`). See [SettingsArchitecture.md](SettingsArchitecture.md#controls-for-youtube-and-vimeo-mpcvidplyembedchrome).
 
 ### Privacy Settings Service
 

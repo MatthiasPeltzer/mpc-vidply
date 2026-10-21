@@ -38,24 +38,28 @@ These apply to every frontend player unless overridden in Fluid/TypoScript.
 Declared by the `mpc/mpc-vidply` site set
 (`Configuration/Sets/mpc-vidply/settings.definitions.yaml`). Editors and
 integrators change them in **Site Management → Sites → *your site* →
-Settings → VidPly Player → Accessibility**; integrators can also write them to
+Settings → VidPly Player** (screen reader announcements are in the
+**Accessibility** subcategory); integrators can also write them to
 `config/sites/<id>/settings.yaml` or read them in TypoScript as constants.
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
 | `mpcVidply.screenReaderAnnouncements` | bool | `true` | Announce play/pause, volume, mute, captions, fullscreen and speed changes in the player's live region |
 | `mpcVidply.resumePlayback` | bool | `false` | Remember playback position and offer to resume on the next visit (content elements can override) |
+| `mpcVidply.embedChrome` | `vidply` \| `provider` | `vidply` | **Controls for YouTube and Vimeo** — see below |
 
 ```yaml
 # config/sites/<id>/settings.yaml
 mpcVidply.screenReaderAnnouncements: false
 mpcVidply.resumePlayback: true
+mpcVidply.embedChrome: provider
 ```
 
 ```typoscript
 # available as TypoScript constants
 {$mpcVidply.screenReaderAnnouncements}
 {$mpcVidply.resumePlayback}
+{$mpcVidply.embedChrome}
 ```
 
 Turning the announcements off silences the status messages the player sends to
@@ -63,6 +67,27 @@ assistive technology (WCAG 4.1.3). Only do that when something else on the page
 already announces the same state — the player's own notices (help dialog,
 sign-language drag and resize hints) keep speaking either way, since they are
 the only feedback for the action that triggered them.
+
+#### Controls for YouTube and Vimeo (`mpcVidply.embedChrome`)
+
+Decides who draws the player for YouTube and Vimeo after the visitor has
+accepted the privacy notice. The privacy overlay itself is the same in both
+modes — nothing is requested from YouTube or Vimeo before consent.
+
+| Value | Single YouTube / Vimeo item | YouTube / Vimeo tracks in a playlist |
+|-------|-----------------------------|--------------------------------------|
+| `vidply` (default) | Plays inside the VidPly player: VidPly control bar, keyboard shortcuts, sidecar captions, chapters and transcript from the media record's **Captions** tab | Same — the VidPly controls stay visible for embed tracks |
+| `provider` | The privacy layer mounts the provider's own embed (previous behaviour); VidPly captions and transcript are not shown | VidPly controls are hidden while an embed track plays; the provider's controls are used |
+
+SoundCloud is not affected: it always uses its own widget (see
+[PrivacyLayer.md → Switch SoundCloud to Renderer Mode](PrivacyLayer.md#switch-soundcloud-to-renderer-mode-advanced)).
+YouTube's own captions are never shown in `vidply` mode; add WebVTT files to
+the media record instead.
+
+The setting is passed to the player as the `embedChrome` option by
+`PlayerOptionsBuilder`. `vidply` loads the VidPly core for single YouTube and
+Vimeo items as well (see [AssetLoading.md](AssetLoading.md)); `provider` keeps
+those pages on the lighter privacy-layer-only path.
 
 ### Privacy Layer Settings (tx_mpcvidply_privacy_settings)
 **Site-wide settings for external service privacy layers:**
@@ -149,6 +174,7 @@ Use for branding and security defaults that should not vary per page:
 Use for policies that differ between the sites of one installation:
 - Whether the player announces its state to screen readers
 - Whether visitors are offered resume playback by default
+- Whether YouTube and Vimeo play inside the VidPly player or in the provider's own player
 
 ### Privacy Layer Settings (Site-Wide)
 Use for settings that should be **consistent across all external services**:

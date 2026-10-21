@@ -16,8 +16,8 @@ Backend copy for each provider is edited under **List → Privacy Layer Settings
 
 | Service | Type | Post-consent player | Domain | Features |
 |---|---|---|---|---|
-| YouTube | Video | YouTube IFrame embed | `youtube-nocookie.com` | Privacy-enhanced |
-| Vimeo | Video | Vimeo Player embed | `player.vimeo.com` | Standard player |
+| YouTube | Video | VidPly player around the YouTube embed (default); YouTube IFrame embed with `embedChrome: provider` | `youtube-nocookie.com` | Privacy-enhanced, VidPly captions and transcript |
+| Vimeo | Video | VidPly player around the Vimeo embed (default); Vimeo Player embed with `embedChrome: provider` | `player.vimeo.com` | VidPly captions and transcript |
 | SoundCloud | Audio / Sets | SoundCloud Widget iframe (the same URL the bundled `SoundCloudRenderer` in `vidply` would use) | `w.soundcloud.com` | Visual waveform |
 
 > **About the SoundCloud renderer**
@@ -33,13 +33,14 @@ Backend copy for each provider is edited under **List → Privacy Layer Settings
 - No tracking scripts loaded
 
 ### After Click
-- Privacy layer replaced with the service-specific iframe
-  - YouTube → privacy-enhanced YouTube IFrame embed
-  - Vimeo → Vimeo Player embed
-  - SoundCloud → SoundCloud Widget iframe (visual waveform mode)
-- **Auto-play enabled** (immediate playback)
+- **YouTube / Vimeo** (site setting `mpcVidply.embedChrome: vidply`, default) — the VidPly player loads the provider's embed through its YouTube / Vimeo renderer and keeps its own control bar on top: play / pause, seek, volume, fullscreen, keyboard shortcuts, plus the sidecar captions, chapters and transcript from the media record's **Captions** tab. This applies to single items and to playlist tracks alike.
+- **YouTube / Vimeo** with `mpcVidply.embedChrome: provider` — the privacy layer is replaced with the provider's own iframe (privacy-enhanced YouTube IFrame embed / Vimeo Player embed); VidPly captions and transcript are not available.
+- **SoundCloud** — always the SoundCloud Widget iframe (visual waveform mode), independent of `embedChrome`.
+- **Auto-play** where the browser allows it (iOS gets a ready-to-play embed instead)
 - Service's privacy policy applies from this point on
 - For SoundCloud, the Widget iframe is the same URL VidPly's standalone `SoundCloudRenderer` uses internally — so the user-visible result is identical, the only difference is *who* mounts it (privacy layer vs. VidPly renderer).
+
+See [SettingsArchitecture.md → Controls for YouTube and Vimeo](SettingsArchitecture.md#controls-for-youtube-and-vimeo-mpcvidplyembedchrome) for the setting.
 
 ## User Experience
 
@@ -49,7 +50,7 @@ Backend copy for each provider is edited under **List → Privacy Layer Settings
 **Default text (SoundCloud):**
 > "To activate the widget, you must click on the button. After activating the button, **SoundCloud's privacy policy** applies."
 
-> **For content editors:** After consent, YouTube and Vimeo load their own embed players; SoundCloud loads the **Widget iframe** (waveform UI), not VidPly's unified control bar — unless your site uses the advanced renderer override documented below.
+> **For content editors:** After consent, YouTube and Vimeo play inside the VidPly player with its control bar, captions and transcript — unless an integrator has set **Controls for YouTube and Vimeo** to `provider`, in which case the provider's own player is shown. SoundCloud loads the **Widget iframe** (waveform UI), not VidPly's unified control bar — unless your site uses the advanced renderer override documented below.
 
 **Customizable** - All privacy texts, links, headlines, and button labels can be configured in the backend.
 
@@ -119,17 +120,22 @@ button.addEventListener('click', function() {
 ```
 
 ### Template Logic
+
+`RenderDecisionResolver` sets `vidply.renderMode`; `Partials/VidPly/Player.html` switches on it:
+
 ```html
-<f:if condition="{vidply.serviceType}">
-    <f:then>
-        <!-- Privacy layer (YouTube, Vimeo, SoundCloud) -->
-        <f:render partial="VidPly/PrivacyLayer" />
-    </f:then>
-    <f:else>
-        <!-- VidPly player (video/audio, including HLS/DASH sources) -->
-        <f:render partial="VidPly/MediaPlayer" arguments="{_all}" />
-    </f:else>
-</f:if>
+<f:switch expression="{vidply.renderMode}">
+    <f:case value="privacy">
+        <!-- Single SoundCloud item, or single YouTube/Vimeo with embedChrome: provider -->
+        <f:render partial="VidPly/PrivacyLayer" arguments="{...}" />
+    </f:case>
+    <f:case value="mixedPlaylist">
+        <!-- Single YouTube/Vimeo (embedChrome: vidply) and playlists with external tracks:
+             VidPly player behind the playlist privacy overlay -->
+        <f:render partial="VidPly/MixedPlaylistPlayer" arguments="{_all}" />
+    </f:case>
+    <!-- "audio" / "video": VidPly player for local media, including HLS/DASH sources -->
+</f:switch>
 ```
 
 ## Features
@@ -154,9 +160,11 @@ button.addEventListener('click', function() {
 - Multilingual support (EN/DE + backend translations)
 - Database-driven configuration
 - Works for single items and playlists
-- Minimal overhead (~5KB JS + CSS)
+- Minimal overhead (~5KB JS + CSS) on the privacy-layer-only path (SoundCloud, or YouTube/Vimeo with `embedChrome: provider`)
 
 ## iframe Configuration
+
+The URLs below are the embeds the privacy layer mounts directly (SoundCloud, and YouTube / Vimeo with `embedChrome: provider`). With the default `vidply` mode the VidPly YouTube / Vimeo renderers build the embed themselves and hide the provider's own controls.
 
 ### YouTube
 ```
@@ -296,14 +304,15 @@ ddev typo3 cache:flush
 1. Create test media (YouTube, Vimeo, SoundCloud)
 2. Check **no** external requests on page load
 3. Click play button
-4. Verify iframe loads and plays immediately
-5. Test multilingual sites (EN/DE)
+4. Verify the video plays — for YouTube / Vimeo with the VidPly control bar, and your WebVTT captions and transcript if the record has them
+5. Switch `mpcVidply.embedChrome` to `provider`, flush caches and verify the provider's own player appears instead
+6. Test multilingual sites (EN/DE)
 
 ## Performance
 
-- **Zero impact** until user interaction
+- **Zero external requests** until user interaction
 - **~5KB** JavaScript (PrivacyLayer.js)
 - **~2KB** CSS (privacy-layer.css, loaded conditionally)
-- **No VidPly initialization** for external services
+- **No VidPly initialization** for single SoundCloud items and for single YouTube / Vimeo items with `embedChrome: provider`; with the default `vidply` mode the VidPly core is loaded for YouTube / Vimeo (see [AssetLoading.md](AssetLoading.md))
 - **Cached after first load**
 - **Database queries** cached by TYPO3

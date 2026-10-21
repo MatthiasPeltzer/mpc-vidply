@@ -4,13 +4,13 @@ VidPly intelligently loads only the JavaScript assets needed for your specific m
 
 ## How It Works
 
-The DataProcessor analyzes media items and sets flags indicating which assets are required:
+The DataProcessor analyzes media items and sets flags indicating which assets are required (`RenderDecisionResolver::resolveAssetFlags()`):
 
 | Flag | Loads | When |
 |------|-------|------|
 | `needsPrivacyLayer` | PrivacyLayer.js + privacy-layer.css | YouTube, Vimeo, or SoundCloud present |
-| `needsVidPlay` | VidPly core (`vidply/vidply.esm.min.js` + code-split chunks; compiled from TypeScript, includes the buffering spinner, the optional download button and the SoundCloud renderer) | Video or audio media (not external services) |
-| `needsPlaylist` | PlaylistInit.js | 2+ media items OR native player |
+| `needsVidPlay` | VidPly core (`vidply/vidply.esm.min.js` + code-split chunks; compiled from TypeScript, includes the buffering spinner, the optional download button and the SoundCloud renderer) | Local video or audio, every playlist, and single YouTube / Vimeo items while `mpcVidply.embedChrome` is `vidply` (default) |
+| `needsPlaylist` | PlaylistInit.js | Whenever the VidPly core is loaded (player initialization, playlists) |
 | `needsHLS` | hls.js **1.7.3** (`hls.min.js`) | HLS source (.m3u8) detected in media files |
 | `needsDASH` | dash.js **5.2.1** (`dash.all.min.js`, modern UMD) | DASH source (.mpd) detected in media files |
 
@@ -21,11 +21,25 @@ element's Layout field is `card` or `episodes`.
 
 **CSS always loads** — `vidply.min.css` is lightweight and always included for consistent styling. It also contains the styles for the centered buffering spinner (`.vidply-loading` / `.vidply-buffering`) and the download button.
 
-**SoundCloud uses the privacy-layer path by default** — In `mpc-vidply` SoundCloud media items load only `PrivacyLayer.js` + `privacy-layer.css` (not the VidPly core), because the SoundCloud Widget iframe brings its own UI. The bundled standalone `SoundCloudRenderer` is shipped inside the VidPly core bundle and is therefore only fetched for pages that already need the VidPly core for other reasons (local video / audio, HLS, DASH). See [PrivacyLayer.md → Switch SoundCloud to Renderer Mode](PrivacyLayer.md#switch-soundcloud-to-renderer-mode-advanced) for opting in.
+**YouTube and Vimeo play inside the VidPly player by default** — Single YouTube / Vimeo items load the VidPly core and `PlaylistInit.js` next to the privacy layer, so they get the VidPly control bar, captions and transcript after consent. Set the site setting `mpcVidply.embedChrome` to `provider` to keep them on the lighter privacy-layer-only path with the provider's own player (see [SettingsArchitecture.md](SettingsArchitecture.md#controls-for-youtube-and-vimeo-mpcvidplyembedchrome)).
+
+**SoundCloud uses the privacy-layer path by default** — In `mpc-vidply` single SoundCloud media items load only `PrivacyLayer.js` + `privacy-layer.css` (not the VidPly core), because the SoundCloud Widget iframe brings its own UI. The bundled standalone `SoundCloudRenderer` is shipped inside the VidPly core bundle and is therefore only fetched for pages that already need the VidPly core for other reasons (local video / audio, HLS, DASH). See [PrivacyLayer.md → Switch SoundCloud to Renderer Mode](PrivacyLayer.md#switch-soundcloud-to-renderer-mode-advanced) for opting in.
 
 ## Examples
 
-### Single YouTube / Vimeo / SoundCloud Item
+### Single YouTube / Vimeo Item (default, `embedChrome: vidply`)
+**Loaded:**
+- vidply.min.css
+- privacy-layer.css
+- PrivacyLayer.js (privacy overlay)
+- VidPly player (`vidply/vidply.esm.min.js` + chunks; the YouTube / Vimeo renderer is loaded after consent)
+- PlaylistInit.js (player initialization behind the privacy overlay)
+
+**Not Loaded:**
+- hls.js
+- dash.js
+
+### Single SoundCloud Item, or Single YouTube / Vimeo with `embedChrome: provider`
 **Loaded:**
 - vidply.min.css (styling, incl. spinner & download button styles)
 - privacy-layer.css (privacy layer styles)
@@ -84,10 +98,10 @@ element's Layout field is `card` or `episodes`.
 - vidply.min.css
 - privacy-layer.css
 - PrivacyLayer.js
+- VidPly player (playlist UI; YouTube / Vimeo tracks play through its renderers)
 - PlaylistInit.js (for playlist management)
 
 **Not Loaded:**
-- VidPly player (external services use native iframes via the privacy layer)
 - hls.js
 - dash.js
 
@@ -106,53 +120,37 @@ element's Layout field is `card` or `episodes`.
 - Total: ~605KB (including vendored hls.js 1.7.3)
 
 **After optimization:**
-- Single YouTube / Vimeo / SoundCloud: ~7KB (PrivacyLayer.js + privacy-layer.css)
+- Single SoundCloud, or single YouTube / Vimeo with `embedChrome: provider`: ~7KB (PrivacyLayer.js + privacy-layer.css)
+- Single YouTube / Vimeo (default `embedChrome: vidply`): ~187KB (privacy layer + VidPly core + PlaylistInit)
 - Single local video: ~180KB (VidPly core + PlaylistInit) — already includes the buffering spinner, optional download button and the SoundCloud renderer
 - Video with HLS source: ~314KB (VidPly + PlaylistInit + hls.js)
 - Video with DASH source: ~380KB (VidPly + PlaylistInit + dash.js)
 - Video with HLS + DASH sources: ~514KB (VidPly + PlaylistInit + hls.js + dash.js)
 
 **Savings:**
-- External services: 97% reduction (~350KB → ~7KB)
+- External services on the privacy-layer-only path: 97% reduction (~350KB → ~7KB)
 - Local video without streaming: ~65% reduction vs. the unoptimized "load everything" baseline
 
 > Sizes are minified, **uncompressed**. Real-world transfer is typically 30–40% of these numbers after gzip / brotli.
 
 ## Implementation
 
-### DataProcessor (VidPlyProcessor.php)
+### DataProcessor (VidPlyProcessor.php → RenderDecisionResolver.php)
 
 ```php
-// Analyze media types
-$needsPrivacyLayer = false;
-$needsVidPlay = false;
-$needsPlaylist = false;
-$needsHLS = false;
-$needsDASH = false;
+// $serviceType: 'youtube' | 'vimeo' | 'soundcloud' for a single external item, null otherwise.
+// $singleEmbedInPlayer: true for a single YouTube/Vimeo item while embedChrome is 'vidply'
+// (always false for SoundCloud, whose chrome is fixed to 'provider').
+$isPlaylist = $trackResult['isPlaylist'];
+$needsPrivacyLayer = $serviceType !== null || ($isPlaylist && $trackResult['hasExternalMedia']);
+$needsVidPlay = $isPlaylist || $serviceType === null || $singleEmbedInPlayer;
+$needsPlaylist = $isPlaylist || $needsVidPlay;
 
-// Check for external services
-if (in_array($firstTrackType, ['youtube', 'vimeo', 'soundcloud'])) {
-    // External services use the privacy-layer iframe path.
-    // SoundCloud could alternatively be routed through the bundled
-    // `SoundCloudRenderer` (set $needsVidPlay = true) — see PrivacyLayer.md.
-    $needsPrivacyLayer = true;
-} else {
-    $needsVidPlay = true; // Native VidPly player for local video/audio (incl. HLS/DASH sources)
-    $needsPlaylist = true;
-}
-
-// Check for HLS and DASH streams (detected by MIME type)
-foreach ($tracks as $track) {
-    if (in_array($track['type'], ['application/x-mpegurl', 'application/vnd.apple.mpegurl'])) {
-        $needsHLS = true;
-    }
-    if ($track['type'] === 'application/dash+xml') {
-        $needsDASH = true;
-    }
-}
+// HLS and DASH streams are detected by MIME type on every track and its sources
+// (MediaMimeType::isHls() / MediaMimeType::isDash()).
 ```
 
-### Template (VidPly.html)
+### Template (Partials/VidPly/Player.html)
 
 ```html
 <f:render partial="VidPly/Assets" arguments="{
@@ -182,7 +180,7 @@ foreach ($tracks as $track) {
     <f:asset.script identifier="vidPlyDASH" src="EXT:mpc_vidply/Resources/Public/JavaScript/dash.all.min.js" defer="true"/>
 </f:if>
 
-<!-- VidPly Core - only for native player -->
+<!-- VidPly Core - local media, playlists, single YouTube/Vimeo with embedChrome: vidply -->
 <f:if condition="{needsVidPlay}">
     <f:asset.script identifier="vidPlyWrapper" src="..." />
     <f:asset.script identifier="vidPly" src="..." type="module"/>
@@ -196,7 +194,7 @@ foreach ($tracks as $track) {
 
 ## Benefits
 
-1. **Faster Page Load** - Especially for external service videos (YouTube, Vimeo)
+1. **Faster Page Load** - Especially for SoundCloud and for YouTube / Vimeo with `embedChrome: provider`
 2. **Reduced Bandwidth** - Users only download what they need
 3. **Better Caching** - Unused scripts don't pollute browser cache
 4. **Automatic** - No configuration needed, works based on media types
@@ -215,10 +213,12 @@ All major browsers support conditional asset loading through TYPO3's Asset API:
 To verify conditional loading:
 
 1. Open browser DevTools → Network tab
-2. Create page with single YouTube video
-3. Reload page, check only PrivacyLayer.js loads
-4. Create page with local MP4
-5. Reload, verify VidPly core loads but PrivacyLayer.js doesn't
+2. Create page with a single SoundCloud item
+3. Reload page, check only PrivacyLayer.js loads (no VidPly core)
+4. Create page with a single YouTube video
+5. Reload, verify PrivacyLayer.js, the VidPly core and PlaylistInit.js load — but no request to YouTube before you click play
+6. Create page with local MP4
+7. Reload, verify VidPly core loads but PrivacyLayer.js doesn't
 
 ## Troubleshooting
 

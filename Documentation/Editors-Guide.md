@@ -113,6 +113,8 @@ On existing records with a linked online-media file, use **Refresh metadata** to
 - No tracking before user consent
 - Compliant with GDPR requirements
 
+**Playback:** After consent the video plays **inside the VidPly player** — with the same accessible control bar, keyboard shortcuts, captions and transcript as an MP4 video — also when the content element contains only this one video. Whether this applies is decided per site by the site setting **Controls for YouTube and Vimeo** (`mpcVidply.embedChrome`, see [SettingsArchitecture.md](SettingsArchitecture.md#controls-for-youtube-and-vimeo-mpcvidplyembedchrome)): `vidply` (default) or `provider`, which embeds YouTube's own player instead.
+
 ---
 
 #### Vimeo
@@ -126,6 +128,8 @@ On existing records with a linked online-media file, use **Refresh metadata** to
 4. Add a **title** (required)
 5. Add a **poster image** — **allowed formats: JPG / JPEG, PNG, WebP, SVG**
 6. Optional: add your own captions, chapters and the transcript on the **Captions** tab, as for MP4 videos (see [Captions & Subtitles](#captions--subtitles))
+
+**Privacy and playback:** Same as YouTube — nothing loads before consent; afterwards the video plays inside the VidPly player unless the site setting **Controls for YouTube and Vimeo** is set to `provider`.
 
 ---
 
@@ -180,6 +184,15 @@ do not want the “You might also like” row below the player.
 ---
 
 ### Player UI Options (per media record)
+
+Which options a record shows depends on its media type:
+
+| Media type | Options shown |
+|------------|---------------|
+| Video | All four options below |
+| Audio | All except **Enable floating player** |
+| YouTube, Vimeo | Only **Hide keyboard shortcuts help** — embeds have no speed control in the VidPly bar and nothing that can be downloaded |
+| SoundCloud | None — SoundCloud keeps its own widget without the VidPly control bar |
 
 - **Hide speed button**: Hides the playback speed control for this media item.
   - **Single item**: the speed control is hidden.
