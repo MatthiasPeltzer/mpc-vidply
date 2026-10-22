@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.45] - 2026-10-22
+
+### Added
+- updated vidply fullscreen behaviour
+- YouTube, Vimeo no cookies
+
 ## [1.2.44] - 2026-10-20
 
 ### Added
@@ -1148,6 +1154,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.45]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.44...v1.2.45
 [1.2.44]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.43...v1.2.44
 [1.2.43]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.42...v1.2.43
 [1.2.42]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.41...v1.2.42
