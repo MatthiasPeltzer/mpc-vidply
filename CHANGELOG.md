@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.46] - 2026-10-23
+
+### Added
+- feat(vidply): embed CC bridge and chromeless caption UX
+- fix(vidply): keep page position on exit instead of scrolling player into view
+- fix(vidply): fullscreen pause, Chromium autoplay policy, privacy hosts
+
 ## [1.2.45] - 2026-10-22
 
 ### Added
@@ -1154,6 +1161,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.46]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.45...v1.2.46
 [1.2.45]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.44...v1.2.45
 [1.2.44]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.43...v1.2.44
 [1.2.43]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.42...v1.2.43
