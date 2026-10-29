@@ -335,13 +335,13 @@ tt_content.mpc_vidply {
 
 VidPly only loads JavaScript needed for current media types:
 
-| Scenario | Assets Loaded | Size |
-|----------|---------------|------|
+| Scenario | Assets Loaded | Size (gzip, approx.) |
+|----------|---------------|----------------------|
 | Single SoundCloud, or YouTube/Vimeo with `embedChrome: provider` | PrivacyLayer.js | ~5KB |
 | Single YouTube/Vimeo (default `embedChrome: vidply`) | PrivacyLayer.js + `vidply/vidply.esm.min.js` (+ chunks) + PlaylistInit.js | ~185KB |
-| Local video/audio | `vidply/vidply.esm.min.js` (+ chunks) + PlaylistInit.js | ~180KB |
-| HLS streaming | + hls.min.js | +74KB |
-| DASH streaming | + dash.all.min.js | +200KB |
+| Local video/audio | `vidply/vidply.esm.min.js` (+ chunks) + PlaylistInit.js | ~145KB |
+| HLS streaming | + hls.min.js | +186KB |
+| DASH streaming | + dash.all.min.js | +228KB |
 | Playlist (2+ items) | + PlaylistInit.js | +5KB |
 
 **Up to 97% reduction** for content on the privacy-layer-only path. See [AssetLoading.md](AssetLoading.md) for the full matrix.
@@ -352,9 +352,9 @@ VidPly only loads JavaScript needed for current media types:
 |------|---------|
 | `PrivacyLayer.js` | GDPR consent for external services (YouTube / Vimeo / SoundCloud) |
 | `PlaylistInit.js` | Playlist UI and navigation |
-| `hls.min.js` | hls.js **1.7.3** for adaptive HLS streaming (Chrome / Firefox / Edge / desktop Safari) |
+| `hls.min.js` | hls.js **1.7.4** for adaptive HLS streaming (Chrome / Firefox / Edge / desktop Safari) |
 | `dash.all.min.js` | dash.js **5.2.1** (modern UMD) for MPEG-DASH streaming |
-| `vidply/*.js` | Core player **v1.2.9** (compiled TypeScript → ESM, code-split, includes SoundCloud renderer + buffering spinner + optional download button) |
+| `vidply/*.js` | Core player **v1.2.25** (compiled TypeScript → ESM, code-split, includes SoundCloud renderer + buffering spinner + optional download button) |
 
 ### Player Initialization
 
@@ -429,6 +429,20 @@ Settings fall back to language file translations if database fields are empty.
 ## HLS & DASH Streaming
 
 HLS and DASH are not separate media types. Streaming sources (.m3u8 / .mpd) are added as files within the **Video** or **Audio** media type alongside progressive fallbacks.
+
+### Upgrading the bundled player or streaming libraries
+
+Player behaviour and CDN pins are developed in **`.libs/vidply`**. After player changes:
+
+1. `npm run build` in `.libs/vidply`
+2. `npm run ship:mpc-vidply` (copies `dist/prod/*.js` and CSS into this extension — do not hand-edit shipped chunks under `Resources/Public/JavaScript/vidply/`)
+
+When bumping **hls.js** or **dash.js**, copy the published release artifacts into:
+
+- `Resources/Public/JavaScript/hls.min.js`
+- `Resources/Public/JavaScript/dash.all.min.js`
+
+Then update the CDN pin + Subresource Integrity defaults in `.libs/vidply` (`HLSRenderer.ts` / `DASHRenderer.ts`), rebuild, and ship again. See [HLS-Implementation.md](HLS-Implementation.md) for version details and standalone CDN fallbacks.
 
 ### How It Works
 
@@ -683,5 +697,5 @@ tx_mpcvidply_privacy_settings -- Privacy layer configuration
 
 ---
 
-**Version:** 1.2.27 | **TYPO3:** 13.4+ / 14.x | **PHP:** ≥8.2 | **Bundled player:** VidPly v1.2.9
+**Version:** 1.2.47 | **TYPO3:** 13.4+ / 14.x | **PHP:** ≥8.2 | **Bundled player:** VidPly v1.2.25
 
