@@ -56,3 +56,4 @@ Documentation for the **mpc-vidply** TYPO3 extension. Start here to find the rig
 
 - Extension root: [README.md](../README.md)
 - Changelog: [CHANGELOG.md](../CHANGELOG.md)
+- Standalone player source and npm package: [VidPly](https://github.com/MatthiasPeltzer/vidply) (`.libs/vidply` in the mpcore workspace — build with `npm run ship:mpc-vidply` to refresh bundled assets)

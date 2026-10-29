@@ -8,9 +8,9 @@
 
 | Browser | Implementation | Status |
 |---|---|---|
-| Chrome / Edge | hls.js **1.7.3** (vendored locally) | Working |
-| Firefox | hls.js **1.7.3** | Working |
-| Desktop macOS Safari | hls.js **1.7.3** (for parity with Chrome/Firefox: full quality menu, advanced caption styling) | Working |
+| Chrome / Edge | hls.js **1.7.4** (vendored locally) | Working |
+| Firefox | hls.js **1.7.4** | Working |
+| Desktop macOS Safari | hls.js **1.7.4** (for parity with Chrome/Firefox: full quality menu, advanced caption styling) | Working |
 | iOS / iPadOS Safari | Native HLS (`<video>` MSE is unavailable on iOS) — VidPly bridges native `TextTrack` API into the captions / transcript / quality UI | Working |
 
 ### DASH
@@ -32,15 +32,17 @@ Loaded locally by `mpc-vidply` via `Resources/Private/Partials/VidPly/Assets.htm
 | | |
 |---|---|
 | **Vendored file** | `Resources/Public/JavaScript/hls.min.js` |
-| **Pinned version** | **hls.js 1.7.3** (release build) |
+| **Pinned version** | **hls.js 1.7.4** (release build) |
 
-> The vendored file is the published **1.7.3** release, not a local `master`-branch checkout of hls.js. When upgrading, copy the release artifact (npm / GitHub tag) into `Resources/Public/JavaScript/hls.min.js`.
+> The vendored file is the published **1.7.4** release, not a local `master`-branch checkout of hls.js. When upgrading, copy the release artifact (npm / GitHub tag) into `Resources/Public/JavaScript/hls.min.js`.
 
 VidPly's CDN fallback (used only when hls.js is not already on the page, e.g. standalone embeds):
 
 ```
-https://cdn.jsdelivr.net/npm/hls.js@1.7.3/dist/hls.min.js
+https://cdn.jsdelivr.net/npm/hls.js@1.7.4/dist/hls.min.js
 ```
+
+Standalone embeds load that URL with a built-in **Subresource Integrity** hash (`sha384-p9vgU/7IYJWd3I4STrtqxqR/2cAQlhIX7D/HrTnIMEjjcUox165b7se7sxmm3zDg`). Override via `hlsScriptUrl` / `hlsScriptIntegrity` on the player options; custom URLs need an explicit integrity hash. See [SECURITY.md](https://github.com/MatthiasPeltzer/vidply/blob/main/SECURITY.md) in the VidPly repository.
 
 #### 2. VidPly HLS Renderer
 
@@ -94,6 +96,8 @@ VidPly's CDN fallback (used only when dash.js is not already on the page):
 ```
 https://cdn.jsdelivr.net/npm/dashjs@5.2.1/dist/modern/umd/dash.all.min.js
 ```
+
+Default SRI for that build: `sha384-NwbBGevMmVf2Lv50ZqQWLZ0dLH69dxVHYeS+8t54klP9odovQ2+Ms0J4SWfKzPkr` (`dashScriptUrl` / `dashScriptIntegrity` overrides).
 
 #### 2. VidPly DASH Renderer
 
@@ -202,7 +206,7 @@ ddev typo3 cache:flush
 
 - **Adaptive bitrate** — Automatically adjusts quality (HLS and DASH)
 - **Buffer optimization** — Smooth playback
-- **CDN delivery** — Standalone VidPly embeds can load pinned releases from jsDelivr; `mpc-vidply` ships **hls.js 1.7.3** and **dash.js 5.2.1** locally
+- **CDN delivery** — Standalone VidPly embeds can load pinned releases from jsDelivr; `mpc-vidply` ships **hls.js 1.7.4** and **dash.js 5.2.1** locally
 - **Minimal overhead** — `hls.js` / `dash.js` only load when an `.m3u8` / `.mpd` source is actually used
 - **Conditional loading** — `hls.js` and `dash.js` are loaded independently based on detected source formats by the `VidPlyProcessor`
 - **Native HLS on iOS** — Avoids the cost of running `hls.js` on devices where it cannot run anyway, while still keeping the full VidPly UI through the native `TextTrack` bridge

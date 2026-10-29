@@ -11,7 +11,7 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 | `needsPrivacyLayer` | PrivacyLayer.js + privacy-layer.css | YouTube, Vimeo, or SoundCloud present |
 | `needsVidPlay` | VidPly core (`vidply/vidply.esm.min.js` + code-split chunks; compiled from TypeScript, includes the buffering spinner, the optional download button and the SoundCloud renderer) | Local video or audio, every playlist, and single YouTube / Vimeo items while `mpcVidply.embedChrome` is `vidply` (default) |
 | `needsPlaylist` | PlaylistInit.js | Whenever the VidPly core is loaded (player initialization, playlists) |
-| `needsHLS` | hls.js **1.7.3** (`hls.min.js`) | HLS source (.m3u8) detected in media files |
+| `needsHLS` | hls.js **1.7.4** (`hls.min.js`) | HLS source (.m3u8) detected in media files |
 | `needsDASH` | dash.js **5.2.1** (`dash.all.min.js`, modern UMD) | DASH source (.mpd) detected in media files |
 
 The episode layouts add two more assets, loaded by `VidPly/EpisodeLayout.html`
@@ -117,21 +117,21 @@ element's Layout field is `card` or `episodes`.
 
 **Before optimization:**
 - All JavaScript files loaded on every page with VidPly
-- Total: ~605KB (including vendored hls.js 1.7.3)
+- Total: ~613KB transferred (gzip, all extension JavaScript combined)
 
 **After optimization:**
 - Single SoundCloud, or single YouTube / Vimeo with `embedChrome: provider`: ~7KB (PrivacyLayer.js + privacy-layer.css)
 - Single YouTube / Vimeo (default `embedChrome: vidply`): ~187KB (privacy layer + VidPly core + PlaylistInit)
-- Single local video: ~180KB (VidPly core + PlaylistInit) — already includes the buffering spinner, optional download button and the SoundCloud renderer
-- Video with HLS source: ~314KB (VidPly + PlaylistInit + hls.js)
-- Video with DASH source: ~380KB (VidPly + PlaylistInit + dash.js)
-- Video with HLS + DASH sources: ~514KB (VidPly + PlaylistInit + hls.js + dash.js)
+- Single local video: ~145KB (VidPly core + PlaylistInit) — already includes the buffering spinner, optional download button and the SoundCloud renderer
+- Video with HLS source: ~330KB (VidPly + PlaylistInit + hls.js)
+- Video with DASH source: ~370KB (VidPly + PlaylistInit + dash.js)
+- Video with HLS + DASH sources: ~560KB (VidPly + PlaylistInit + hls.js + dash.js)
 
 **Savings:**
 - External services on the privacy-layer-only path: 97% reduction (~350KB → ~7KB)
 - Local video without streaming: ~65% reduction vs. the unoptimized "load everything" baseline
 
-> Sizes are minified, **uncompressed**. Real-world transfer is typically 30–40% of these numbers after gzip / brotli.
+> Scenario sizes above are **approximate gzip transfer** (minified sources). On-disk minified files are larger — e.g. `hls.min.js` ≈ 609 KB, `dash.all.min.js` ≈ 782 KB, all `vidply/*.js` chunks combined ≈ 542 KB.
 
 ## Implementation
 
@@ -170,7 +170,7 @@ $needsPlaylist = $isPlaylist || $needsVidPlay;
     <f:asset.script identifier="vidPlyPrivacy" src="..." type="module"/>
 </f:if>
 
-<!-- HLS.js 1.7.3 - only for HLS streams -->
+<!-- HLS.js 1.7.4 - only for HLS streams -->
 <f:if condition="{needsHLS}">
     <f:asset.script identifier="vidPlyHLS" src="EXT:mpc_vidply/Resources/Public/JavaScript/hls.min.js" defer="true"/>
 </f:if>

@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.47] - 2026-10-29
+
+### Changed
+
+- Updated bundled VidPly player assets with hls.js **1.7.4** CDN pin and SRI in the HLS renderer.
+- Updated vendored `hls.min.js` to **hls.js 1.7.4**.
+- Documentation updated for hls.js 1.7.4.
+- Documentation: corrected bundled player / extension version references, gzip size estimates, SRI notes, and player upgrade workflow (`ship:mpc-vidply`).
+
 ## [1.2.46] - 2026-10-23
 
 ### Added
@@ -1161,6 +1170,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.47]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.46...v1.2.47
 [1.2.46]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.45...v1.2.46
 [1.2.45]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.44...v1.2.45
 [1.2.44]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.43...v1.2.44
