@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [1.2.48] - 2026-11-06
+
+- Updated vendored dash.js to **5.3.0** (modern UMD).
+- Bundled VidPly player assets with dash.js **5.3.0** CDN pin and SRI in the DASH renderer.
+- Documentation updated for dash.js **5.3.0**.
+
 ## [1.2.47] - 2026-10-29
 
 ### Changed
@@ -1170,6 +1178,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.48]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.47...v1.2.48
 [1.2.47]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.46...v1.2.47
 [1.2.46]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.45...v1.2.46
 [1.2.45]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.44...v1.2.45
