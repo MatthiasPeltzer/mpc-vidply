@@ -359,26 +359,66 @@ final class TrackAssembler
             $track['tracks'] = $textTracks;
         }
 
-        $audioDescFiles = $this->files->getReferences($mediaUid, 'audio_description');
-        if ($audioDescFiles !== []) {
-            $audioDescUrl = $this->files->getPublicUrl($audioDescFiles[0]);
-            if ($audioDescUrl !== '') {
-                $track['audioDescriptionSrc'] = $audioDescUrl;
+        [$audioDescUrl, $audioDescFallbackUrl] = $this->resolveAlternativeVideo($mediaUid, 'audio_description');
+        if ($audioDescUrl !== '') {
+            $track['audioDescriptionSrc'] = $audioDescUrl;
+            if ($audioDescFallbackUrl !== '') {
+                $track['audioDescriptionFallbackSrc'] = $audioDescFallbackUrl;
             }
         }
 
-        $signLangFiles = $this->files->getReferences($mediaUid, 'sign_language');
-        if ($signLangFiles !== []) {
-            $signLangUrl = $this->files->getPublicUrl($signLangFiles[0]);
-            if ($signLangUrl !== '') {
-                $track['signLanguageSrc'] = $signLangUrl;
-                $track['signLanguageDisplayMode'] = $mediaRecord['sign_language_display_mode'] ?? 'pip';
+        [$signLangUrl, $signLangFallbackUrl] = $this->resolveAlternativeVideo($mediaUid, 'sign_language');
+        if ($signLangUrl !== '') {
+            $track['signLanguageSrc'] = $signLangUrl;
+            if ($signLangFallbackUrl !== '') {
+                $track['signLanguageFallbackSrc'] = $signLangFallbackUrl;
             }
+            $track['signLanguageDisplayMode'] = $mediaRecord['sign_language_display_mode'] ?? 'pip';
         }
 
         if (!empty($mediaRecord['enable_transcript'])) {
             $track['enableTranscript'] = true;
         }
+    }
+
+    /**
+     * Audio-description / sign-language video of a record: the first file, or,
+     * when the field holds a stream (as on converted records), the stream plus
+     * the first progressive file as fallback for browsers without MSE. HLS wins
+     * over DASH here because Safari plays it without a library.
+     *
+     * @return array{0: string, 1: string} Source URL and fallback URL ('' when none)
+     */
+    private function resolveAlternativeVideo(int $mediaUid, string $fieldName): array
+    {
+        $references = $this->files->getReferences($mediaUid, $fieldName);
+        if ($references === []) {
+            return ['', ''];
+        }
+
+        $hls = null;
+        $dash = null;
+        $progressive = null;
+        foreach ($references as $reference) {
+            $extension = strtolower($reference->getExtension());
+            if ($extension === 'm3u8') {
+                $hls ??= $reference;
+            } elseif ($extension === 'mpd') {
+                $dash ??= $reference;
+            } elseif (!in_array($extension, MediaMimeType::NON_PROGRESSIVE_EXTENSIONS, true)) {
+                $progressive ??= $reference;
+            }
+        }
+
+        $stream = $hls ?? $dash;
+        if ($stream === null) {
+            return [$this->files->getPublicUrl($references[0]), ''];
+        }
+
+        return [
+            $this->files->getPublicUrl($stream),
+            $progressive !== null ? $this->files->getPublicUrl($progressive) : '',
+        ];
     }
 
     /**

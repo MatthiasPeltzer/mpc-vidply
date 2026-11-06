@@ -62,7 +62,20 @@ CREATE TABLE tx_mpcvidply_media (
 	# Categorization
 	categories int unsigned DEFAULT '0' NOT NULL,
 
-	KEY slug (slug(191))
+	# Streaming conversion (ffmpeg → HLS/DASH variant record)
+	stream_convert tinyint unsigned DEFAULT '0' NOT NULL,
+	stream_format varchar(10) DEFAULT 'hls' NOT NULL,
+	stream_status varchar(20) DEFAULT '' NOT NULL,
+	stream_error text,
+	stream_converted_at int unsigned DEFAULT '0' NOT NULL,
+	stream_ffmpeg_version varchar(50) DEFAULT '' NOT NULL,
+	stream_record int unsigned DEFAULT '0' NOT NULL,
+	stream_source int unsigned DEFAULT '0' NOT NULL,
+	stream_signature varchar(64) DEFAULT '' NOT NULL,
+	stream_output_folder varchar(1024) DEFAULT '' NOT NULL,
+
+	KEY slug (slug(191)),
+	KEY stream_queue (stream_status, stream_convert)
 );
 
 #

@@ -15,6 +15,8 @@ services:
       # with the container file extension as their first constructor argument.
       - '../Classes/OnlineMedia/Helpers/ExternalMediaDomainValidationTrait.php'
       - '../Classes/OnlineMedia/Helpers/AbstractExternalMediaHelper.php'
+      # Needs EXT:reports; registered conditionally in Services.php.
+      - '../Classes/Report/*'
 
   # DataProcessors are instantiated via GeneralUtility::makeInstance() from
   # TypoScript, so they must be marked public for the service locator fallback
@@ -119,3 +121,27 @@ services:
       - name: 'console.command'
         command: 'mpc-vidply:convert-srt-to-vtt'
         description: 'Convert VidPly-linked SRT subtitle files to WebVTT'
+
+  # Streaming conversion (ffmpeg → HLS/DASH). The hook, display condition and
+  # status element reach these through makeInstance(), so they are public.
+  Mpc\MpcVidply\Hooks\StreamConversionDataHandlerHook:
+    public: true
+
+  Mpc\MpcVidply\Service\Streaming\StreamingSettings:
+    public: true
+
+  Mpc\MpcVidply\Service\Streaming\StreamRecordRepository:
+    public: true
+
+  Mpc\MpcVidply\Service\Streaming\FfmpegVersionChecker:
+    public: true
+
+  Mpc\MpcVidply\Service\Streaming\ProcessRunnerInterface:
+    alias: Mpc\MpcVidply\Service\Streaming\SymfonyProcessRunner
+
+  Mpc\MpcVidply\Command\StreamConvertCommand:
+    tags:
+      - name: 'console.command'
+        command: 'mpc-vidply:stream:convert'
+        description: 'Convert queued VidPly videos to HLS/DASH streaming variants with ffmpeg'
+        schedulable: true

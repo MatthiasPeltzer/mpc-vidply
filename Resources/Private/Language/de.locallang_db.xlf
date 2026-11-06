@@ -55,6 +55,10 @@
         <source>H3 - Hidden (SR only)</source>
         <target>H3 - Versteckt (nur SR)</target>
       </trans-unit>
+      <trans-unit id="palette.streaming">
+        <source>Streaming conversion</source>
+        <target>Streaming-Konvertierung</target>
+      </trans-unit>
       <trans-unit id="sys_file_reference.tx_desc_src_file">
         <source>Audio Description Version</source>
         <target>Audiodeskriptions-Version</target>
@@ -438,6 +442,38 @@
       <trans-unit id="tx_mpcvidply_media.slug.description">
         <source>SEO-friendly URL segment used on the detail page. Will be auto-generated from the title unless overridden. Must be unique per site.</source>
         <target>SEO-freundliches URL-Segment für die Detailseite. Wird automatisch aus dem Titel generiert, sofern nicht überschrieben. Muss pro Site eindeutig sein.</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.stream_convert">
+        <source>Convert to stream (HLS/DASH)</source>
+        <target>In Stream umwandeln (HLS/DASH)</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.stream_convert.description">
+        <source>Creates a separate streaming record "&lt;title&gt; (Stream)" in this folder with adaptive renditions of the video, its audio-description and sign-language videos. This record stays unchanged. Conversion runs in the background.</source>
+        <target>Legt in diesem Ordner einen eigenen Streaming-Datensatz „&lt;Titel&gt; (Stream)“ mit adaptiven Auflösungen des Videos sowie seiner Audiodeskriptions- und Gebärdensprach-Videos an. Dieser Datensatz bleibt unverändert. Die Umwandlung läuft im Hintergrund.</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.stream_format">
+        <source>Streaming format</source>
+        <target>Streaming-Format</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.stream_format.both">
+        <source>HLS and DASH (shared CMAF segments)</source>
+        <target>HLS und DASH (gemeinsame CMAF-Segmente)</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.stream_format.dash">
+        <source>DASH</source>
+        <target>DASH</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.stream_format.description">
+        <source>HLS plays natively in Safari and via hls.js elsewhere. DASH needs dash.js. "Both" writes one set of segments with an HLS and a DASH manifest.</source>
+        <target>HLS spielt nativ in Safari und sonst über hls.js. DASH benötigt dash.js. „Beides“ schreibt einen Satz Segmente mit HLS- und DASH-Manifest.</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.stream_format.hls">
+        <source>HLS (recommended)</source>
+        <target>HLS (empfohlen)</target>
+      </trans-unit>
+      <trans-unit id="tx_mpcvidply_media.stream_status">
+        <source>Conversion status</source>
+        <target>Status der Umwandlung</target>
       </trans-unit>
       <trans-unit id="tx_mpcvidply_media.title">
         <source>Title</source>

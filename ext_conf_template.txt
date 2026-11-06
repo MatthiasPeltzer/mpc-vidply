@@ -20,3 +20,27 @@ theme = dark
 
 # cat=config/ui/50; type=boolean; label=LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:config.themeSyncEnabled
 themeSyncEnabled = 0
+
+# cat=streaming/enable/10; type=boolean; label=LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:config.streamingEnabled
+streamingEnabled = 0
+
+# cat=streaming/ffmpeg/20; type=string; label=LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:config.ffmpegPath
+ffmpegPath = ffmpeg
+
+# cat=streaming/ffmpeg/30; type=string; label=LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:config.ffprobePath
+ffprobePath = ffprobe
+
+# cat=streaming/ffmpeg/40; type=int+; label=LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:config.streamingThreads
+streamingThreads = 0
+
+# cat=streaming/output/50; type=string; label=LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:config.streamingTargetFolder
+streamingTargetFolder = 1:/user_upload/
+
+# cat=streaming/output/60; type=string; label=LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:config.streamingRenditions
+streamingRenditions = 1080,720,480,360
+
+# cat=streaming/output/70; type=string; label=LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:config.streamingSignLanguageRenditions
+streamingSignLanguageRenditions = 480,360
+
+# cat=streaming/output/80; type=int+; label=LLL:EXT:mpc_vidply/Resources/Private/Language/locallang.xlf:config.streamingSegmentDuration
+streamingSegmentDuration = 4

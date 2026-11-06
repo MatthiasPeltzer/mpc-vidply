@@ -201,6 +201,9 @@ final class SingleTrackDataExtractor
                 'mimeType' => '',
             ];
             $optionOverrides['audioDescriptionSrc'] = $track['audioDescriptionSrc'];
+            if (!empty($track['audioDescriptionFallbackSrc'])) {
+                $optionOverrides['audioDescriptionFallbackSrc'] = $track['audioDescriptionFallbackSrc'];
+            }
             $optionOverrides['audioDescriptionButton'] = true;
         }
 
@@ -220,6 +223,9 @@ final class SingleTrackDataExtractor
                 'label' => 'Sign Language',
             ];
             $optionOverrides['signLanguageSrc'] = $track['signLanguageSrc'];
+            if (!empty($track['signLanguageFallbackSrc'])) {
+                $optionOverrides['signLanguageFallbackSrc'] = $track['signLanguageFallbackSrc'];
+            }
             $optionOverrides['signLanguageButton'] = true;
             $optionOverrides['signLanguagePosition'] = 'bottom-right';
             $displayMode = $track['signLanguageDisplayMode'] ?? 'pip';

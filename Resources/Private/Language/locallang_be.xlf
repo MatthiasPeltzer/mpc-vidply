@@ -102,6 +102,102 @@
       <trans-unit id="preview.untitled">
         <source>Untitled</source>
       </trans-unit>
+      <trans-unit id="report.ffmpeg.disabled">
+        <source>Disabled</source>
+      </trans-unit>
+      <trans-unit id="report.ffmpeg.disabled.message">
+        <source>Streaming conversion is turned off in the extension configuration (streamingEnabled).</source>
+      </trans-unit>
+      <trans-unit id="report.ffmpeg.notFound">
+        <source>Not found</source>
+      </trans-unit>
+      <trans-unit id="report.ffmpeg.notFound.message">
+        <source>"%1$s" cannot be run. Install a current static ffmpeg build or set the path in the extension configuration. %2$s</source>
+      </trans-unit>
+      <trans-unit id="report.ffmpeg.ok.message">
+        <source>Found at "%s".</source>
+      </trans-unit>
+      <trans-unit id="report.ffmpeg.title">
+        <source>ffmpeg</source>
+      </trans-unit>
+      <trans-unit id="report.ffmpeg.tooOld.message">
+        <source>Version %s or newer is required for the streaming conversion.</source>
+      </trans-unit>
+      <trans-unit id="report.ffmpeg.unknownVersion">
+        <source>Unknown version</source>
+      </trans-unit>
+      <trans-unit id="report.ffmpeg.unknownVersion.message">
+        <source>This build reports no release number. The conversion needs at least version %s.</source>
+      </trans-unit>
+      <trans-unit id="report.ffprobe.title">
+        <source>ffprobe</source>
+      </trans-unit>
+      <trans-unit id="stream.error.noLocalVideo">
+        <source>The record has no local video file (MP4, WebM, MOV, MKV) to convert. External and already streaming sources cannot be converted.</source>
+      </trans-unit>
+      <trans-unit id="stream.error.noLocalVideo.title">
+        <source>Nothing to convert</source>
+      </trans-unit>
+      <trans-unit id="stream.ffmpeg.missing">
+        <source>ffmpeg or ffprobe cannot be run (%1$s, %2$s). Conversions fail until an administrator installs ffmpeg 7.1 or newer.</source>
+      </trans-unit>
+      <trans-unit id="stream.ffmpeg.tooOld">
+        <source>The installed ffmpeg %1$s is too old; version %2$s or newer is required.</source>
+      </trans-unit>
+      <trans-unit id="stream.ffmpeg.unknownVersion">
+        <source>The installed ffmpeg reports no release number (development build). Make sure it is at least version %s.</source>
+      </trans-unit>
+      <trans-unit id="stream.flash.queued">
+        <source>The video is queued for conversion to a stream.</source>
+      </trans-unit>
+      <trans-unit id="stream.flash.queued.title">
+        <source>Streaming conversion queued</source>
+      </trans-unit>
+      <trans-unit id="stream.flash.removed">
+        <source>The streaming record and its files were removed.</source>
+      </trans-unit>
+      <trans-unit id="stream.flash.removed.title">
+        <source>Streaming version removed</source>
+      </trans-unit>
+      <trans-unit id="stream.format.both">
+        <source>HLS and DASH</source>
+      </trans-unit>
+      <trans-unit id="stream.format.dash">
+        <source>DASH</source>
+      </trans-unit>
+      <trans-unit id="stream.format.hls">
+        <source>HLS</source>
+      </trans-unit>
+      <trans-unit id="stream.status.convertedAt">
+        <source>Converted</source>
+      </trans-unit>
+      <trans-unit id="stream.status.done">
+        <source>Converted. The streaming record is up to date.</source>
+      </trans-unit>
+      <trans-unit id="stream.status.failed">
+        <source>The conversion failed. Fix the cause and save the record to try again.</source>
+      </trans-unit>
+      <trans-unit id="stream.status.ffmpegVersion">
+        <source>ffmpeg version</source>
+      </trans-unit>
+      <trans-unit id="stream.status.format">
+        <source>Format</source>
+      </trans-unit>
+      <trans-unit id="stream.status.isVariant">
+        <source>This is the streaming version of %s. It is rebuilt on every conversion of the original: change files and texts there, not here.</source>
+      </trans-unit>
+      <trans-unit id="stream.status.none">
+        <source>Not converted yet. Save the record to queue it.</source>
+      </trans-unit>
+      <trans-unit id="stream.status.pending">
+        <source>Queued. The conversion starts with the next run of the scheduler task "mpc-vidply:stream:convert".</source>
+      </trans-unit>
+      <trans-unit id="stream.status.processing">
+        <source>Converting… This can take a while for long videos.</source>
+      </trans-unit>
+      <trans-unit id="stream.status.variantLink">
+        <source>Streaming record: %s</source>
+      </trans-unit>
       <trans-unit id="tabs.accessibility">
         <source>Accessibility</source>
       </trans-unit>
@@ -171,17 +267,17 @@
       <trans-unit id="tt_content.tx_mpcvidply_episode_sort">
         <source>Episode order</source>
       </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_episode_sort.date_asc">
+        <source>Date (oldest first)</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_episode_sort.date_desc">
+        <source>Date (newest first)</source>
+      </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_episode_sort.description">
         <source>Preselected order of the episode list. Visitors can change it with the sort dropdown. Playback always follows the order of the media items above.</source>
       </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_episode_sort.sorting">
         <source>Manual (order of the media items)</source>
-      </trans-unit>
-      <trans-unit id="tt_content.tx_mpcvidply_episode_sort.date_desc">
-        <source>Date (newest first)</source>
-      </trans-unit>
-      <trans-unit id="tt_content.tx_mpcvidply_episode_sort.date_asc">
-        <source>Date (oldest first)</source>
       </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_episode_sort.title_asc">
         <source>Title (A-Z)</source>
@@ -195,29 +291,17 @@
       <trans-unit id="tt_content.tx_mpcvidply_layout">
         <source>Layout</source>
       </trans-unit>
-      <trans-unit id="tt_content.tx_mpcvidply_layout.description">
-        <source>How the player is presented. "Episode card" adds a square cover with title, date, duration and description around the player. "Episode card with episode list" puts the player on top and lists every selected medium below it, replacing the player's own playlist panel.</source>
+      <trans-unit id="tt_content.tx_mpcvidply_layout.card">
+        <source>Episode card</source>
       </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_layout.default">
         <source>Player only (default)</source>
       </trans-unit>
-      <trans-unit id="tt_content.tx_mpcvidply_layout.card">
-        <source>Episode card</source>
+      <trans-unit id="tt_content.tx_mpcvidply_layout.description">
+        <source>How the player is presented. "Episode card" adds a square cover with title, date, duration and description around the player. "Episode card with episode list" puts the player on top and lists every selected medium below it, replacing the player's own playlist panel.</source>
       </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_layout.episodes">
         <source>Episode card with episode list</source>
-      </trans-unit>
-      <trans-unit id="tt_content.tx_mpcvidply_playlist_position">
-        <source>Playlist position</source>
-      </trans-unit>
-      <trans-unit id="tt_content.tx_mpcvidply_playlist_position.description">
-        <source>Where the in-player playlist panel appears when two or more media items are selected. On mobile devices the list is always shown below the player.</source>
-      </trans-unit>
-      <trans-unit id="tt_content.tx_mpcvidply_playlist_position.below">
-        <source>Below the player (default)</source>
-      </trans-unit>
-      <trans-unit id="tt_content.tx_mpcvidply_playlist_position.right">
-        <source>Right of the player</source>
       </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_listview_rows">
         <source>Listview Rows</source>
@@ -303,11 +387,35 @@
       <trans-unit id="tt_content.tx_mpcvidply_playlist_auto_advance">
         <source>Auto-advance to Next Track</source>
       </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_playlist_position">
+        <source>Playlist position</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_playlist_position.below">
+        <source>Below the player (default)</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_playlist_position.description">
+        <source>Where the in-player playlist panel appears when two or more media items are selected. On mobile devices the list is always shown below the player.</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_playlist_position.right">
+        <source>Right of the player</source>
+      </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_poster">
         <source>Poster Image</source>
       </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_resume_playback">
+        <source>Resume from Last Position</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_resume_playback.toggle">
+        <source>Resume from last position</source>
+      </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_show_related">
         <source>Related content</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_show_related.description">
+        <source>When enabled, a horizontal list of more items from the same category is shown below the player (if any exist). Turn off to hide this block entirely.</source>
+      </trans-unit>
+      <trans-unit id="tt_content.tx_mpcvidply_show_related.toggle">
+        <source>Show "You might also like" row</source>
       </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_show_track_info">
         <source>Show track info header (single media)</source>
@@ -317,18 +425,6 @@
       </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_show_track_info.toggle">
         <source>Show track info header (single media)</source>
-      </trans-unit>
-      <trans-unit id="tt_content.tx_mpcvidply_resume_playback">
-        <source>Resume from Last Position</source>
-      </trans-unit>
-      <trans-unit id="tt_content.tx_mpcvidply_resume_playback.toggle">
-        <source>Resume from last position</source>
-      </trans-unit>
-      <trans-unit id="tt_content.tx_mpcvidply_show_related.description">
-        <source>When enabled, a horizontal list of more items from the same category is shown below the player (if any exist). Turn off to hide this block entirely.</source>
-      </trans-unit>
-      <trans-unit id="tt_content.tx_mpcvidply_show_related.toggle">
-        <source>Show "You might also like" row</source>
       </trans-unit>
       <trans-unit id="tt_content.tx_mpcvidply_sign_language">
         <source>Sign Language Videos</source>

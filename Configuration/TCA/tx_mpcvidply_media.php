@@ -48,6 +48,7 @@ return [
                     import_source_url,
                     media_type,
                     media_file,
+                    --palette--;LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:palette.streaming;streaming,
                     --palette--;;metadata,
                     poster,
                     --palette--;;ui,
@@ -198,6 +199,9 @@ return [
         ],
         'timeRestriction' => [
             'showitem' => 'starttime,endtime',
+        ],
+        'streaming' => [
+            'showitem' => 'stream_convert,stream_format,--linebreak--,stream_status',
         ],
     ],
     'columns' => [
@@ -712,7 +716,7 @@ return [
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.audio_description',
             'config' => [
                 'type' => 'file',
-                'allowed' => 'mp4,webm,externalvideo',
+                'allowed' => 'mp4,webm,externalvideo,m3u8,mpd',
                 'maxitems' => 5,
                 'appearance' => [
                     'createNewRelationLinkTitle' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.audio_description.add',
@@ -739,7 +743,7 @@ return [
             'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.sign_language',
             'config' => [
                 'type' => 'file',
-                'allowed' => 'mp4,webm,externalvideo',
+                'allowed' => 'mp4,webm,externalvideo,m3u8,mpd',
                 'maxitems' => 5,
                 'appearance' => [
                     'createNewRelationLinkTitle' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.sign_language.add',
@@ -858,6 +862,58 @@ return [
             'label' => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.categories',
             'config' => [
                 'type' => 'category',
+            ],
+        ],
+        // Streaming conversion. The queue state lives in non-TCA columns
+        // (stream_record, stream_source, stream_signature, …) so DataHandler
+        // never copies or overwrites them.
+        'stream_convert' => [
+            'exclude' => true,
+            'l10n_mode' => 'exclude',
+            'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.stream_convert',
+            'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.stream_convert.description',
+            'displayCond' => 'USER:Mpc\\MpcVidply\\Form\\DisplayCondition\\StreamingDisplayCondition->canConvert',
+            'onChange' => 'reload',
+            'config' => [
+                'type' => 'check',
+                'renderType' => 'checkboxToggle',
+                'items' => [
+                    [
+                        'label' => '',
+                    ],
+                ],
+            ],
+        ],
+        'stream_format' => [
+            'exclude' => true,
+            'l10n_mode' => 'exclude',
+            'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.stream_format',
+            'description' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.stream_format.description',
+            'displayCond' => [
+                'AND' => [
+                    'FIELD:stream_convert:=:1',
+                    'USER:Mpc\\MpcVidply\\Form\\DisplayCondition\\StreamingDisplayCondition->canConvert',
+                ],
+            ],
+            'config' => [
+                'type' => 'select',
+                'renderType' => 'selectSingle',
+                'items' => [
+                    ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.stream_format.hls', 'value' => 'hls'],
+                    ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.stream_format.dash', 'value' => 'dash'],
+                    ['label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.stream_format.both', 'value' => 'both'],
+                ],
+                'default' => 'hls',
+            ],
+        ],
+        'stream_status' => [
+            'exclude' => true,
+            'l10n_mode' => 'exclude',
+            'label' => 'LLL:EXT:mpc_vidply/Resources/Private/Language/locallang_db.xlf:tx_mpcvidply_media.stream_status',
+            'displayCond' => 'USER:Mpc\\MpcVidply\\Form\\DisplayCondition\\StreamingDisplayCondition->showStatus',
+            'config' => [
+                'type' => 'user',
+                'renderType' => 'vidplyStreamStatus',
             ],
         ],
     ],

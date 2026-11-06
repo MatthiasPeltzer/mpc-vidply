@@ -205,6 +205,24 @@ Which options a record shows depends on its media type:
 - **Enable floating player (custom PiP)**: Replaces the browser's native Picture-in-Picture with VidPly's **draggable, resizable floating window** (also triggers when the video scrolls out of view while playing). Only applies to **single-item** players, not playlists. Distinct from the standard **PiP** toolbar button, which uses the browser's native mini-player.
 - **Buffering spinner**: A centered loading spinner is shown automatically while the player is buffering — no configuration required. Works for local files, HLS and DASH streams.
 
+### Streaming conversion (HLS / DASH)
+
+When your administrator has enabled it, video records with an uploaded file (MP4, WebM, MOV, MKV) show the tab **Streaming conversion**:
+
+1. Tick **Convert to stream (HLS/DASH)**.
+2. Choose the **Streaming format**: **HLS** (recommended, plays everywhere), **DASH**, or **HLS and DASH** (one set of segments, both manifests).
+3. Save. The tab shows **Queued**; the conversion runs in the background, usually within a few minutes.
+
+When it is done, the folder contains a new record **"<title> (Stream)"**. Use that record in your player content elements. It contains:
+
+- the video in several qualities, switched automatically by the player,
+- converted **audio-description** and **sign-language** videos (sign language also as MP4),
+- your captions, chapters, download setting, poster and texts, in every translation. Without a poster, a frame from the video is used.
+
+Your original record stays as it is. Make changes **on the original**; saving it with changed files or format converts it again and updates the streaming record. Unticking the option, or deleting the original, removes the streaming record again. If the conversion fails, the tab shows the error — contact your administrator.
+
+Technical details: [Streaming Conversion](Streaming-Conversion.md).
+
 ## Accessibility Features
 
 VidPly provides WCAG 2.2 AA accessibility support.

@@ -159,6 +159,15 @@ final class RenderDecisionResolver
                     $needsDASH = true;
                 }
             }
+            // Converted audio-description / sign-language videos are streams too.
+            foreach (['audioDescriptionSrc', 'signLanguageSrc'] as $alternativeKey) {
+                $extension = strtolower(pathinfo((string)parse_url((string)($track[$alternativeKey] ?? ''), PHP_URL_PATH), PATHINFO_EXTENSION));
+                if ($extension === 'm3u8') {
+                    $needsHLS = true;
+                } elseif ($extension === 'mpd') {
+                    $needsDASH = true;
+                }
+            }
             if ($needsHLS && $needsDASH) {
                 break;
             }

@@ -33,10 +33,13 @@
     "saschaegerer/phpstan-typo3": "^3.0",
     "typo3/coding-standards": "^0.8.0",
     "typo3/cms-install": "^13.4 || ^14.3",
+    "typo3/cms-reports": "^13.4 || ^14.3",
     "typo3/testing-framework": "^9.3"
   },
   "suggest": {
-    "typo3/cms-fluid-styled-content": "Optional: use site-package layoutRootPaths overrides for themed frame/header partials"
+    "typo3/cms-fluid-styled-content": "Optional: use site-package layoutRootPaths overrides for themed frame/header partials",
+    "typo3/cms-reports": "Optional: ffmpeg/ffprobe version check of the streaming conversion in the Status Report",
+    "typo3/cms-scheduler": "Optional: run the streaming conversion (mpc-vidply:stream:convert) as a scheduled task"
   },
   "autoload": {
     "psr-4": {

@@ -197,6 +197,21 @@ final class RenderDecisionResolverTest extends TestCase
                 null,
                 ['needsPrivacyLayer' => false, 'needsVidPlay' => true, 'needsHLS' => false, 'needsDASH' => true],
             ],
+            'streamed sign-language video pulls in hls.js' => [
+                ['tracks' => [['type' => 'video/mp4', 'signLanguageSrc' => '/fileadmin/stream/sign.m3u8?v=2']]],
+                null,
+                ['needsVidPlay' => true, 'needsHLS' => true, 'needsDASH' => false],
+            ],
+            'streamed audio description pulls in dash.js' => [
+                ['tracks' => [['type' => 'video/mp4', 'audioDescriptionSrc' => '/fileadmin/stream/ad.mpd']]],
+                null,
+                ['needsVidPlay' => true, 'needsHLS' => false, 'needsDASH' => true],
+            ],
+            'progressive accessibility videos need no streaming library' => [
+                ['tracks' => [['type' => 'video/mp4', 'audioDescriptionSrc' => '/ad.mp4', 'signLanguageSrc' => '/sl.mp4']]],
+                null,
+                ['needsHLS' => false, 'needsDASH' => false],
+            ],
             'external playlist needs the privacy layer' => [
                 ['isPlaylist' => true, 'hasExternalMedia' => true, 'tracks' => [['type' => 'youtube'], ['type' => 'video/mp4']]],
                 null,

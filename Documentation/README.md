@@ -13,6 +13,7 @@ Documentation for the **mpc-vidply** TYPO3 extension. Start here to find the rig
 | Understand where settings live | [Settings Architecture](SettingsArchitecture.md) |
 | Optimize frontend asset loading | [Asset Loading](AssetLoading.md) |
 | Set up HLS or DASH streaming | [HLS Implementation](HLS-Implementation.md) |
+| Convert uploaded videos to HLS / DASH with ffmpeg | [Streaming Conversion](Streaming-Conversion.md) · [Editors Guide → Streaming conversion](Editors-Guide.md#streaming-conversion-hls--dash) |
 | Override Fluid templates | [Partials](Partials.md) |
 | Embed players in Vue / Swiper sliders | [Integrations](Integrations.md) |
 | Configure JSON-LD / SEO structured data | [Developers Quickstart → Structured data](Developers-Quickstart.md#structured-data-json-ld) |
@@ -30,6 +31,7 @@ Documentation for the **mpc-vidply** TYPO3 extension. Start here to find the rig
 - **[Settings Architecture](SettingsArchitecture.md)** — Extension Configuration, privacy settings, player CE options, per-media fields.
 - **[Listview](Listview.md)** (section 2) — Route enhancers, database updates, cache flush, hidden detail pages in breadcrumbs.
 - **[PrivacyLayer.md](PrivacyLayer.md)** — How external-service consent works site-wide.
+- **[Streaming Conversion](Streaming-Conversion.md)** — ffmpeg requirements, extension settings, scheduler task, output layout.
 
 ### Developers & integrators
 
@@ -50,6 +52,7 @@ Documentation for the **mpc-vidply** TYPO3 extension. Start here to find the rig
 | [AssetLoading.md](AssetLoading.md) | Conditional JavaScript loading |
 | [PrivacyLayer.md](PrivacyLayer.md) | GDPR consent for YouTube/Vimeo/SoundCloud |
 | [HLS-Implementation.md](HLS-Implementation.md) | HLS & DASH streaming setup and CSP |
+| [Streaming-Conversion.md](Streaming-Conversion.md) | Server-side ffmpeg conversion to HLS / DASH streaming records |
 | [Partials.md](Partials.md) | Fluid partial structure and overrides |
 
 ## Related

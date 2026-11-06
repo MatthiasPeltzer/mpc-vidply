@@ -11,6 +11,7 @@ Universal, Accessible Video & Audio Player for TYPO3. Includes support for HTML5
 - **Full Accessibility** - Captions, chapters, audio description, sign language, keyboard controls
 - **HLS Streaming** - Adaptive bitrate streaming with **hls.js 1.7.4** (Chrome / Firefox / Edge / desktop Safari) and native HLS on iOS / iPadOS — both paths integrate with VidPly's captions, transcript and quality menus
 - **DASH Streaming** - MPEG-DASH via **dash.js 5.2.1** (modern UMD) with adaptive quality and subtitles (integrated into video/audio types)
+- **Streaming Conversion (optional)** - Editors convert uploaded videos with ffmpeg 7.1+ into HLS, DASH or both (shared CMAF segments); a scheduler task creates a separate "&lt;title&gt; (Stream)" record including converted audio-description and sign-language videos, captions, chapters, poster and translations — see [Streaming Conversion](Documentation/Streaming-Conversion.md)
 - **Import from URL** - Paste a media URL in the backend to auto-detect type, attach online media, and pre-fill title, artist, and poster
 - **SoundCloud Support** - GDPR consent layer, then SoundCloud Widget playback (optional developer opt-in for unified VidPly controls — see [PrivacyLayer.md](Documentation/PrivacyLayer.md))
 - **Buffering Spinner** - Centered loading spinner shown automatically while the media is buffering
@@ -69,6 +70,7 @@ Start at the **[Documentation index](Documentation/README.md)** for audience-bas
 | [Settings Architecture](Documentation/SettingsArchitecture.md) | Extension, privacy, player, and media settings |
 | [PrivacyLayer.md](Documentation/PrivacyLayer.md) | GDPR consent for YouTube, Vimeo, SoundCloud |
 | [HLS-Implementation.md](Documentation/HLS-Implementation.md) | HLS & DASH streaming and CSP |
+| [Streaming-Conversion.md](Documentation/Streaming-Conversion.md) | ffmpeg conversion of uploads to HLS / DASH |
 | [AssetLoading.md](Documentation/AssetLoading.md) | Conditional JavaScript loading |
 | [Partials.md](Documentation/Partials.md) | Fluid template overrides |
 
@@ -88,6 +90,7 @@ Start at the **[Documentation index](Documentation/README.md)** for audience-bas
 - **PHP**: 8.2+ (8.3 recommended)
 - **Composer**: Required
 - **Browsers**: Chrome 90+, Firefox 88+, Safari 14+
+- **Optional, for streaming conversion**: ffmpeg/ffprobe 7.1+, `typo3/cms-scheduler`; `typo3/cms-reports` for the ffmpeg status check
 
 `fluid_styled_content` is optional. VidPly registers its own frontend content-rendering TypoScript (`lib.mpcVidplyContentElement`) and ships a compatible Default layout for `tt_content` headers and frame classes.
 

@@ -16,6 +16,9 @@ $EM_CONF['mpc_vidply'] = [
             'frontend' => '13.4.0-14.99.99',
         ],
         'conflicts' => [],
-        'suggests' => [],
+        'suggests' => [
+            'reports' => '13.4.0-14.99.99',
+            'scheduler' => '13.4.0-14.99.99',
+        ],
     ],
 ];

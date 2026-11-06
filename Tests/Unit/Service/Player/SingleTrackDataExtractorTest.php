@@ -186,6 +186,41 @@ final class SingleTrackDataExtractorTest extends TestCase
     }
 
     #[Test]
+    public function streamedAccessibilityVideosPassTheirProgressiveFallbacks(): void
+    {
+        $track = [
+            'src' => 'a.m3u8',
+            'type' => 'application/x-mpegurl',
+            'audioDescriptionSrc' => '/fileadmin/stream/ad/ad.m3u8',
+            'audioDescriptionFallbackSrc' => '/fileadmin/ad.mp4',
+            'signLanguageSrc' => '/fileadmin/stream/sign/sl.m3u8',
+            'signLanguageFallbackSrc' => '/fileadmin/stream/sign/sl-480p.mp4',
+        ];
+
+        $overrides = $this->subject->extract(self::trackResult([$track]), 'de')['optionOverrides'];
+
+        self::assertSame('/fileadmin/stream/ad/ad.m3u8', $overrides['audioDescriptionSrc']);
+        self::assertSame('/fileadmin/ad.mp4', $overrides['audioDescriptionFallbackSrc']);
+        self::assertSame('/fileadmin/stream/sign/sl-480p.mp4', $overrides['signLanguageFallbackSrc']);
+    }
+
+    #[Test]
+    public function progressiveAccessibilityVideosCarryNoFallback(): void
+    {
+        $track = [
+            'src' => 'a.mp4',
+            'type' => 'video/mp4',
+            'audioDescriptionSrc' => '/fileadmin/ad.mp4',
+            'signLanguageSrc' => '/fileadmin/sl.mp4',
+        ];
+
+        $overrides = $this->subject->extract(self::trackResult([$track]))['optionOverrides'];
+
+        self::assertArrayNotHasKey('audioDescriptionFallbackSrc', $overrides);
+        self::assertArrayNotHasKey('signLanguageFallbackSrc', $overrides);
+    }
+
+    #[Test]
     public function descriptionsTrackEnablesTheAudioDescriptionButton(): void
     {
         $track = ['src' => 'a.mp4', 'type' => 'video/mp4', 'tracks' => [['kind' => 'descriptions', 'src' => 'd.vtt']]];

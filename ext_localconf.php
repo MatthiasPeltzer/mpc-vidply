@@ -3,11 +3,13 @@
 declare(strict_types=1);
 
 use Mpc\MpcVidply\Form\Element\MediaUrlImportElement;
+use Mpc\MpcVidply\Form\Element\StreamStatusElement;
 use Mpc\MpcVidply\Form\FormDataProvider\MediaUrlImportFormDataProvider;
 use Mpc\MpcVidply\Hooks\ListviewRowTranslationSync;
 use Mpc\MpcVidply\Hooks\MediaPosterThumbnailHook;
 use Mpc\MpcVidply\Hooks\MediaUrlImportPosterPersistHook;
 use Mpc\MpcVidply\Hooks\SrtCaptionConversionHook;
+use Mpc\MpcVidply\Hooks\StreamConversionDataHandlerHook;
 use Mpc\MpcVidply\Hooks\VidPlyPlaylistTranslationSync;
 use Mpc\MpcVidply\OnlineMedia\Helpers\DashHelper;
 use Mpc\MpcVidply\OnlineMedia\Helpers\ExternalAudioHelper;
@@ -40,6 +42,8 @@ $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['proc
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processCmdmapClass'][] = VidPlyPlaylistTranslationSync::class;
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processCmdmapClass'][] = ListviewRowTranslationSync::class;
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processCmdmapClass'][] = MediaPosterThumbnailHook::class;
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = StreamConversionDataHandlerHook::class;
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processCmdmapClass'][] = StreamConversionDataHandlerHook::class;
 
 // Custom route aspect for `route-enhancers.yaml` (slug optional → query fallback).
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['routing']['aspects']['MpcVidplyMediaRoute'] = VidPlyMediaRouteAspect::class;
@@ -56,6 +60,11 @@ $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1740000001] = [
     'nodeName' => 'vidplyMediaUrlImport',
     'priority' => 40,
     'class' => MediaUrlImportElement::class,
+];
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1740000002] = [
+    'nodeName' => 'vidplyStreamStatus',
+    'priority' => 40,
+    'class' => StreamStatusElement::class,
 ];
 
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['formDataGroup']['tcaDatabaseRecord'][MediaUrlImportFormDataProvider::class] = [
@@ -112,6 +121,12 @@ $mediaExt = GeneralUtility::trimExplode(',', (string)($GLOBALS['TYPO3_CONF_VARS'
 if (!in_array('soundcloud', $mediaExt, true)) {
     $mediaExt[] = 'soundcloud';
     $GLOBALS['TYPO3_CONF_VARS']['SYS']['mediafile_ext'] = implode(',', $mediaExt);
+}
+
+// Streaming conversion writes manifests and fMP4 segments into FAL.
+if ((bool)($extConf['streamingEnabled'] ?? false)) {
+    $mediaExt = GeneralUtility::trimExplode(',', (string)($GLOBALS['TYPO3_CONF_VARS']['SYS']['mediafile_ext'] ?? ''), true);
+    $GLOBALS['TYPO3_CONF_VARS']['SYS']['mediafile_ext'] = implode(',', array_values(array_unique([...$mediaExt, 'm3u8', 'mpd', 'm4s'])));
 }
 
 $textFileExt = GeneralUtility::trimExplode(',', (string)($GLOBALS['TYPO3_CONF_VARS']['SYS']['textfile_ext'] ?? ''), true);

@@ -23,6 +23,14 @@
         <source>Comma or newline separated list of allowed domains for external video URLs (e.g. *.xyz.de, www.xyz.de, https://*.xyz.de)</source>
         <target>Durch Komma oder Zeilenumbruch getrennte Liste zulässiger Domains für externe Video-URLs (z.B. *.xyz.de, www.xyz.de, https://*.xyz.de)</target>
       </trans-unit>
+      <trans-unit id="config.ffmpegPath">
+        <source>Path to the ffmpeg binary (default: "ffmpeg" from PATH)</source>
+        <target>Pfad zum ffmpeg-Programm (Standard: „ffmpeg“ aus PATH)</target>
+      </trans-unit>
+      <trans-unit id="config.ffprobePath">
+        <source>Path to the ffprobe binary (default: "ffprobe" from PATH)</source>
+        <target>Pfad zum ffprobe-Programm (Standard: „ffprobe“ aus PATH)</target>
+      </trans-unit>
       <trans-unit id="config.playIcon">
         <source>Play button icon (EXT: path, URL, or public path)</source>
         <target>Play-Button Icon (EXT: Pfad, URL oder öffentlicher Pfad)</target>
@@ -30,6 +38,30 @@
       <trans-unit id="config.playPosition">
         <source>Play button position</source>
         <target>Position des Play-Buttons</target>
+      </trans-unit>
+      <trans-unit id="config.streamingEnabled">
+        <source>Enable streaming conversion: editors can convert videos to HLS/DASH with ffmpeg (needs ffmpeg 7.1+ and the scheduler task "mpc-vidply:stream:convert")</source>
+        <target>Streaming-Konvertierung aktivieren: Redakteure können Videos mit ffmpeg in HLS/DASH umwandeln (benötigt ffmpeg 7.1+ und den Scheduler-Task „mpc-vidply:stream:convert“)</target>
+      </trans-unit>
+      <trans-unit id="config.streamingRenditions">
+        <source>Video renditions as heights in pixels, comma separated (sources are never upscaled)</source>
+        <target>Video-Auflösungen als Höhe in Pixeln, durch Komma getrennt (Quellen werden nie hochskaliert)</target>
+      </trans-unit>
+      <trans-unit id="config.streamingSegmentDuration">
+        <source>Segment length in seconds (1–30)</source>
+        <target>Segmentlänge in Sekunden (1–30)</target>
+      </trans-unit>
+      <trans-unit id="config.streamingSignLanguageRenditions">
+        <source>Sign-language renditions as heights in pixels, comma separated</source>
+        <target>Gebärdensprache-Auflösungen als Höhe in Pixeln, durch Komma getrennt</target>
+      </trans-unit>
+      <trans-unit id="config.streamingTargetFolder">
+        <source>Target folder for converted streams as combined identifier (e.g. 1:/user_upload/). Each video gets its own sub folder.</source>
+        <target>Zielordner für konvertierte Streams als kombinierter Bezeichner (z. B. 1:/user_upload/). Jedes Video erhält einen eigenen Unterordner.</target>
+      </trans-unit>
+      <trans-unit id="config.streamingThreads">
+        <source>Encoder threads per ffmpeg run (0 = ffmpeg decides)</source>
+        <target>Encoder-Threads pro ffmpeg-Lauf (0 = ffmpeg entscheidet)</target>
       </trans-unit>
       <trans-unit id="config.theme">
         <source>Player theme (dark or light mode)</source>

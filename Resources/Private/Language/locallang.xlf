@@ -18,11 +18,35 @@
       <trans-unit id="config.allowedVideoDomains.list">
         <source>Comma or newline separated list of allowed domains for external video URLs (e.g. *.xyz.de, www.xyz.de, https://*.xyz.de)</source>
       </trans-unit>
+      <trans-unit id="config.ffmpegPath">
+        <source>Path to the ffmpeg binary (default: "ffmpeg" from PATH)</source>
+      </trans-unit>
+      <trans-unit id="config.ffprobePath">
+        <source>Path to the ffprobe binary (default: "ffprobe" from PATH)</source>
+      </trans-unit>
       <trans-unit id="config.playIcon">
         <source>Play button icon (EXT: path, URL, or public path)</source>
       </trans-unit>
       <trans-unit id="config.playPosition">
         <source>Play button position</source>
+      </trans-unit>
+      <trans-unit id="config.streamingEnabled">
+        <source>Enable streaming conversion: editors can convert videos to HLS/DASH with ffmpeg (needs ffmpeg 7.1+ and the scheduler task "mpc-vidply:stream:convert")</source>
+      </trans-unit>
+      <trans-unit id="config.streamingRenditions">
+        <source>Video renditions as heights in pixels, comma separated (sources are never upscaled)</source>
+      </trans-unit>
+      <trans-unit id="config.streamingSegmentDuration">
+        <source>Segment length in seconds (1–30)</source>
+      </trans-unit>
+      <trans-unit id="config.streamingSignLanguageRenditions">
+        <source>Sign-language renditions as heights in pixels, comma separated</source>
+      </trans-unit>
+      <trans-unit id="config.streamingTargetFolder">
+        <source>Target folder for converted streams as combined identifier (e.g. 1:/user_upload/). Each video gets its own sub folder.</source>
+      </trans-unit>
+      <trans-unit id="config.streamingThreads">
+        <source>Encoder threads per ffmpeg run (0 = ffmpeg decides)</source>
       </trans-unit>
       <trans-unit id="config.theme">
         <source>Player theme (dark or light mode)</source>

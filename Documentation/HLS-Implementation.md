@@ -151,6 +151,10 @@ HLS and DASH are not standalone media types. Instead, streaming sources are adde
 5. Add poster image (allowed formats: `png`, `jpg`, `jpeg`, `webp`, `svg`)
 6. Save
 
+**Generating HLS/DASH from an uploaded video:** with the optional ffmpeg conversion, editors tick
+**Convert to stream (HLS/DASH)** on a video record and a scheduler task writes the manifests and
+segments into a new "&lt;title&gt; (Stream)" record — see [Streaming Conversion](Streaming-Conversion.md).
+
 **Adding HLS/DASH to an Audio record:**
 1. Create VidPly media record with type **Audio**
 2. Add a `.m3u8` (HLS) or `.mpd` (DASH) file as a media source
@@ -165,6 +169,10 @@ HLS and DASH are not standalone media types. Instead, streaming sources are adde
 - Embedded captions/subtitles from HLS/DASH manifests are used by default; local VTT files act as optional overrides
 - Quality switching available (if stream has multiple levels)
 - A centered buffering spinner is shown automatically while the stream is buffering
+- Audio-description and sign-language sources may be HLS/DASH as well. They get a progressive
+  fallback (`data-audio-description-fallback-src`, `data-sign-language-fallback-src`; in playlists
+  `audioDescriptionFallbackSrc`, `signLanguageFallbackSrc`) that the player switches to when the
+  stream cannot be loaded. The main video falls back to its progressive sources the same way.
 
 ## Testing
 
@@ -187,6 +195,9 @@ ddev typo3 cache:flush
 - Verify CORS headers on stream server (incl. `Access-Control-Allow-Origin` for `Range` requests)
 - Check CSP configuration (incl. `blob:`, `data:`, `worker-src 'blob:'`)
 - Look for JavaScript console errors
+
+**Self-hosted DASH served as `application/octet-stream`:**
+- Works with dash.js, but configure `application/dash+xml` for `.mpd` and `video/iso.segment` for `.m4s` — see [Streaming Conversion → Web server MIME types](Streaming-Conversion.md#web-server-mime-types)
 
 **No quality button:**
 - Verify stream has multiple quality levels
