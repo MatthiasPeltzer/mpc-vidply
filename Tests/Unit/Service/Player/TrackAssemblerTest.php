@@ -90,6 +90,26 @@ final class TrackAssemblerTest extends TestCase
     }
 
     #[Test]
+    public function textTrackLabelDropsTheTranslationPrefix(): void
+    {
+        $sanitize = new \ReflectionMethod($this->subject, 'sanitizeTextTrack');
+
+        $track = $sanitize->invoke($this->subject, [
+            'kind' => 'captions',
+            'srclang' => 'en',
+            'label' => '[Translate to English:] English',
+        ], 'de');
+        self::assertSame('English', $track['label']);
+
+        $empty = $sanitize->invoke($this->subject, [
+            'kind' => 'chapters',
+            'srclang' => 'en',
+            'label' => '[Translate to English:] ',
+        ], 'de');
+        self::assertSame('Chapters', $empty['label']);
+    }
+
+    #[Test]
     public function assembleStructuredDataTrackSkipsUnsavedRecords(): void
     {
         self::assertNull($this->subject->assembleStructuredDataTrack(['uid' => 0, 'media_type' => 'video']));

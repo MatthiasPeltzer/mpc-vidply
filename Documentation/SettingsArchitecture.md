@@ -47,12 +47,14 @@ Settings → VidPly Player** (screen reader announcements are in the
 | `mpcVidply.screenReaderAnnouncements` | bool | `true` | Announce play/pause, volume, mute, captions, fullscreen and speed changes in the player's live region |
 | `mpcVidply.resumePlayback` | bool | `false` | Remember playback position and offer to resume on the next visit (content elements can override) |
 | `mpcVidply.embedChrome` | `vidply` \| `provider` | `vidply` | **Controls for YouTube and Vimeo** — see below |
+| `mpcVidply.contextMenu` | bool | `true` | **Player menu on right-click** — right-click, the Menu key or Shift+F10 open the player's own menu instead of the browser menu; Shift + right-click always shows the browser menu. Passed to the player as the `contextMenu` option |
 
 ```yaml
 # config/sites/<id>/settings.yaml
 mpcVidply.screenReaderAnnouncements: false
 mpcVidply.resumePlayback: true
 mpcVidply.embedChrome: provider
+mpcVidply.contextMenu: false
 ```
 
 ```typoscript
@@ -60,6 +62,7 @@ mpcVidply.embedChrome: provider
 {$mpcVidply.screenReaderAnnouncements}
 {$mpcVidply.resumePlayback}
 {$mpcVidply.embedChrome}
+{$mpcVidply.contextMenu}
 ```
 
 Turning the announcements off silences the status messages the player sends to

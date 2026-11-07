@@ -434,6 +434,9 @@ final class TrackAssembler
         $textTrack['srclang'] = $srclang;
 
         $label = $this->urlSanitizer->stripControlChars((string)($textTrack['label'] ?? ''));
+        // sys_file_reference.title is `prefixLangTitle`: localized references start as
+        // "[Translate to English:] English" until an editor changes them.
+        $label = trim((string)preg_replace('/^\[[^\[\]]+:\]\s*/u', '', $label));
         if ($label === '') {
             $label = $kind === 'chapters' ? 'Chapters' : ($kind === 'descriptions' ? 'Descriptions' : 'Captions');
         }

@@ -19,6 +19,10 @@ settings:
     enum:
       vidply: 'LLL:EXT:mpc_vidply/Configuration/Sets/mpc-vidply/labels.xlf:settings.mpcVidply.embedChrome.vidply'
       provider: 'LLL:EXT:mpc_vidply/Configuration/Sets/mpc-vidply/labels.xlf:settings.mpcVidply.embedChrome.provider'
+  mpcVidply.contextMenu:
+    default: true
+    type: bool
+    category: mpcVidply
   mpcVidply.registerBreadcrumbMenu:
     default: true
     type: bool

@@ -21,6 +21,12 @@
       <trans-unit id="settings.description.mpcVidply.resumePlayback">
         <source>When enabled, the player remembers where a visitor stopped watching or listening and offers to continue from that point on the next visit. Applies to all VidPly players on this site unless a content element overrides it.</source>
       </trans-unit>
+      <trans-unit id="settings.mpcVidply.contextMenu">
+        <source>Player menu on right-click</source>
+      </trans-unit>
+      <trans-unit id="settings.description.mpcVidply.contextMenu">
+        <source>Right-click, the Menu key or Shift+F10 on a player open a menu with the player's functions (playback, captions, chapters, speed, transcript, audio description, sign language, fullscreen, download, keyboard help) instead of the browser menu. Shift + right-click always shows the browser menu. Switch this off to keep the browser menu on all VidPly players of this site.</source>
+      </trans-unit>
       <trans-unit id="settings.mpcVidply.embedChrome">
         <source>Controls for YouTube and Vimeo</source>
       </trans-unit>

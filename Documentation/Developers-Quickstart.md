@@ -372,6 +372,24 @@ const player = new Player('#my-player', {
 const playlist = new PlaylistManager(player, { autoAdvance: true });
 ```
 
+### Context menu
+
+Right-click (or the Menu key / Shift+F10 on the focused player) opens a player
+menu instead of the browser menu: play/pause, seeking, mute, loop, captions,
+chapters, speed and quality submenus, transcript, audio description, sign
+language, floating player / PiP, fullscreen, download and keyboard help. It only
+lists what the current media supports and follows the OS light/dark colours.
+
+- On by default. Site setting **Player menu on right-click**
+  (`mpcVidply.contextMenu`, see
+  [SettingsArchitecture.md](SettingsArchitecture.md)) switches it off for all
+  players of a site; `PlayerOptionsBuilder` passes it as the `contextMenu`
+  player option.
+- **Shift + right-click** with a mouse always shows the browser menu; touch
+  long-press, text fields, links and selected text keep it as well.
+- Not shown when the provider's own controls are used (`embedChrome: provider`)
+  or `controls` is off.
+
 ---
 
 ## Privacy Layer

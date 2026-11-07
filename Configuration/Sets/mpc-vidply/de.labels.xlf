@@ -27,6 +27,14 @@
         <source>When enabled, the player remembers where a visitor stopped watching or listening and offers to continue from that point on the next visit. Applies to all VidPly players on this site unless a content element overrides it.</source>
         <target>Wenn aktiviert, merkt sich der Player, an welcher Stelle Besuchende das Ansehen oder Anhören beendet haben, und bietet beim nächsten Besuch an, dort fortzufahren. Gilt für alle VidPly-Player dieser Site, sofern ein Inhaltselement dies nicht überschreibt.</target>
       </trans-unit>
+      <trans-unit id="settings.mpcVidply.contextMenu">
+        <source>Player menu on right-click</source>
+        <target>Player-Menü bei Rechtsklick</target>
+      </trans-unit>
+      <trans-unit id="settings.description.mpcVidply.contextMenu">
+        <source>Right-click, the Menu key or Shift+F10 on a player open a menu with the player's functions (playback, captions, chapters, speed, transcript, audio description, sign language, fullscreen, download, keyboard help) instead of the browser menu. Shift + right-click always shows the browser menu. Switch this off to keep the browser menu on all VidPly players of this site.</source>
+        <target>Rechtsklick, die Menütaste oder Umschalt+F10 auf einem Player öffnen statt des Browser-Menüs ein Menü mit den Funktionen des Players (Wiedergabe, Untertitel, Kapitel, Geschwindigkeit, Transkript, Audiodeskription, Gebärdensprache, Vollbild, Download, Tastaturhilfe). Umschalt + Rechtsklick zeigt immer das Browser-Menü. Schalten Sie dies aus, um auf allen VidPly-Playern dieser Site das Browser-Menü zu behalten.</target>
+      </trans-unit>
       <trans-unit id="settings.mpcVidply.embedChrome">
         <source>Controls for YouTube and Vimeo</source>
         <target>Steuerung für YouTube und Vimeo</target>

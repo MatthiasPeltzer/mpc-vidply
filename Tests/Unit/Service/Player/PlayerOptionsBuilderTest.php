@@ -94,6 +94,24 @@ final class PlayerOptionsBuilderTest extends TestCase
     }
 
     #[Test]
+    public function buildEnablesTheContextMenuByDefault(): void
+    {
+        self::assertTrue($this->subject->build([])['contextMenu']);
+    }
+
+    #[Test]
+    public function buildTakesTheContextMenuFromTheSiteSettings(): void
+    {
+        $site = new Site('mpc', 1, [
+            'base' => '/',
+            'settings' => ['mpcVidply' => ['contextMenu' => false]],
+        ]);
+        $request = (new ServerRequest())->withAttribute('site', $site);
+
+        self::assertFalse($this->subject->build([], $request)['contextMenu']);
+    }
+
+    #[Test]
     public function buildEnablesResumePlaybackFromTheContentElementOption(): void
     {
         $options = $this->subject->build(['tx_mpcvidply_resume_playback' => 1]);

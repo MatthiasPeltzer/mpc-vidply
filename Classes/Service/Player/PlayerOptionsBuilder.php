@@ -64,6 +64,12 @@ final class PlayerOptionsBuilder
 
     private const EMBED_CHROME_MODES = ['vidply', 'provider'];
 
+    /**
+     * Site setting for the player's right-click menu (`{$mpcVidply.contextMenu}`).
+     * On by default; off keeps the browser's own context menu.
+     */
+    private const SETTING_CONTEXT_MENU = 'mpcVidply.contextMenu';
+
     private const PLAY_BUTTON_POSITIONS = ['center', 'left-top', 'right-top', 'left-bottom', 'right-bottom'];
 
     private const AUDIO_DESCRIPTION_MODES = ['auto', 'swap', 'vtt_speech'];
@@ -118,6 +124,7 @@ final class PlayerOptionsBuilder
 
         $playerOptions['embedChrome'] = $this->resolveEmbedChrome($request);
         $playerOptions['embedChromeSoundcloud'] = 'provider';
+        $playerOptions['contextMenu'] = $this->resolveContextMenu($request);
 
         // `?vidplyDebug=1` is deliberately not read here: the parameter is
         // excluded from the cHash, so a server-side flag would be cached for
@@ -384,6 +391,20 @@ final class PlayerOptionsBuilder
         }
 
         return (bool)$site->getSettings()->get(self::SETTING_RESUME_PLAYBACK, false);
+    }
+
+    /**
+     * The player menu replaces the browser's context menu unless a site turns
+     * it off. Requests without a resolved site (backend preview, CLI) keep the default.
+     */
+    private function resolveContextMenu(?ServerRequestInterface $request): bool
+    {
+        $site = $request?->getAttribute('site');
+        if (!$site instanceof Site) {
+            return true;
+        }
+
+        return (bool)$site->getSettings()->get(self::SETTING_CONTEXT_MENU, true);
     }
 
     /**
