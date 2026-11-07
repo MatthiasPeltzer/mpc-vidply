@@ -12,7 +12,7 @@ The DataProcessor analyzes media items and sets flags indicating which assets ar
 | `needsVidPlay` | VidPly core (`vidply/vidply.esm.min.js` + code-split chunks; compiled from TypeScript, includes the buffering spinner, the optional download button and the SoundCloud renderer) | Local video or audio, every playlist, and single YouTube / Vimeo items while `mpcVidply.embedChrome` is `vidply` (default) |
 | `needsPlaylist` | PlaylistInit.js | Whenever the VidPly core is loaded (player initialization, playlists) |
 | `needsHLS` | hls.js **1.7.4** (`hls.min.js`) | HLS source (.m3u8) detected in media files |
-| `needsDASH` | dash.js **5.2.1** (`dash.all.min.js`, modern UMD) | DASH source (.mpd) detected in media files |
+| `needsDASH` | dash.js **5.3.0** (`dash.all.min.js`, modern UMD) | DASH source (.mpd) detected in media files |
 
 The episode layouts add two more assets, loaded by `VidPly/EpisodeLayout.html`
 rather than by a flag: `episode.min.css` and `EpisodeInit.min.js` (wires the
@@ -131,7 +131,7 @@ element's Layout field is `card` or `episodes`.
 - External services on the privacy-layer-only path: 97% reduction (~350KB → ~7KB)
 - Local video without streaming: ~65% reduction vs. the unoptimized "load everything" baseline
 
-> Scenario sizes above are **approximate gzip transfer** (minified sources). On-disk minified files are larger — e.g. `hls.min.js` ≈ 609 KB, `dash.all.min.js` ≈ 782 KB, all `vidply/*.js` chunks combined ≈ 542 KB.
+> Scenario sizes above are **approximate gzip transfer** (minified sources). On-disk minified files are larger — e.g. `hls.min.js` ≈ 609 KB, `dash.all.min.js` ≈ 812 KB, all `vidply/*.js` chunks combined ≈ 542 KB.
 
 ## Implementation
 
@@ -175,7 +175,7 @@ $needsPlaylist = $isPlaylist || $needsVidPlay;
     <f:asset.script identifier="vidPlyHLS" src="EXT:mpc_vidply/Resources/Public/JavaScript/hls.min.js" defer="true"/>
 </f:if>
 
-<!-- dash.js 5.2.1 (modern UMD) - only for DASH streams -->
+<!-- dash.js 5.3.0 (modern UMD) - only for DASH streams -->
 <f:if condition="{needsDASH}">
     <f:asset.script identifier="vidPlyDASH" src="EXT:mpc_vidply/Resources/Public/JavaScript/dash.all.min.js" defer="true"/>
 </f:if>
