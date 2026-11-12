@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Bundled VidPly player with the new player context menu (on by default): right-click, the Menu key or Shift+F10 open a native-looking menu with the player's functions (playback, seeking, mute, loop, captions / chapters / speed / quality submenus, transcript, audio description, sign language, floating player / PiP, fullscreen, download, keyboard help). Shift + right-click shows the browser menu.
+- Site setting `mpcVidply.contextMenu` ("Player menu on right-click", on by default) to keep the browser menu on all VidPly players of a site.
+
+### Fixed
+
+- Caption, chapter and description track labels no longer show TYPO3's "[Translate to …:]" prefix on translated pages (`sys_file_reference.title` is `prefixLangTitle`).
+- Bundled VidPly player: chapters follow the page language in the chapters menu and the context menu.
+
 ## [1.2.48] - 2026-11-06
 
 - Updated vendored dash.js to **5.3.0** (modern UMD).
