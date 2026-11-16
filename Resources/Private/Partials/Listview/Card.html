@@ -3,8 +3,7 @@
 <article class="mpc-vidply-card mpc-vidply-card--{cardStyle}">
     <f:if condition="{card.detailUrl}">
         <f:then>
-            <a class="mpc-vidply-card__link" href="{card.detailUrl}"
-               aria-label="{card.title}{f:if(condition: card.durationFormatted, then: ', {card.durationFormatted}')}">
+            <a class="mpc-vidply-card__link" href="{card.detailUrl}">
                 <f:render section="Media" arguments="{card: card, cardStyle: cardStyle}" />
             </a>
         </f:then>
