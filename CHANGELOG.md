@@ -5,7 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.2.50] - 2026-11-18
+
+### Fixed
+
+- Mediathek list cards: use the visible title as the link accessible name; remove
+  redundant `aria-label` on stretched card links.
+
+### Changed
+
+- Shipped VidPly build with quality-button aria-label sync (HLS/DASH axe).
+
+### Fixed
+
+- Shipped VidPly build: DASH quality button after all representations are ready.
+
+## [1.2.49] - 2026-11-12
+
+### Fixed
+
+- Keep player controls readable on hover when browsers use custom colors.
 
 ### Added
 
@@ -1188,6 +1207,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.2.50]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.49...v1.2.50
+[1.2.49]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.48...v1.2.49
 [1.2.48]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.47...v1.2.48
 [1.2.47]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.46...v1.2.47
 [1.2.46]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.45...v1.2.46
