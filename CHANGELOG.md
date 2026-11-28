@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-11-28
+
+### Fixed
+- Acceptance CI: pass `-p 8.3` to `runTests.sh` so the Docker PHP stack matches `>=8.3` (default was 8.2).
+
+### Changed
+
+- **PHP 8.3–8.6 only:** `composer.json` requires `>=8.3 <8.7`; PHP 8.2 is no longer supported. CI quality matrix and functional jobs use 8.3–8.6; README requirements updated.
+
 ## [1.2.50] - 2026-11-18
 
 ### Fixed
@@ -1197,6 +1206,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
+[1.3.0]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.50...v1.3.0
 [1.2.50]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.49...v1.2.50
 [1.2.49]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.48...v1.2.49
 [1.2.48]: https://github.com/MatthiasPeltzer/mpc-vidply/compare/v1.2.47...v1.2.48
