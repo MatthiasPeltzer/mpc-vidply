@@ -182,4 +182,4 @@ jobs:
         run: .Build/bin/codecept build -c codeception.yml
 
       - name: Acceptance tests via runTests.sh
-        run: bash Build/Scripts/runTests.sh -b docker -s acceptance -d sqlite
+        run: bash Build/Scripts/runTests.sh -b docker -s acceptance -d sqlite -p 8.3
