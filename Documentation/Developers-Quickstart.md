@@ -697,5 +697,5 @@ tx_mpcvidply_privacy_settings -- Privacy layer configuration
 
 ---
 
-**Version:** 1.2.47 | **TYPO3:** 13.4+ / 14.x | **PHP:** ≥8.2 | **Bundled player:** VidPly v1.2.25
+**Version:** 1.2.47 | **TYPO3:** 13.4+ / 14.x | **PHP:** 8.3–8.6 (`>=8.3 <8.7`) | **Bundled player:** VidPly v1.2.25
 

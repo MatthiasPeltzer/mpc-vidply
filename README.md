@@ -85,7 +85,7 @@ Start at the **[Documentation index](Documentation/README.md)** for audience-bas
 ## Requirements
 
 - **TYPO3**: 13.4+ or 14.x (Core, Fluid, Extbase)
-- **PHP**: 8.2+ (8.3 recommended)
+- **PHP**: 8.3–8.6 (`>=8.3 <8.7`)
 - **Composer**: Required
 - **Browsers**: Chrome 90+, Firefox 88+, Safari 14+
 
